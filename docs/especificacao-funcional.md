@@ -10,6 +10,31 @@ Documento vivo — vai sendo preenchido conforme cada módulo fecha.
 
 ---
 
+## Registro de decisões — refinamento
+
+Decisões fechadas na sessão de refinamento (fonte única; detalhes nos módulos e no
+`docs/modelo-de-dados.md`):
+
+| # | Tema | Decisão |
+|---|---|---|
+| 1 | Papéis por membro | **Múltiplos papéis**, com um **papel primário** que define a tela-casa do Covil. |
+| 2 | Admin (Felipe) | **Flag à parte** (`is_admin`), por cima dos 3 papéis; pode acumular papel operacional. |
+| 3 | Avanço de fase | **Manual + checklist**. Prazo de 7 dias = SLA/alerta (não trava). Gates bloqueiam a conclusão da fase. |
+| 4 | Status da Cria | Ciclo **Ativa / Pausada / Encerrada** + **`em_risco`** como flag **derivada** (SLA/NPS). |
+| 5 | Fogueira | É o **board Kanban (Linha de Fogo)** — apresentação, não entidade de dados. |
+| 6 | Kanban | **Aba separada** (não dentro do Covil). |
+| 7 | Campo Produto | **Travado** em "Estruturação" (enum já previsto pra futuros produtos). |
+| 8 | Covil V1 | **Listas + alertas + KPIs**; calendário fica pro backlog. |
+
+**Ainda aguardando input do Felipe (não é múltipla escolha):**
+
+- Rotinas reais de cada papel (a 1.5 é rascunho de trabalho).
+- Deliverable concreto de cada fase (além do já mapeado em 3.3).
+- Material/POP oficial de referência da Estruturação.
+- Validação da proposta de KPIs e dos blocos do Covil por papel.
+
+---
+
 ## Módulo 1 — Acesso e Membros
 
 ### 1.1 Princípio central (o diferencial)
@@ -148,10 +173,14 @@ e documentação de processos.
 
 - [x] **Roster completo de papéis:** FECHADO — só três: Gestor de Contas, Gestor de Projetos,
   Gestor de Tráfego. (Sem Designer/Social/Copy.)
-- [ ] Validar/ajustar as rotinas de cada papel (seção 1.5)
-- [ ] Recorrência da Lenha de Rotina: diária, semanal, mensal? (cada tarefa precisa de cadência)
-- [ ] Um membro pode ter mais de um papel ao mesmo tempo?
-- [ ] Líder (Felipe) acumula um dos três papéis ou entra como Admin à parte?
+- [ ] Validar/ajustar as rotinas de cada papel (seção 1.5) — _aguardando input do Felipe; o
+  rascunho da 1.5 vale como versão de trabalho._
+- [x] **Recorrência da Lenha de Rotina:** o campo precisa suportar **diária fixa, por dia da
+  semana, semanal, mensal e sprint** (ver `docs/modelo-de-dados.md`). Não é só diária/semanal/mensal.
+- [x] **Um membro pode ter mais de um papel?** SIM — **múltiplos papéis**, com um **papel
+  primário** que define a tela-casa do Covil.
+- [x] **Líder (Felipe):** entra como **Admin (flag à parte)**, por cima dos 3 papéis; pode,
+  opcionalmente, acumular um papel operacional.
 
 ### 1.7 Impacto técnico (schema)
 
@@ -183,8 +212,9 @@ partir dela que nascem as Forjas (projetos).
 - Closer (quem fechou o contrato)
 
 > **Nota sobre "Produto":** como o produto é único (Estruturação), esse campo tende a vir
-> fixo/pré-preenchido como Estruturação, não como escolha aberta. Confirmar se fica travado ou
-> se é só rótulo. Se no futuro entrar Alavancagem/E3 Light, o campo já está previsto.
+> fixo/pré-preenchido como Estruturação, não como escolha aberta. **Decidido: fica travado**
+> (pré-preenchido e não editável). Se no futuro entrar Alavancagem/E3 Light, o campo (enum) já
+> está previsto.
 
 **Campos de sistema (automáticos, não digitados):** Gestor de Contas responsável, data de
 contrato, status da Cria, flag de contrato (Forja Quente / Brasa Viva). Confirmar se algum
@@ -321,8 +351,9 @@ _Impacto técnico:_
 - [x] **Uma Cria tem uma ou várias Forjas?** 1 Cria = 1 Estruturação, automática no cadastro.
 - [x] **Precisa criar Forja/escolher produto?** Não. Produto único, disparo automático.
 - [x] **Perguntas do relatório interno** — recebido (briefing semanal, 6 campos).
-- [ ] O que precisa aparecer na lista vs. no detalhe da Cria?
-- [ ] Status possíveis de uma Cria (ativa/pausada/encerrada/em risco?).
+- [ ] O que precisa aparecer na lista vs. no detalhe da Cria? _(rascunho em 2.4; refinar na fase de UI)_
+- [x] **Status da Cria:** ciclo = **Ativa / Pausada / Encerrada**. "Em risco" **não** é status
+  manual — é **flag derivada** (SLA estourando / NPS baixo) que acende no Covil.
 
 ---
 
@@ -404,11 +435,14 @@ identidade (Faísca/Fornalha/etc.) nas fases do funil.
 
 ### 3.5 Em aberto (aguardando Felipe definir)
 
-- [ ] O deliverable concreto de cada fase (além dos já mapeados em 3.3).
-- [ ] Como cada fase deve ser tratada — o que precisa acontecer pra avançar.
-- [ ] Critério de avanço de fase (automático por prazo? manual por conclusão da Lenha? checklist?).
-- [ ] Referências/padrões que a E3 já usa pra estruturação (material oficial, igual ao POP do Projetos).
-- [ ] Papel da entidade `Fogueira` nesse contexto (provável dono do Kanban / Linha de Fogo).
+- [ ] O deliverable concreto de cada fase (além dos já mapeados em 3.3) — _aguardando Felipe._
+- [x] **Critério de avanço de fase:** **manual + checklist**. O Gestor conclui a Lenha da fase e
+  avança na mão; o prazo de 7 dias vira **SLA/alerta** (não trava sozinho). Gates (ex.: Formulário
+  Diagnóstico) impedem concluir a fase sem serem cumpridos.
+- [ ] Referências/padrões que a E3 já usa pra estruturação (material oficial, igual ao POP do
+  Projetos) — _aguardando Felipe._
+- [x] **Fogueira:** é o **board Kanban (Linha de Fogo)** — visão de apresentação das Forjas por
+  fase, **não** uma entidade de dados pesada. Fica em **aba separada** (não dentro do Covil).
 
 ---
 
@@ -455,10 +489,11 @@ O Covil **não é uma tela única**. Como definido no Módulo 1, cada papel entr
 
 ### 4.4 Em aberto
 
-- [ ] Quais números/indicadores o Covil mostra no topo (Forjas ativas, % no prazo, Crias em risco…?).
+- [~] **KPIs do topo (proposta de V1, validar):** Forjas ativas · % de fases no prazo · Crias em
+  risco · Briefings pendentes na semana · Gargalos abertos sem plano de ação.
 - [ ] Validar os blocos de cada papel (cortar/adicionar).
-- [ ] O Covil tem visão de calendário (Daily/Weekly/BSC, prazos de fase) ou só listas?
-- [ ] Kanban (Linha de Fogo) entra dentro do Covil ou é aba separada?
+- [x] **Calendário no Covil:** V1 = **listas + alertas + KPIs**; calendário fica pro backlog.
+- [x] **Kanban (Linha de Fogo):** **aba separada** (não dentro do Covil).
 
 ---
 

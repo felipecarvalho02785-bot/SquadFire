@@ -61,18 +61,25 @@ automaticamente a Estruturação (Forja)** — um funil de **7 fases × 7 dias =
 - **1 Cria = 1 Estruturação**, criada automaticamente no cadastro (sem escolha de produto).
 - Funil de **7 fases × 7 dias = 49 dias** (substitui o antigo de 6 fases). Nomes **operacionais** das fases.
 - Todos veem tudo; o que diferencia cada papel é a **tarefa delegada**, não a visibilidade.
+- **Múltiplos papéis por membro**, com um **papel primário** (define a tela-casa do Covil).
+- **Admin** é uma **flag à parte** (Felipe), por cima dos papéis.
+- **Avanço de fase manual + checklist**; o prazo de 7 dias é SLA/alerta, não trava.
+- **Status da Cria:** Ativa / Pausada / Encerrada; "em risco" é flag **derivada**.
+- **Fogueira = Kanban (Linha de Fogo)**, em **aba separada**.
+- **Campo Produto travado** em "Estruturação".
+- **Covil V1** = listas + alertas + KPIs (calendário no backlog).
 
-## Em aberto
+## Em aberto (aguardando input do Felipe)
 
-- Validar as rotinas de cada papel e a cadência de recorrência da Lenha de Rotina.
-- Um membro pode acumular mais de um papel?
-- Entregável concreto e critério de avanço de cada fase.
-- KPIs do topo do Covil e se há visão de calendário.
-- Papel exato da entidade `Fogueira` (provável dono do Kanban).
+- Rotinas reais de cada papel (o rascunho da spec vale como versão de trabalho).
+- Deliverable concreto de cada fase (além do já mapeado).
+- Material/POP oficial de referência da Estruturação.
+- Validar a proposta de KPIs e os blocos do Covil por papel.
 
 ## Documentação
 
 - 📄 [Especificação Funcional completa](docs/especificacao-funcional.md) — o documento vivo, organizado por módulo.
+- 🗂️ [Modelo de Dados](docs/modelo-de-dados.md) — entidades, enums, relacionamentos e regras de negócio (base Supabase/Postgres).
 
 ---
 
