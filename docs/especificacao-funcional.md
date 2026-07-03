@@ -25,6 +25,9 @@ Decisões fechadas na sessão de refinamento (fonte única; detalhes nos módulo
 | 6 | Kanban | **Aba separada** (não dentro do Covil). |
 | 7 | Campo Produto | **Travado** em "Estruturação" (enum já previsto pra futuros produtos). |
 | 8 | Covil V1 | **Listas + alertas + KPIs**; calendário fica pro backlog. |
+| 9 | Contrato no cadastro | Cria pode ser cadastrada **sem contrato**. Forja nasce com `data_inicio` nula e 7 fases "pendente" (sem prazos); ao confirmar o contrato, a IA seta a data e os prazos são calculados. |
+| 10 | Permissões por papel | Todos **leem** tudo; **edição** por papel (matriz em `docs/modelo-de-dados.md`). Contas→Crias/contratos; Projetos→fases/Lenha de Forja; Tráfego→mídia; Admin→tudo + membros. |
+| 11 | Checklist por fase | Cada fase tem Lenha de Forja padrão (seed). Fases 1–2 já concretas (Formulário Acesso/Diagnóstico, Diagnóstico 360); 3–7 com placeholder até Felipe detalhar. |
 
 **Ainda aguardando input do Felipe (não é múltipla escolha):**
 

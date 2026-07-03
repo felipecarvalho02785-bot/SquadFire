@@ -68,6 +68,9 @@ automaticamente a Estruturação (Forja)** — um funil de **7 fases × 7 dias =
 - **Fogueira = Kanban (Linha de Fogo)**, em **aba separada**.
 - **Campo Produto travado** em "Estruturação".
 - **Covil V1** = listas + alertas + KPIs (calendário no backlog).
+- **Contrato opcional no cadastro** — Forja nasce sem prazos; a IA os calcula ao confirmar o contrato.
+- **Permissões por papel** (leitura total, edição por função) — matriz base pra RLS definida.
+- **Checklist por fase** — Lenha de Forja padrão semeada (fases 1–2 concretas; 3–7 placeholder).
 
 ## Em aberto (aguardando input do Felipe)
 

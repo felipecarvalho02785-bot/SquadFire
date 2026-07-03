@@ -337,10 +337,13 @@ create type origem_briefing as enum ('audio', 'grupo_whatsapp', 'manual');
 ## Regras de negócio (invariantes)
 
 1. **Cadastro dispara a Estruturação.** Ao criar `cria`, criar automaticamente `forja` + as 7
-   `fase_da_forja` (a partir do seed de `fase`). Sem escolha de produto, sem criação manual de Forja.
-2. **Prazos a partir do contrato.** `forja.data_inicio` vem da IA lendo o contrato. Ao confirmar,
-   calcular `data_prevista_inicio`/`fim` de cada fase em cascata (fase N começa quando N-1 fecha
-   no previsto; 7 dias cada).
+   `fase_da_forja` (a partir do seed de `fase`) + as **Lenhas de Forja padrão** de cada fase
+   (ver seed abaixo). Sem escolha de produto, sem criação manual de Forja.
+2. **Contrato é opcional no cadastro; prazos vêm dele.** A Cria pode ser cadastrada **sem
+   contrato**: a Forja nasce com `data_inicio` nula e as 7 fases em `pendente`, **sem prazos**.
+   Ao anexar e **confirmar** o contrato, `forja.data_inicio` recebe a data extraída pela IA e os
+   `data_prevista_inicio`/`fim` de cada fase são calculados em cascata (fase N começa quando N-1
+   fecha no previsto; 7 dias cada). Enquanto não há data, nada de SLA/atraso.
 3. **Avanço de fase = manual + checklist.** Só conclui a fase quando as Lenhas de Forja dela
    estão concluídas (e o gate, se houver, cumprido). Avançar seta `data_realizada_fim` da fase
    atual, `data_realizada_inicio` da próxima e move `forja.fase_atual_id`.
@@ -350,6 +353,45 @@ create type origem_briefing as enum ('audio', 'grupo_whatsapp', 'manual');
 6. **Papel primário válido.** `membro.papel_primario` tem que estar em `membro_papel`.
 7. **Visibilidade total, delegação por papel.** Todos leem Crias e Forjas; edição/delegação e a
    composição do Covil dependem do papel (RLS por papel + `is_admin`).
+
+---
+
+## Permissões por papel (base pra RLS)
+
+Passada grossa — todos **leem** tudo; a **edição** é por papel. Refina na implementação das
+políticas RLS. `Admin` (flag) libera tudo.
+
+| Recurso / Ação | Contas | Projetos | Tráfego | Admin |
+|---|---|---|---|---|
+| Ler tudo (Crias, Forjas, Lenha, Covil) | ✅ | ✅ | ✅ | ✅ |
+| Criar / editar Cria + Contrato | ✅ | — | — | ✅ |
+| Comentário / Briefing | ✅ | ✅ | — | ✅ |
+| Mover fase da Forja (avançar) | — | ✅ | — | ✅ |
+| Criar / distribuir Lenha de Forja | — | ✅ | — | ✅ |
+| Editar campos de mídia / campanha | — | — | ✅ | ✅ |
+| Gargalo + Plano de Ação | ✅ | ✅ | — | ✅ |
+| Concluir a **própria** Lenha (Forja/Rotina) | ✅ | ✅ | ✅ | ✅ |
+| Gestão de membros / allowlist | — | — | — | ✅ |
+
+> Regra transversal: quem só é `responsavel_id` de uma Lenha pode mudar o **status dela**, mas
+> não criar/redistribuir — isso é do dono do recurso (Projetos pra Forja, Admin no geral).
+
+---
+
+## Seed — Lenha de Forja padrão por fase
+
+Gerado junto com a Forja (regra 1). Fases 1–2 já concretas (fonte: spec 3.3); 3–7 com placeholder
+até o Felipe detalhar. É o **checklist** cuja conclusão habilita avançar a fase.
+
+| Fase | Lenha de Forja padrão | Gate |
+|---|---|---|
+| 1 · Alinhamento / Boas-vindas | Reunião de alinhamento · Enviar Formulário de Acesso · Enviar Formulário Diagnóstico | **Formulário Diagnóstico respondido** (trava fase 1→2) |
+| 2 · Diagnóstico 360 | Elaborar documento Diagnóstico 360 (gargalos + planos) · Reunião de fechamento · Enviar PDF ao cliente | — |
+| 3 · Treinamento Comercial | _Entregável da fase (a detalhar)_ | — |
+| 4 · Consultoria Comercial (sócios) | _Entregável da fase (a detalhar)_ | — |
+| 5 · Implementação CRM + IA | _Entregável da fase (a detalhar)_ | — |
+| 6 · Auditoria de Mídia | _Entregável da fase (a detalhar — inclui Google Meu Negócio)_ | — |
+| 7 · Auditoria Criativa | _Entregável da fase (a detalhar)_ | — |
 
 ---
 
