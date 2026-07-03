@@ -80,6 +80,7 @@ automaticamente a Estruturação (Forja)** — um funil de **7 fases × 7 dias =
 
 - 📄 [Especificação Funcional completa](docs/especificacao-funcional.md) — o documento vivo, organizado por módulo.
 - 🗂️ [Modelo de Dados](docs/modelo-de-dados.md) — entidades, enums, relacionamentos e regras de negócio (base Supabase/Postgres).
+- 🔁 [Catálogo de Rotinas](docs/rotinas.md) — Lenha de Rotina por papel, pronta pra seed (com pendências marcadas).
 
 ---
 

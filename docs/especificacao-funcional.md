@@ -81,6 +81,8 @@ O CRM tem duas naturezas de tarefa que convivem:
 ### 1.5 Rotinas por papel — Lenha de Rotina (RASCUNHO, validar)
 
 > Proposta inicial pra Felipe cortar/ajustar. As rotinas reais quem manda é ele.
+> **Versão estruturada e seed-ready em [`docs/rotinas.md`](rotinas.md)** — já com Check-in da
+> Cria = semanal confirmado; demais cadências parqueadas.
 
 **Rotina COMUM — toda a equipe (coletiva)**
 
