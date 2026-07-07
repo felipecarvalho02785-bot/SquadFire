@@ -1,29 +1,32 @@
 <title>SquadFire — Entrar</title>
 <style>
-  /* Login "covil do dragão" — preto profundo, brasas + fumaça subindo, fornalha por baixo. */
+  /* Login "covil do dragão" — preto profundo, faíscas reais + fumaça, fornalha por baixo. */
   :root{
-    --ink:#070605; --surface:rgba(16,12,10,.72); --border:rgba(255,120,60,.14);
+    --ink:#060504; --surface:rgba(15,11,9,.74); --border:rgba(255,120,60,.14);
     --text:#F3E9E2; --muted:#A99889; --faint:#6E5F55;
-    --accent:#FF6A2B; --accent-bright:#FFB454; --ember-deep:#E8451F;
+    --accent:#FF6A2B; --accent-bright:#FFB454;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0; height:100%}
-  body{font-family:var(--sans); color:var(--text); min-height:100vh; background:#070605; -webkit-font-smoothing:antialiased; overflow:hidden}
+  body{font-family:var(--sans); color:var(--text); min-height:100vh; background:#060504; -webkit-font-smoothing:antialiased; overflow:hidden}
   :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:8px}
 
-  /* layers */
   #smoke,#embers{position:fixed; inset:0; width:100%; height:100%; pointer-events:none}
   #smoke{z-index:0} #embers{z-index:1}
-  .forge{position:fixed; left:50%; bottom:-16%; width:130%; height:52%; transform:translateX(-50%); z-index:0; pointer-events:none;
-    background:radial-gradient(50% 100% at 50% 100%, rgba(255,90,30,.34), rgba(232,69,31,.14) 42%, transparent 72%);
-    filter:blur(6px)}
+  /* fornalha / leito de brasas por baixo da tela */
+  .forge{position:fixed; left:50%; bottom:-20%; width:150%; height:56%; transform:translateX(-50%); z-index:0; pointer-events:none;
+    background:
+      radial-gradient(38% 100% at 50% 100%, rgba(255,140,50,.55), transparent 66%),
+      radial-gradient(62% 100% at 50% 100%, rgba(230,70,28,.32), transparent 72%),
+      radial-gradient(90% 100% at 50% 100%, rgba(150,30,12,.22), transparent 78%);
+    filter:blur(8px)}
   .vignette{position:fixed; inset:0; z-index:2; pointer-events:none;
     background:
-      radial-gradient(120% 90% at 50% 42%, transparent 40%, rgba(0,0,0,.55) 82%, rgba(0,0,0,.85) 100%),
-      linear-gradient(180deg, rgba(0,0,0,.6), transparent 26%)}
-  @media (prefers-reduced-motion:no-preference){ .forge{animation:flick 5s ease-in-out infinite} }
-  @keyframes flick{0%,100%{opacity:.9} 45%{opacity:.62} 70%{opacity:1}}
+      radial-gradient(118% 88% at 50% 40%, transparent 38%, rgba(0,0,0,.6) 82%, rgba(0,0,0,.9) 100%),
+      linear-gradient(180deg, rgba(0,0,0,.65), transparent 24%)}
+  @media (prefers-reduced-motion:no-preference){ .forge{animation:flick 4.5s ease-in-out infinite} }
+  @keyframes flick{0%,100%{opacity:.92} 38%{opacity:.6} 55%{opacity:.82} 72%{opacity:1}}
 
   .stage{position:relative; z-index:3; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px}
 
@@ -31,7 +34,7 @@
     width:100%; max-width:384px; text-align:center; padding:42px 38px 32px;
     background:var(--surface); backdrop-filter:blur(3px);
     border:1px solid var(--border); border-radius:20px;
-    box-shadow:0 0 0 1px rgba(0,0,0,.5), 0 30px 80px -26px rgba(0,0,0,.95), 0 0 60px -12px rgba(255,90,30,.22);
+    box-shadow:0 0 0 1px rgba(0,0,0,.5), 0 30px 80px -26px rgba(0,0,0,.95), 0 0 60px -14px rgba(255,90,30,.2);
   }
   .mark{width:50px; height:50px; margin-bottom:16px; filter:drop-shadow(0 0 18px rgba(255,110,40,.75))}
   @media (prefers-reduced-motion:no-preference){ .mark{animation:markglow 3.4s ease-in-out infinite} }
@@ -91,56 +94,75 @@
 
 <script>
 (function(){
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(reduce) return;
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   var sc=document.getElementById('smoke'), ec=document.getElementById('embers');
-  var sx=sc.getContext('2d'), ex=ec.getContext('2d'), W, H, smoke=[], embers=[], raf;
+  var sx=sc.getContext('2d'), ex=ec.getContext('2d'), W, H, smoke=[], sparks=[], raf, frame=0;
 
   function size(){ W=sc.width=ec.width=window.innerWidth; H=sc.height=ec.height=window.innerHeight; }
 
+  /* ---- fumaça: baforadas quentes, iluminadas de baixo, que sobem e se espalham ---- */
   function mkSmoke(spread){ return {
-    x:W*0.5 + (Math.random()-0.5)*W*0.9,
-    y:spread?Math.random()*H:H+40,
-    r:34+Math.random()*70, grow:0.15+Math.random()*0.35,
-    vy:0.25+Math.random()*0.55, drift:(Math.random()-0.5)*0.4, sway:Math.random()*6.28, swaySpd:0.004+Math.random()*0.01,
-    life:0, max:340+Math.random()*300, base:0.05+Math.random()*0.06 }; }
+    x:W*0.5+(Math.random()-0.5)*W*0.85, y:spread?Math.random()*H:H+30,
+    r:30+Math.random()*60, grow:0.18+Math.random()*0.4, vy:0.3+Math.random()*0.6,
+    ph:Math.random()*6.28, phSpd:0.004+Math.random()*0.01, amp:0.3+Math.random()*0.7,
+    life:0, max:320+Math.random()*280, base:0.045+Math.random()*0.05 }; }
 
-  function mkEmber(spread){ return {
-    x:W*0.5 + (Math.random()-0.5)*W*0.96,
-    y:spread?Math.random()*H:H+8,
-    r:0.5+Math.random()*2.0, vy:0.35+Math.random()*1.1,
-    sway:Math.random()*6.28, swaySpd:0.008+Math.random()*0.022,
-    life:0, max:180+Math.random()*220 }; }
-
-  function seed(){
-    smoke=[]; embers=[];
-    var ns=Math.round(Math.min(26, W/52)); for(var i=0;i<ns;i++) smoke.push(mkSmoke(true));
-    var ne=Math.round(Math.min(52, W/26)); for(var j=0;j<ne;j++) embers.push(mkEmber(true));
+  /* ---- brasa real: núcleo quente + rastro; esfria de branco->laranja->vermelho ---- */
+  function mkSpark(spread){
+    var big=Math.random()<0.14;
+    return {
+      x:W*0.5+(Math.random()-0.5)*W*(0.35+Math.random()*0.6),
+      y:spread?Math.random()*H:H+Math.random()*24,
+      px:0, py:0,
+      vx:(Math.random()-0.5)*0.5, vy:-(0.9+Math.random()*(big?2.0:3.2)),
+      r:(big?1.4:0.5)+Math.random()*1.2,
+      ph:Math.random()*6.28, phSpd:0.03+Math.random()*0.06,
+      life:0, max:100+Math.random()*(big?220:150), fl:Math.random()*6.28 };
   }
 
-  var EC=['255,150,60','255,106,43','255,190,110','255,90,30'];
+  function seed(){ smoke=[]; sparks=[];
+    var ns=Math.round(Math.min(18, W/72)); for(var i=0;i<ns;i++) smoke.push(mkSmoke(true));
+    var ne=Math.round(Math.min(120, W/12)); for(var j=0;j<ne;j++) sparks.push(mkSpark(true));
+  }
+
+  // rampa de temperatura: 0=branco-quente -> laranja -> vermelho escuro
+  var STOPS=[[0,255,249,224],[0.28,255,196,96],[0.58,255,104,34],[1,158,32,12]];
+  function heat(t){ for(var i=1;i<STOPS.length;i++){ if(t<=STOPS[i][0]){ var a=STOPS[i-1],b=STOPS[i],f=(t-a[0])/(b[0]-a[0]);
+    return Math.round(a[1]+(b[1]-a[1])*f)+','+Math.round(a[2]+(b[2]-a[2])*f)+','+Math.round(a[3]+(b[3]-a[3])*f); } } return '158,32,12'; }
 
   function draw(){
-    // smoke — warm ash, lit from below, hazes over the fire
+    frame++;
+    /* fumaça */
     sx.clearRect(0,0,W,H); sx.globalCompositeOperation='source-over';
-    for(var i=0;i<smoke.length;i++){ var p=smoke[i]; p.life++; p.y-=p.vy; p.r+=p.grow; p.sway+=p.swaySpd; p.x+=p.drift+Math.sin(p.sway)*0.4;
-      var t=p.life/p.max, fade=Math.sin(Math.min(1,t)*Math.PI); // in-then-out
-      var hr=Math.max(0,Math.min(1,p.y/H));                     // 1 bottom -> 0 top
-      var a=p.base*fade*(0.35+0.65*hr);
-      var r=Math.round(70+50*hr), g=Math.round(52+28*hr), b=Math.round(44+16*hr); // warmer near fire
+    for(var i=0;i<smoke.length;i++){ var p=smoke[i]; p.life++; p.y-=p.vy; p.r+=p.grow; p.ph+=p.phSpd;
+      p.x+=Math.sin(p.ph)*p.amp + Math.sin(p.ph*2.3)*p.amp*0.4;
+      var t=p.life/p.max, fade=Math.sin(Math.min(1,t)*Math.PI), hr=Math.max(0,Math.min(1,p.y/H));
+      var a=p.base*fade*(0.3+0.7*hr);
+      var r=Math.round(64+56*hr), g=Math.round(48+30*hr), bl=Math.round(40+16*hr);
       var gr=sx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
-      gr.addColorStop(0,'rgba('+r+','+g+','+b+','+a+')'); gr.addColorStop(1,'rgba('+r+','+g+','+b+',0)');
+      gr.addColorStop(0,'rgba('+r+','+g+','+bl+','+a+')'); gr.addColorStop(1,'rgba('+r+','+g+','+bl+',0)');
       sx.fillStyle=gr; sx.beginPath(); sx.arc(p.x,p.y,p.r,0,6.283); sx.fill();
-      if(p.y< -p.r || p.life>p.max) smoke[i]=mkSmoke(false);
+      if(p.y<-p.r||p.life>p.max) smoke[i]=mkSmoke(false);
     }
-    // embers — bright sparks, additive, rising through the smoke
-    ex.clearRect(0,0,W,H); ex.globalCompositeOperation='lighter';
-    for(var k=0;k<embers.length;k++){ var e=embers[k]; e.life++; e.y-=e.vy; e.sway+=e.swaySpd; e.x+=Math.sin(e.sway)*0.4;
-      var et=e.life/e.max, ea=Math.max(0,(1-et))*(0.45+0.45*Math.sin(e.life*0.16)), col=EC[k%EC.length];
-      var g2=ex.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*4.5);
-      g2.addColorStop(0,'rgba('+col+','+ea+')'); g2.addColorStop(1,'rgba('+col+',0)');
-      ex.fillStyle=g2; ex.beginPath(); ex.arc(e.x,e.y,e.r*4.5,0,6.283); ex.fill();
-      if(e.y< -12 || e.life>e.max) embers[k]=mkEmber(false);
+    /* brasas */
+    ex.clearRect(0,0,W,H); ex.globalCompositeOperation='lighter'; ex.lineCap='round';
+    for(var k=0;k<sparks.length;k++){ var s=sparks[k];
+      s.px=s.x; s.py=s.y; s.life++;
+      s.vy+=0.006;                              // gravidade puxa: sobe e desacelera
+      s.vx+=(Math.random()-0.5)*0.05; s.vx*=0.98;
+      s.ph+=s.phSpd;
+      s.x+=s.vx+Math.sin(s.ph)*0.25; s.y+=s.vy;
+      var t=s.life/s.max, col=heat(t);
+      var flick=0.5+0.5*Math.abs(Math.sin(s.fl+frame*0.35));   // cintilância
+      var bright=Math.max(0,1-t*t)*flick;
+      // rastro (o "risco" da faísca)
+      ex.strokeStyle='rgba('+col+','+(bright*0.42)+')'; ex.lineWidth=s.r*0.9;
+      ex.beginPath(); ex.moveTo(s.px,s.py); ex.lineTo(s.x,s.y); ex.stroke();
+      // núcleo quente + brilho curtinho (não bolha)
+      var g2=ex.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*2.2);
+      g2.addColorStop(0,'rgba('+col+','+bright+')'); g2.addColorStop(0.5,'rgba('+col+','+(bright*0.5)+')'); g2.addColorStop(1,'rgba('+col+',0)');
+      ex.fillStyle=g2; ex.beginPath(); ex.arc(s.x,s.y,s.r*2.2,0,6.283); ex.fill();
+      if(s.y<-16||s.life>s.max||s.x<-30||s.x>W+30) sparks[k]=mkSpark(false);
     }
     ex.globalCompositeOperation='source-over';
     raf=requestAnimationFrame(draw);
