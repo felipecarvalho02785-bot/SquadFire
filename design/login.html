@@ -1,0 +1,189 @@
+<title>SquadFire — Entrar</title>
+<style>
+  /* Login commits to the dark "forge at night" look — a deliberate single-theme entry moment. */
+  :root{
+    --ground:#120E0C; --surface:#1E1815; --elevated:#2A221D; --border:#3A2F28;
+    --text:#F4ECE5; --muted:#B0A096; --faint:#7C6B60;
+    --accent:#FF6A2B; --accent-bright:#FFB454; --accent-soft:rgba(255,106,43,.14);
+    --good:#33B8A0;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    /* heat scale for the decorative bar */
+    --h1:#6B7C89; --h2:#9a7565; --h3:#C0743F; --h4:#E67C2C; --h5:#FB6E1E; --h6:#FF9838; --h7:#FFD79E;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; height:100%}
+  body{font-family:var(--sans); color:var(--text); background:var(--ground); -webkit-font-smoothing:antialiased; min-height:100vh; overflow:hidden}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:8px}
+
+  .login{display:grid; grid-template-columns:1.15fr .85fr; min-height:100vh}
+
+  /* ===== Hero (left) ===== */
+  .hero{position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; padding:46px 54px;
+    background:
+      radial-gradient(90% 60% at 30% 108%, rgba(255,106,43,.28), transparent 60%),
+      radial-gradient(70% 50% at 85% -10%, rgba(255,140,60,.14), transparent 60%),
+      linear-gradient(160deg,#1a1310,#120E0C 60%);
+    border-right:1px solid var(--border)}
+  #embers{position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none}
+  .hero > *{position:relative; z-index:1}
+
+  .brand{display:flex; align-items:center; gap:13px}
+  .brand .mark{width:40px; height:40px; filter:drop-shadow(0 0 14px rgba(255,120,50,.55))}
+  .brand .word{font-weight:800; letter-spacing:.15em; font-size:21px; text-transform:uppercase}
+  .brand .word .lit{color:var(--accent)}
+
+  .hero-mid{max-width:460px}
+  .hero-mid .eyebrow{font-size:11.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); font-weight:700; margin-bottom:18px}
+  .hero-mid h1{font-size:41px; line-height:1.08; font-weight:800; letter-spacing:-.02em; margin:0 0 16px; text-wrap:balance}
+  .hero-mid h1 em{font-style:normal; color:var(--accent)}
+  .hero-mid p{font-size:15px; line-height:1.6; color:var(--muted); margin:0}
+
+  .heatbar{margin-top:30px; max-width:460px}
+  .heatbar .segs{display:grid; grid-template-columns:repeat(7,1fr); gap:6px}
+  .heatbar .seg{height:7px; border-radius:4px; background:var(--pc); box-shadow:0 0 10px -2px var(--pc)}
+  .heatbar .cap{margin-top:11px; font-family:var(--mono); font-size:11px; color:var(--faint); letter-spacing:.02em}
+
+  .hero-foot{font-size:12px; color:var(--faint); letter-spacing:.02em}
+
+  /* ===== Panel (right) ===== */
+  .panel{display:flex; align-items:center; justify-content:center; padding:40px 34px; background:var(--ground)}
+  .card{width:100%; max-width:372px}
+  .card .top{display:flex; align-items:center; gap:10px; margin-bottom:26px}
+  .card .top .mk{width:30px;height:30px; filter:drop-shadow(0 0 8px rgba(255,120,50,.45))}
+  .card .top span{font-weight:800; letter-spacing:.12em; font-size:14px; text-transform:uppercase}
+  .card .top span .lit{color:var(--accent)}
+  .card h2{font-size:24px; font-weight:800; margin:0 0 6px; letter-spacing:-.01em}
+  .card .sub{font-size:13.5px; color:var(--muted); margin:0 0 26px; line-height:1.5}
+
+  .gbtn{display:flex; align-items:center; justify-content:center; gap:11px; width:100%; padding:13px 16px; border-radius:12px; cursor:pointer;
+    background:#fff; color:#1f1f1f; border:0; font-size:14.5px; font-weight:650; font-family:inherit; transition:.15s; box-shadow:0 8px 26px -10px rgba(255,140,60,.5)}
+  .gbtn:hover{transform:translateY(-1px); box-shadow:0 12px 30px -10px rgba(255,140,60,.65)}
+  .gbtn:active{transform:translateY(0)}
+  .gbtn svg{width:19px; height:19px; flex:0 0 auto}
+
+  .divider{display:flex; align-items:center; gap:12px; margin:22px 0; color:var(--faint); font-size:11px; letter-spacing:.08em; text-transform:uppercase}
+  .divider::before,.divider::after{content:""; height:1px; flex:1; background:var(--border)}
+
+  .note{display:flex; gap:11px; align-items:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:13px 15px}
+  .note svg{width:17px; height:17px; color:var(--accent); flex:0 0 auto; margin-top:1px}
+  .note p{margin:0; font-size:12.5px; color:var(--muted); line-height:1.5}
+  .note b{color:var(--text); font-weight:650}
+
+  .legal{margin-top:24px; font-size:11.5px; color:var(--faint); line-height:1.6}
+  .legal a{color:var(--muted); text-decoration:none; border-bottom:1px solid var(--border)}
+  .legal a:hover{color:var(--accent)}
+
+  @media (max-width:860px){
+    body{overflow:auto}
+    .login{grid-template-columns:1fr}
+    .hero{padding:34px 28px; min-height:auto}
+    .hero-mid h1{font-size:32px}
+    .heatbar{display:none}
+    .hero-foot{display:none}
+    .panel{padding:34px 24px}
+  }
+  @media (prefers-reduced-motion:reduce){ #embers{display:none} .gbtn:hover{transform:none} }
+</style>
+
+<div class="login">
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <canvas id="embers"></canvas>
+
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 2c2.5 5-1.5 6.5-1 10 .4 2.8 3.2 3.4 3-.2 2.6 2 3.8 5.2 3.4 8.2C24.6 25.4 20.7 30 16 30 10.6 30 6 25.9 6 20.4c0-4.2 2.6-6.8 3.8-8.7.9 2.7 3.4 2.2 3.3-.6C12.9 7.3 12.4 4.7 16 2z" fill="var(--accent)"/>
+        <path d="M16 30c-3 0-5.6-2.3-5.6-5.4 0-2.6 1.9-4 2.8-5.5.6 1.9 2.7 1.6 2.5-.5 2 1.3 3.1 3 3.1 5.3C18.8 27.6 18 30 16 30z" fill="var(--accent-bright)"/>
+      </svg>
+      <span class="word">Squad<span class="lit">Fire</span></span>
+    </div>
+
+    <div class="hero-mid">
+      <div class="eyebrow">CRM · Squad 8 · E3 Digital</div>
+      <h1>Uma forja,<br><em>várias funções.</em></h1>
+      <p>A interface se monta a partir do seu papel. Entre no Covil e encontre a sua tela-casa — suas Crias, suas Lenhas, suas Forjas esquentando rumo à conclusão.</p>
+    </div>
+
+    <div>
+      <div class="heatbar">
+        <div class="segs">
+          <span class="seg" style="--pc:var(--h1)"></span><span class="seg" style="--pc:var(--h2)"></span>
+          <span class="seg" style="--pc:var(--h3)"></span><span class="seg" style="--pc:var(--h4)"></span>
+          <span class="seg" style="--pc:var(--h5)"></span><span class="seg" style="--pc:var(--h6)"></span>
+          <span class="seg" style="--pc:var(--h7)"></span>
+        </div>
+        <div class="cap">Estruturação · 7 fases × 7 dias — do ferro frio ao branco incandescente.</div>
+      </div>
+      <div class="hero-foot" style="margin-top:26px">© 2026 E3 Digital · Squad 8</div>
+    </div>
+  </section>
+
+  <!-- ===== Panel ===== -->
+  <section class="panel">
+    <div class="card">
+      <div class="top">
+        <svg class="mk" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 2c2.5 5-1.5 6.5-1 10 .4 2.8 3.2 3.4 3-.2 2.6 2 3.8 5.2 3.4 8.2C24.6 25.4 20.7 30 16 30 10.6 30 6 25.9 6 20.4c0-4.2 2.6-6.8 3.8-8.7.9 2.7 3.4 2.2 3.3-.6C12.9 7.3 12.4 4.7 16 2z" fill="var(--accent)"/>
+        </svg>
+        <span>Squad<span class="lit">Fire</span></span>
+      </div>
+
+      <h2>Entrar no Covil</h2>
+      <p class="sub">Acesse com a sua conta Google da squad. A tela que você vê depois depende do seu papel.</p>
+
+      <button class="gbtn" id="gbtn">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 6.1C12.3 13.2 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.1 5.3-4.6 6.9l7.1 5.5c4.1-3.8 6.2-9.5 6.2-16z"/><path fill="#FBBC05" d="M10.4 19.4c-.5 1.5-.8 3-.8 4.6s.3 3.1.8 4.6l-7.9 6.1C.9 31.5 0 27.9 0 24s.9-7.5 2.5-10.7l7.9 6.1z"/><path fill="#34A853" d="M24 48c6.4 0 11.8-2.1 15.7-5.8l-7.1-5.5c-2 1.3-4.6 2.1-8.6 2.1-6.3 0-11.7-3.7-13.6-9l-7.9 6.1C6.4 42.6 14.6 48 24 48z"/></svg>
+        Entrar com Google
+      </button>
+
+      <div class="divider">Acesso restrito</div>
+
+      <div class="note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l7 4v6c0 4.4-3 7.6-7 10-4-2.4-7-5.6-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        <p><b>Somente membros da squad.</b> O login é liberado por <b>allowlist</b> — se o seu e-mail não estiver autorizado, fale com o Felipe (Admin).</p>
+      </div>
+
+      <div class="legal">
+        Ao entrar, você concorda com o uso interno da E3 Digital.<br>
+        Problemas de acesso? <a href="#">Falar com o Admin</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var c=document.getElementById('embers');
+  if(!c || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  var ctx=c.getContext('2d'), W, H, parts=[], raf;
+  function size(){ var r=c.parentElement.getBoundingClientRect(); W=c.width=r.width; H=c.height=r.height; }
+  function seed(){ parts=[]; var n=Math.round(Math.min(64, W/22));
+    for(var i=0;i<n;i++) parts.push(mk(true)); }
+  function mk(spread){
+    return { x:Math.random()*W, y:spread?Math.random()*H:H+8,
+      r:.6+Math.random()*2.2, vy:.25+Math.random()*.9, sway:Math.random()*Math.PI*2,
+      swaySpd:.008+Math.random()*.02, life:0, max:160+Math.random()*220 };
+  }
+  var COLORS=['255,150,60','255,106,43','255,190,110','255,120,40'];
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+    for(var i=0;i<parts.length;i++){
+      var p=parts[i]; p.life++; p.y-=p.vy; p.sway+=p.swaySpd; p.x+=Math.sin(p.sway)*.35;
+      var t=p.life/p.max, a=Math.max(0,(1-t))*(.5+.5*Math.sin(p.life*.18));
+      var col=COLORS[i%COLORS.length];
+      var g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
+      g.addColorStop(0,'rgba('+col+','+(a*.9)+')');
+      g.addColorStop(1,'rgba('+col+',0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*4,0,6.283); ctx.fill();
+      if(p.y< -10 || p.life>p.max) parts[i]=mk(false);
+    }
+    ctx.globalCompositeOperation='source-over';
+    raf=requestAnimationFrame(draw);
+  }
+  size(); seed(); draw();
+  var to; window.addEventListener('resize',function(){ clearTimeout(to); to=setTimeout(function(){ cancelAnimationFrame(raf); size(); seed(); draw(); },150); });
+  document.getElementById('gbtn').addEventListener('click',function(){ this.style.opacity=.7; this.innerHTML='Entrando…'; });
+})();
+</script>
