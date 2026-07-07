@@ -12,8 +12,7 @@
   body{font-family:var(--sans); color:var(--text); min-height:100vh; background:#060504; -webkit-font-smoothing:antialiased; overflow:hidden}
   :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:8px}
 
-  #smoke,#embers{position:fixed; inset:0; width:100%; height:100%; pointer-events:none}
-  #smoke{z-index:0} #embers{z-index:1}
+  #smoke{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; filter:blur(20px); opacity:.92}
   /* fornalha / leito de brasas por baixo da tela */
   .forge{position:fixed; left:50%; bottom:-20%; width:150%; height:56%; transform:translateX(-50%); z-index:0; pointer-events:none;
     background:
@@ -25,8 +24,8 @@
     background:
       radial-gradient(118% 88% at 50% 40%, transparent 38%, rgba(0,0,0,.6) 82%, rgba(0,0,0,.9) 100%),
       linear-gradient(180deg, rgba(0,0,0,.65), transparent 24%)}
-  @media (prefers-reduced-motion:no-preference){ .forge{animation:flick 4.5s ease-in-out infinite} }
-  @keyframes flick{0%,100%{opacity:.92} 38%{opacity:.6} 55%{opacity:.82} 72%{opacity:1}}
+  @media (prefers-reduced-motion:no-preference){ .forge{animation:flick 7s ease-in-out infinite} }
+  @keyframes flick{0%,100%{opacity:.9} 45%{opacity:.74} 70%{opacity:1}}
 
   .stage{position:relative; z-index:3; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px}
 
@@ -58,12 +57,11 @@
   .foot a:hover{color:var(--accent)}
 
   @media (max-width:480px){ .card{padding:36px 26px 28px} body{overflow:auto} }
-  @media (prefers-reduced-motion:reduce){ #smoke,#embers{display:none} .gbtn:hover{transform:none} }
+  @media (prefers-reduced-motion:reduce){ #smoke{display:none} .gbtn:hover{transform:none} }
 </style>
 
 <div class="forge"></div>
 <canvas id="smoke"></canvas>
-<canvas id="embers"></canvas>
 <div class="vignette"></div>
 
 <div class="stage">
@@ -90,82 +88,41 @@
 
 <script>
 (function(){
+  var gbtn=document.getElementById('gbtn');
+  gbtn.addEventListener('click',function(){ this.style.opacity=.7; this.innerHTML='Entrando…'; });
   if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var sc=document.getElementById('smoke'), ec=document.getElementById('embers');
-  var sx=sc.getContext('2d'), ex=ec.getContext('2d'), W, H, smoke=[], sparks=[], raf, frame=0;
 
-  function size(){ W=sc.width=ec.width=window.innerWidth; H=sc.height=ec.height=window.innerHeight; }
+  var c=document.getElementById('smoke'), ctx=c.getContext('2d'), W, H, puffs=[], raf;
+  function size(){ W=c.width=window.innerWidth; H=c.height=window.innerHeight; }
 
-  /* ---- fumaça: baforadas quentes, iluminadas de baixo, que sobem e se espalham ---- */
-  function mkSmoke(spread){ return {
-    x:W*0.5+(Math.random()-0.5)*W*0.85, y:spread?Math.random()*H:H+30,
-    r:30+Math.random()*60, grow:0.18+Math.random()*0.4, vy:0.3+Math.random()*0.6,
-    ph:Math.random()*6.28, phSpd:0.004+Math.random()*0.01, amp:0.3+Math.random()*0.7,
-    life:0, max:320+Math.random()*280, base:0.045+Math.random()*0.05 }; }
-
-  /* ---- brasa real: núcleo quente + rastro; esfria de branco->laranja->vermelho ---- */
-  function mkSpark(spread){
-    var big=Math.random()<0.14;
-    return {
-      x:W*0.5+(Math.random()-0.5)*W*(0.35+Math.random()*0.6),
-      y:spread?Math.random()*H:H+Math.random()*24,
-      px:0, py:0,
-      vx:(Math.random()-0.5)*0.5, vy:-(0.9+Math.random()*(big?2.0:3.2)),
-      r:(big?1.4:0.5)+Math.random()*1.2,
-      ph:Math.random()*6.28, phSpd:0.03+Math.random()*0.06,
-      life:0, max:100+Math.random()*(big?220:150), fl:Math.random()*6.28 };
-  }
-
-  function seed(){ smoke=[]; sparks=[];
-    var ns=Math.round(Math.min(18, W/72)); for(var i=0;i<ns;i++) smoke.push(mkSmoke(true));
-    var ne=Math.round(Math.min(120, W/12)); for(var j=0;j<ne;j++) sparks.push(mkSpark(true));
-  }
-
-  // rampa de temperatura: 0=branco-quente -> laranja -> vermelho escuro
-  var STOPS=[[0,255,249,224],[0.28,255,196,96],[0.58,255,104,34],[1,158,32,12]];
-  function heat(t){ for(var i=1;i<STOPS.length;i++){ if(t<=STOPS[i][0]){ var a=STOPS[i-1],b=STOPS[i],f=(t-a[0])/(b[0]-a[0]);
-    return Math.round(a[1]+(b[1]-a[1])*f)+','+Math.round(a[2]+(b[2]-a[2])*f)+','+Math.round(a[3]+(b[3]-a[3])*f); } } return '158,32,12'; }
+  // fumaça volumétrica: baforadas grandes e suaves que sobem da fornalha, crescem e esfriam.
+  // o blur no canvas (CSS) faz o restante — nada de partícula "dura".
+  function mk(spread){ return {
+    x:W*(0.12+Math.random()*0.76),
+    y:spread ? H*(0.25+Math.random()*0.95) : H+70,
+    r:90+Math.random()*150, grow:0.09+Math.random()*0.22, vy:0.12+Math.random()*0.34,
+    ph:Math.random()*6.28, phs:0.0025+Math.random()*0.006, amp:0.22+Math.random()*0.55,
+    life:0, max:560+Math.random()*420, base:0.028+Math.random()*0.034 }; }
+  function seed(){ puffs=[]; var n=Math.round(Math.min(22, W/64)); for(var i=0;i<n;i++) puffs.push(mk(true)); }
 
   function draw(){
-    frame++;
-    /* fumaça */
-    sx.clearRect(0,0,W,H); sx.globalCompositeOperation='source-over';
-    for(var i=0;i<smoke.length;i++){ var p=smoke[i]; p.life++; p.y-=p.vy; p.r+=p.grow; p.ph+=p.phSpd;
-      p.x+=Math.sin(p.ph)*p.amp + Math.sin(p.ph*2.3)*p.amp*0.4;
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<puffs.length;i++){ var p=puffs[i]; p.life++; p.y-=p.vy; p.r+=p.grow; p.ph+=p.phs;
+      p.x+=Math.sin(p.ph)*p.amp + Math.sin(p.ph*1.7+1.3)*p.amp*0.5;   // deriva orgânica
       var t=p.life/p.max, fade=Math.sin(Math.min(1,t)*Math.PI), hr=Math.max(0,Math.min(1,p.y/H));
-      var a=p.base*fade*(0.3+0.7*hr);
-      var r=Math.round(64+56*hr), g=Math.round(48+30*hr), bl=Math.round(40+16*hr);
-      var gr=sx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
-      gr.addColorStop(0,'rgba('+r+','+g+','+bl+','+a+')'); gr.addColorStop(1,'rgba('+r+','+g+','+bl+',0)');
-      sx.fillStyle=gr; sx.beginPath(); sx.arc(p.x,p.y,p.r,0,6.283); sx.fill();
-      if(p.y<-p.r||p.life>p.max) smoke[i]=mkSmoke(false);
+      var a=p.base*fade*(0.32+0.68*hr);                               // mais densa embaixo, some no topo
+      var r=Math.round(46+34*hr), g=Math.round(39+20*hr), b=Math.round(36+9*hr); // quente embaixo -> cinza frio em cima
+      var gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+      gr.addColorStop(0,'rgba('+r+','+g+','+b+','+a+')');
+      gr.addColorStop(0.55,'rgba('+r+','+g+','+b+','+(a*0.5)+')');
+      gr.addColorStop(1,'rgba('+r+','+g+','+b+',0)');
+      ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283); ctx.fill();
+      if(p.y<-p.r||p.life>p.max) puffs[i]=mk(false);
     }
-    /* brasas */
-    ex.clearRect(0,0,W,H); ex.globalCompositeOperation='lighter'; ex.lineCap='round';
-    for(var k=0;k<sparks.length;k++){ var s=sparks[k];
-      s.px=s.x; s.py=s.y; s.life++;
-      s.vy+=0.006;                              // gravidade puxa: sobe e desacelera
-      s.vx+=(Math.random()-0.5)*0.05; s.vx*=0.98;
-      s.ph+=s.phSpd;
-      s.x+=s.vx+Math.sin(s.ph)*0.25; s.y+=s.vy;
-      var t=s.life/s.max, col=heat(t);
-      var flick=0.5+0.5*Math.abs(Math.sin(s.fl+frame*0.35));   // cintilância
-      var bright=Math.max(0,1-t*t)*flick;
-      // rastro (o "risco" da faísca)
-      ex.strokeStyle='rgba('+col+','+(bright*0.42)+')'; ex.lineWidth=s.r*0.9;
-      ex.beginPath(); ex.moveTo(s.px,s.py); ex.lineTo(s.x,s.y); ex.stroke();
-      // núcleo quente + brilho curtinho (não bolha)
-      var g2=ex.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*2.2);
-      g2.addColorStop(0,'rgba('+col+','+bright+')'); g2.addColorStop(0.5,'rgba('+col+','+(bright*0.5)+')'); g2.addColorStop(1,'rgba('+col+',0)');
-      ex.fillStyle=g2; ex.beginPath(); ex.arc(s.x,s.y,s.r*2.2,0,6.283); ex.fill();
-      if(s.y<-16||s.life>s.max||s.x<-30||s.x>W+30) sparks[k]=mkSpark(false);
-    }
-    ex.globalCompositeOperation='source-over';
     raf=requestAnimationFrame(draw);
   }
 
   size(); seed(); draw();
   var to; window.addEventListener('resize',function(){ clearTimeout(to); to=setTimeout(function(){ cancelAnimationFrame(raf); size(); seed(); draw(); },150); });
-  document.getElementById('gbtn').addEventListener('click',function(){ this.style.opacity=.7; this.innerHTML='Entrando…'; });
 })();
 </script>
