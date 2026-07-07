@@ -1,46 +1,50 @@
 <title>SquadFire — Entrar</title>
 <style>
-  /* Login minimalista — card centralizado. Commit deliberado ao tema escuro (forja à noite). */
+  /* Login "covil do dragão" — preto profundo, brasas + fumaça subindo, fornalha por baixo. */
   :root{
-    --ground:#120E0C; --surface:#1D1714; --elevated:#282019; --border:#392E27;
-    --text:#F4ECE5; --muted:#AE9E93; --faint:#7A6A5F;
-    --accent:#FF6A2B; --accent-bright:#FFB454; --accent-soft:rgba(255,106,43,.13);
+    --ink:#070605; --surface:rgba(16,12,10,.72); --border:rgba(255,120,60,.14);
+    --text:#F3E9E2; --muted:#A99889; --faint:#6E5F55;
+    --accent:#FF6A2B; --accent-bright:#FFB454; --ember-deep:#E8451F;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box}
   html,body{margin:0; height:100%}
-  body{
-    font-family:var(--sans); color:var(--text); min-height:100vh;
-    background:
-      radial-gradient(60% 42% at 50% 46%, rgba(255,106,43,.16), transparent 62%),
-      radial-gradient(80% 45% at 50% 116%, rgba(255,120,50,.14), transparent 60%),
-      #120E0C;
-    -webkit-font-smoothing:antialiased; overflow:hidden;
-  }
+  body{font-family:var(--sans); color:var(--text); min-height:100vh; background:#070605; -webkit-font-smoothing:antialiased; overflow:hidden}
   :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:8px}
 
-  .stage{position:relative; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px}
-  #embers{position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none}
-  .stage > *{position:relative; z-index:1}
+  /* layers */
+  #smoke,#embers{position:fixed; inset:0; width:100%; height:100%; pointer-events:none}
+  #smoke{z-index:0} #embers{z-index:1}
+  .forge{position:fixed; left:50%; bottom:-16%; width:130%; height:52%; transform:translateX(-50%); z-index:0; pointer-events:none;
+    background:radial-gradient(50% 100% at 50% 100%, rgba(255,90,30,.34), rgba(232,69,31,.14) 42%, transparent 72%);
+    filter:blur(6px)}
+  .vignette{position:fixed; inset:0; z-index:2; pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 42%, transparent 40%, rgba(0,0,0,.55) 82%, rgba(0,0,0,.85) 100%),
+      linear-gradient(180deg, rgba(0,0,0,.6), transparent 26%)}
+  @media (prefers-reduced-motion:no-preference){ .forge{animation:flick 5s ease-in-out infinite} }
+  @keyframes flick{0%,100%{opacity:.9} 45%{opacity:.62} 70%{opacity:1}}
+
+  .stage{position:relative; z-index:3; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px}
 
   .card{
-    width:100%; max-width:392px; text-align:center; padding:40px 38px 34px;
-    background:linear-gradient(180deg, rgba(42,32,25,.55), var(--surface));
+    width:100%; max-width:384px; text-align:center; padding:42px 38px 32px;
+    background:var(--surface); backdrop-filter:blur(3px);
     border:1px solid var(--border); border-radius:20px;
-    box-shadow:0 1px 0 rgba(255,180,120,.06) inset, 0 24px 60px -22px rgba(0,0,0,.8), 0 0 44px -8px rgba(255,106,43,.14);
+    box-shadow:0 0 0 1px rgba(0,0,0,.5), 0 30px 80px -26px rgba(0,0,0,.95), 0 0 60px -12px rgba(255,90,30,.22);
   }
-
-  .mark{width:46px; height:46px; filter:drop-shadow(0 0 16px rgba(255,120,50,.6)); margin-bottom:16px}
-  .word{font-weight:800; letter-spacing:.16em; font-size:16px; text-transform:uppercase; margin-bottom:30px}
+  .mark{width:50px; height:50px; margin-bottom:16px; filter:drop-shadow(0 0 18px rgba(255,110,40,.75))}
+  @media (prefers-reduced-motion:no-preference){ .mark{animation:markglow 3.4s ease-in-out infinite} }
+  @keyframes markglow{0%,100%{filter:drop-shadow(0 0 14px rgba(255,110,40,.6))} 50%{filter:drop-shadow(0 0 26px rgba(255,140,60,.95))}}
+  .word{font-weight:800; letter-spacing:.17em; font-size:16px; text-transform:uppercase; margin-bottom:30px}
   .word .lit{color:var(--accent)}
 
   h1{font-size:22px; font-weight:800; letter-spacing:-.01em; margin:0 0 7px}
   .sub{font-size:13.5px; color:var(--muted); margin:0 0 26px; line-height:1.5}
 
   .gbtn{display:flex; align-items:center; justify-content:center; gap:11px; width:100%; padding:13px 16px; border-radius:12px; cursor:pointer;
-    background:#fff; color:#1f1f1f; border:0; font-size:14.5px; font-weight:650; font-family:inherit; transition:.15s; box-shadow:0 10px 28px -12px rgba(255,140,60,.55)}
-  .gbtn:hover{transform:translateY(-1px); box-shadow:0 14px 32px -12px rgba(255,140,60,.7)}
+    background:#fff; color:#1f1f1f; border:0; font-size:14.5px; font-weight:650; font-family:inherit; transition:.15s; box-shadow:0 10px 30px -12px rgba(255,120,50,.5)}
+  .gbtn:hover{transform:translateY(-1px); box-shadow:0 14px 36px -12px rgba(255,140,60,.7)}
   .gbtn:active{transform:translateY(0)}
   .gbtn svg{width:19px; height:19px; flex:0 0 auto}
 
@@ -48,16 +52,19 @@
   .allow svg{width:14px; height:14px; color:var(--accent); flex:0 0 auto; opacity:.85}
 
   .foot{margin-top:22px; font-size:11.5px; color:var(--faint); text-align:center; line-height:1.6}
-  .foot a{color:var(--muted); text-decoration:none; border-bottom:1px solid var(--border)}
+  .foot a{color:var(--muted); text-decoration:none; border-bottom:1px solid rgba(255,120,60,.2)}
   .foot a:hover{color:var(--accent)}
 
-  @media (max-width:480px){ .card{padding:34px 26px 30px} body{overflow:auto} }
-  @media (prefers-reduced-motion:reduce){ #embers{display:none} .gbtn:hover{transform:none} }
+  @media (max-width:480px){ .card{padding:36px 26px 28px} body{overflow:auto} }
+  @media (prefers-reduced-motion:reduce){ #smoke,#embers{display:none} .gbtn:hover{transform:none} }
 </style>
 
-<div class="stage">
-  <canvas id="embers"></canvas>
+<div class="forge"></div>
+<canvas id="smoke"></canvas>
+<canvas id="embers"></canvas>
+<div class="vignette"></div>
 
+<div class="stage">
   <div class="card">
     <svg class="mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
       <path d="M16 2c2.5 5-1.5 6.5-1 10 .4 2.8 3.2 3.4 3-.2 2.6 2 3.8 5.2 3.4 8.2C24.6 25.4 20.7 30 16 30 10.6 30 6 25.9 6 20.4c0-4.2 2.6-6.8 3.8-8.7.9 2.7 3.4 2.2 3.3-.6C12.9 7.3 12.4 4.7 16 2z" fill="var(--accent)"/>
@@ -84,26 +91,61 @@
 
 <script>
 (function(){
-  var c=document.getElementById('embers');
-  if(!c || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
-  var ctx=c.getContext('2d'), W, H, parts=[], raf;
-  function size(){ W=c.width=window.innerWidth; H=c.height=window.innerHeight; }
-  function mk(spread){ return { x:Math.random()*W, y:spread?Math.random()*H:H+8,
-    r:.5+Math.random()*1.8, vy:.18+Math.random()*.6, sway:Math.random()*6.28, swaySpd:.006+Math.random()*.016,
-    life:0, max:220+Math.random()*260 }; }
-  function seed(){ parts=[]; var n=Math.round(Math.min(38, W/34)); for(var i=0;i<n;i++) parts.push(mk(true)); }
-  var COLORS=['255,150,60','255,106,43','255,190,110'];
-  function draw(){
-    ctx.clearRect(0,0,W,H); ctx.globalCompositeOperation='lighter';
-    for(var i=0;i<parts.length;i++){ var p=parts[i]; p.life++; p.y-=p.vy; p.sway+=p.swaySpd; p.x+=Math.sin(p.sway)*.3;
-      var t=p.life/p.max, a=Math.max(0,(1-t))*(.4+.4*Math.sin(p.life*.14))*.7, col=COLORS[i%COLORS.length];
-      var g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
-      g.addColorStop(0,'rgba('+col+','+a+')'); g.addColorStop(1,'rgba('+col+',0)');
-      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*4,0,6.283); ctx.fill();
-      if(p.y< -10 || p.life>p.max) parts[i]=mk(false);
-    }
-    ctx.globalCompositeOperation='source-over'; raf=requestAnimationFrame(draw);
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce) return;
+  var sc=document.getElementById('smoke'), ec=document.getElementById('embers');
+  var sx=sc.getContext('2d'), ex=ec.getContext('2d'), W, H, smoke=[], embers=[], raf;
+
+  function size(){ W=sc.width=ec.width=window.innerWidth; H=sc.height=ec.height=window.innerHeight; }
+
+  function mkSmoke(spread){ return {
+    x:W*0.5 + (Math.random()-0.5)*W*0.9,
+    y:spread?Math.random()*H:H+40,
+    r:34+Math.random()*70, grow:0.15+Math.random()*0.35,
+    vy:0.25+Math.random()*0.55, drift:(Math.random()-0.5)*0.4, sway:Math.random()*6.28, swaySpd:0.004+Math.random()*0.01,
+    life:0, max:340+Math.random()*300, base:0.05+Math.random()*0.06 }; }
+
+  function mkEmber(spread){ return {
+    x:W*0.5 + (Math.random()-0.5)*W*0.96,
+    y:spread?Math.random()*H:H+8,
+    r:0.5+Math.random()*2.0, vy:0.35+Math.random()*1.1,
+    sway:Math.random()*6.28, swaySpd:0.008+Math.random()*0.022,
+    life:0, max:180+Math.random()*220 }; }
+
+  function seed(){
+    smoke=[]; embers=[];
+    var ns=Math.round(Math.min(26, W/52)); for(var i=0;i<ns;i++) smoke.push(mkSmoke(true));
+    var ne=Math.round(Math.min(52, W/26)); for(var j=0;j<ne;j++) embers.push(mkEmber(true));
   }
+
+  var EC=['255,150,60','255,106,43','255,190,110','255,90,30'];
+
+  function draw(){
+    // smoke — warm ash, lit from below, hazes over the fire
+    sx.clearRect(0,0,W,H); sx.globalCompositeOperation='source-over';
+    for(var i=0;i<smoke.length;i++){ var p=smoke[i]; p.life++; p.y-=p.vy; p.r+=p.grow; p.sway+=p.swaySpd; p.x+=p.drift+Math.sin(p.sway)*0.4;
+      var t=p.life/p.max, fade=Math.sin(Math.min(1,t)*Math.PI); // in-then-out
+      var hr=Math.max(0,Math.min(1,p.y/H));                     // 1 bottom -> 0 top
+      var a=p.base*fade*(0.35+0.65*hr);
+      var r=Math.round(70+50*hr), g=Math.round(52+28*hr), b=Math.round(44+16*hr); // warmer near fire
+      var gr=sx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+      gr.addColorStop(0,'rgba('+r+','+g+','+b+','+a+')'); gr.addColorStop(1,'rgba('+r+','+g+','+b+',0)');
+      sx.fillStyle=gr; sx.beginPath(); sx.arc(p.x,p.y,p.r,0,6.283); sx.fill();
+      if(p.y< -p.r || p.life>p.max) smoke[i]=mkSmoke(false);
+    }
+    // embers — bright sparks, additive, rising through the smoke
+    ex.clearRect(0,0,W,H); ex.globalCompositeOperation='lighter';
+    for(var k=0;k<embers.length;k++){ var e=embers[k]; e.life++; e.y-=e.vy; e.sway+=e.swaySpd; e.x+=Math.sin(e.sway)*0.4;
+      var et=e.life/e.max, ea=Math.max(0,(1-et))*(0.45+0.45*Math.sin(e.life*0.16)), col=EC[k%EC.length];
+      var g2=ex.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*4.5);
+      g2.addColorStop(0,'rgba('+col+','+ea+')'); g2.addColorStop(1,'rgba('+col+',0)');
+      ex.fillStyle=g2; ex.beginPath(); ex.arc(e.x,e.y,e.r*4.5,0,6.283); ex.fill();
+      if(e.y< -12 || e.life>e.max) embers[k]=mkEmber(false);
+    }
+    ex.globalCompositeOperation='source-over';
+    raf=requestAnimationFrame(draw);
+  }
+
   size(); seed(); draw();
   var to; window.addEventListener('resize',function(){ clearTimeout(to); to=setTimeout(function(){ cancelAnimationFrame(raf); size(); seed(); draw(); },150); });
   document.getElementById('gbtn').addEventListener('click',function(){ this.style.opacity=.7; this.innerHTML='Entrando…'; });
