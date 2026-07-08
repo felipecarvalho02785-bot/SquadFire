@@ -184,6 +184,7 @@
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/></svg></span><span class="lbl2">Crias</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z"/></svg></span><span class="lbl2">Forjas</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="9.5" y="4" width="5" height="11" rx="1"/><rect x="16" y="4" width="5" height="14" rx="1"/></svg></span><span class="lbl2">Linha de Fogo</span></a>
+      <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5A1.5 1.5 0 015.5 4H11v16H5.5A1.5 1.5 0 004 21.5z"/><path d="M20 5.5A1.5 1.5 0 0018.5 4H13v16h5.5A1.5 1.5 0 0120 21.5z"/></svg></span><span class="lbl2">Biblioteca</span></a>
       <span class="lbl">Gestão</span>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></span><span class="lbl2">Brigada</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M3 12h2.4M18.6 12H21M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg></span><span class="lbl2">Forjaria</span></a>
@@ -440,6 +441,88 @@
           <div class="card"><div class="c-h"><span class="t">Papéis &amp; Brigada</span></div><p style="font-size:12.5px;color:var(--muted);margin:9px 0 0">Contas, Projetos, Tráfego, Criação e Admin — múltiplos papéis por membro.</p></div>
           <div class="card"><div class="c-h"><span class="t">Integrações</span></div><p style="font-size:12.5px;color:var(--muted);margin:9px 0 0">Login com Google (allowlist), ClickUp e Meta Ads.</p></div>
         </div>
+      </div>
+
+      <div class="screen" id="s-biblioteca">
+        <style>
+          #s-biblioteca .filters{display:flex; align-items:center; gap:10px 12px; flex-wrap:wrap; margin-bottom:18px}
+          #s-biblioteca .chips{display:flex; gap:6px; flex-wrap:wrap}
+          #s-biblioteca .fchip{font-size:12px; font-weight:600; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--muted); cursor:pointer; transition:.14s; font-family:inherit}
+          #s-biblioteca .fchip:hover{border-color:var(--border-2); color:var(--text)}
+          #s-biblioteca .fchip.on{background:var(--ember-soft); border-color:color-mix(in srgb,var(--ember) 40%,var(--border)); color:var(--ember)}
+          #s-biblioteca .libsearch{margin-left:auto; display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:8px 12px; min-width:210px}
+          #s-biblioteca .libsearch input{background:transparent; border:0; outline:0; color:var(--text); font-size:13px; font-family:inherit; width:100%}
+          #s-biblioteca .libsearch svg{width:15px; height:15px; color:var(--faint); flex:0 0 auto}
+          #s-biblioteca .libgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(212px,1fr)); gap:14px}
+          #s-biblioteca .libcard{background:var(--surface); border:1px solid var(--border); border-radius:13px; overflow:hidden; cursor:pointer; transition:.15s}
+          #s-biblioteca .libcard:hover{border-color:var(--border-2); transform:translateY(-2px)}
+          #s-biblioteca .prev{aspect-ratio:4/5; position:relative; display:grid; place-items:center; overflow:hidden}
+          #s-biblioteca .prev .badge{position:absolute; top:9px; left:9px; font-size:10px; font-weight:700; padding:3px 8px 3px 6px; border-radius:20px; background:rgba(0,0,0,.5); backdrop-filter:blur(4px); color:#fff; display:inline-flex; align-items:center; gap:5px}
+          #s-biblioteca .prev .badge svg{width:12px; height:12px}
+          #s-biblioteca .prev .pvlabel{font-weight:800; font-size:18px; text-align:center; padding:0 16px; color:#fff; text-shadow:0 2px 14px rgba(0,0,0,.55); line-height:1.15; letter-spacing:-.01em}
+          #s-biblioteca .prev.doc{background:var(--inset); place-items:stretch; padding:18px 16px 14px}
+          #s-biblioteca .prev.doc .lines{margin-top:auto; margin-bottom:auto} #s-biblioteca .prev.doc .lines i{display:block; height:6px; border-radius:3px; background:var(--border-2); margin-bottom:9px}
+          #s-biblioteca .prev.doc .lines i:nth-child(1){width:65%; background:color-mix(in srgb,var(--ember) 55%,transparent)} #s-biblioteca .prev.doc .lines i:nth-child(3){width:82%} #s-biblioteca .prev.doc .lines i:nth-child(4){width:55%}
+          #s-biblioteca .meta{padding:12px 13px}
+          #s-biblioteca .meta .t{font-size:13px; font-weight:650; line-height:1.25}
+          #s-biblioteca .meta .tags{display:flex; gap:5px; flex-wrap:wrap; margin-top:9px}
+          #s-biblioteca .meta .tag{font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; background:var(--surface-2); color:var(--muted); border:1px solid var(--border)}
+          #s-biblioteca .meta .tag.tese{color:var(--ember); border-color:color-mix(in srgb,var(--ember) 30%,var(--border))}
+          #s-biblioteca .drivenote{display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--faint); margin-top:16px}
+        </style>
+        <div class="head" style="margin-bottom:16px"><div class="eye">Acervo · base no Drive</div><h2>Biblioteca</h2><p>Roteiros e criativos estáticos, filtrados por nicho do direito e tese.</p></div>
+        <div class="filters">
+          <div class="seg libseg"><button class="on" data-tipo="todos">Todos</button><button data-tipo="roteiro">Roteiros</button><button data-tipo="criativo">Criativos</button></div>
+          <div class="chips" id="libnichos">
+            <button class="fchip on" data-nicho="todos">Todos os nichos</button>
+            <button class="fchip" data-nicho="previdenciario">Previdenciário</button>
+            <button class="fchip" data-nicho="trabalhista">Trabalhista</button>
+            <button class="fchip" data-nicho="civel">Cível</button>
+            <button class="fchip" data-nicho="tributario">Tributário</button>
+            <button class="fchip" data-nicho="familia">Família</button>
+            <button class="fchip" data-nicho="consumidor">Consumidor</button>
+          </div>
+          <div class="libsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="libq" placeholder="Buscar tese, título…"></div>
+        </div>
+        <div class="libgrid">
+          <div class="libcard" data-tipo="criativo" data-nicho="previdenciario" data-title="Sua aposentadoria pode aumentar" data-tese="Revisão da Vida Toda">
+            <div class="prev" style="background:linear-gradient(140deg,#E5484D,#FF6A1A)"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 4 3 3-2 4 3"/></svg>Criativo</span><span class="pvlabel">Sua aposentadoria pode aumentar</span></div>
+            <div class="meta"><div class="t">Sua aposentadoria pode aumentar</div><div class="tags"><span class="tag">Previdenciário</span><span class="tag tese">Revisão da Vida Toda</span></div></div>
+          </div>
+          <div class="libcard" data-tipo="roteiro" data-nicho="previdenciario" data-title="Trabalhou exposto a risco?" data-tese="Aposentadoria Especial">
+            <div class="prev doc"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7z"/></svg>Roteiro · 30s</span><div class="lines"><i></i><i></i><i></i><i></i></div></div>
+            <div class="meta"><div class="t">Trabalhou exposto a risco?</div><div class="tags"><span class="tag">Previdenciário</span><span class="tag tese">Aposentadoria Especial</span></div></div>
+          </div>
+          <div class="libcard" data-tipo="criativo" data-nicho="trabalhista" data-title="Forçado a pedir demissão?" data-tese="Rescisão Indireta">
+            <div class="prev" style="background:linear-gradient(140deg,#8E1F0B,#E03A12)"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 4 3 3-2 4 3"/></svg>Criativo</span><span class="pvlabel">Forçado a pedir demissão?</span></div>
+            <div class="meta"><div class="t">Forçado a pedir demissão?</div><div class="tags"><span class="tag">Trabalhista</span><span class="tag tese">Rescisão Indireta</span></div></div>
+          </div>
+          <div class="libcard" data-tipo="roteiro" data-nicho="trabalhista" data-title="Faz hora extra e não recebe?" data-tese="Horas Extras">
+            <div class="prev doc"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7z"/></svg>Roteiro · 45s</span><div class="lines"><i></i><i></i><i></i><i></i></div></div>
+            <div class="meta"><div class="t">Faz hora extra e não recebe?</div><div class="tags"><span class="tag">Trabalhista</span><span class="tag tese">Horas Extras</span></div></div>
+          </div>
+          <div class="libcard" data-tipo="criativo" data-nicho="tributario" data-title="Sua empresa paga imposto a mais" data-tese="Exclusão do ICMS">
+            <div class="prev" style="background:linear-gradient(140deg,#E03A12,#FFB03A)"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 4 3 3-2 4 3"/></svg>Criativo</span><span class="pvlabel">Sua empresa paga imposto a mais</span></div>
+            <div class="meta"><div class="t">Sua empresa paga imposto a mais</div><div class="tags"><span class="tag">Tributário</span><span class="tag tese">Exclusão do ICMS</span></div></div>
+          </div>
+          <div class="libcard" data-tipo="criativo" data-nicho="civel" data-title="Nome sujo indevido?" data-tese="Dano Moral">
+            <div class="prev" style="background:linear-gradient(140deg,#4a2318,#E5484D)"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 4 3 3-2 4 3"/></svg>Criativo</span><span class="pvlabel">Nome sujo indevido?</span></div>
+            <div class="meta"><div class="t">Nome sujo indevido? Você tem direito</div><div class="tags"><span class="tag">Cível</span><span class="tag tese">Dano Moral</span></div></div>
+          </div>
+          <div class="libcard" data-tipo="roteiro" data-nicho="familia" data-title="Divórcio sem brigas" data-tese="Divórcio & Pensão">
+            <div class="prev doc"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7z"/></svg>Roteiro · 30s</span><div class="lines"><i></i><i></i><i></i><i></i></div></div>
+            <div class="meta"><div class="t">Divórcio sem brigas</div><div class="tags"><span class="tag">Família</span><span class="tag tese">Divórcio &amp; Pensão</span></div></div>
+          </div>
+          <div class="libcard" data-tipo="criativo" data-nicho="consumidor" data-title="Caiu no golpe do PIX?" data-tese="Golpe do PIX">
+            <div class="prev" style="background:linear-gradient(140deg,#8E1F0B,#FF6A1A)"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 4 3 3-2 4 3"/></svg>Criativo</span><span class="pvlabel">Caiu no golpe do PIX?</span></div>
+            <div class="meta"><div class="t">Caiu no golpe do PIX? O banco paga</div><div class="tags"><span class="tag">Consumidor</span><span class="tag tese">Golpe do PIX</span></div></div>
+          </div>
+          <div class="libcard" data-tipo="criativo" data-nicho="previdenciario" data-title="Benefício para quem precisa" data-tese="BPC/LOAS">
+            <div class="prev" style="background:linear-gradient(140deg,#E5484D,#FFC531)"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 4 3 3-2 4 3"/></svg>Criativo</span><span class="pvlabel">Benefício de R$ 1.412</span></div>
+            <div class="meta"><div class="t">Benefício de R$ 1.412 para quem precisa</div><div class="tags"><span class="tag">Previdenciário</span><span class="tag tese">BPC/LOAS</span></div></div>
+          </div>
+        </div>
+        <div class="drivenote"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2l7 4v6c0 4.4-3 7.6-7 10-4-2.4-7-5.6-7-10V6z"/></svg>Prévias e arquivos virão da base no Google Drive (conexão a fazer). Layout organizado — pronto pra plugar os assets reais.</div>
       </div>
 
       <div class="screen" id="s-detalhe">
@@ -699,7 +782,7 @@
   });
 
   // troca de tela pela navbar
-  var SMAP={'Covil':'covil','Crias':'crias','Forjas':'forja','Linha de Fogo':'linha','Brigada':'brigada','Forjaria':'forjaria'};
+  var SMAP={'Covil':'covil','Crias':'crias','Forjas':'forja','Linha de Fogo':'linha','Biblioteca':'biblioteca','Brigada':'brigada','Forjaria':'forjaria'};
   document.querySelectorAll('.nav a').forEach(function(a){ a.addEventListener('click',function(){
     var lbl=a.querySelector('.lbl2'); if(!lbl) return; var t=lbl.textContent.trim(); var id=SMAP[t]; if(!id) return;
     document.querySelectorAll('.nav a').forEach(function(x){x.classList.remove('on');}); a.classList.add('on');
@@ -732,5 +815,23 @@
       document.querySelectorAll('#s-detalhe .tabpanel').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-tab')===t); });
     });
   });
+
+  // biblioteca: filtros tipo / nicho / busca
+  var lib={tipo:'todos', nicho:'todos', q:''};
+  function libApply(){
+    document.querySelectorAll('#s-biblioteca .libcard').forEach(function(c){
+      var okT = lib.tipo==='todos' || c.dataset.tipo===lib.tipo;
+      var okN = lib.nicho==='todos' || c.dataset.nicho===lib.nicho;
+      var hay = (c.dataset.title+' '+c.dataset.tese+' '+c.dataset.nicho).toLowerCase();
+      var okQ = !lib.q || hay.indexOf(lib.q)>=0;
+      c.style.display = (okT&&okN&&okQ) ? '' : 'none';
+    });
+  }
+  document.querySelectorAll('#s-biblioteca .libseg button').forEach(function(b){ b.addEventListener('click',function(){ lib.tipo=b.getAttribute('data-tipo'); libApply(); }); });
+  document.querySelectorAll('#s-biblioteca #libnichos .fchip').forEach(function(b){ b.addEventListener('click',function(){
+    document.querySelectorAll('#s-biblioteca #libnichos .fchip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
+    lib.nicho=b.getAttribute('data-nicho'); libApply();
+  }); });
+  var lq=document.getElementById('libq'); if(lq) lq.addEventListener('input',function(){ lib.q=lq.value.trim().toLowerCase(); libApply(); });
 })();
 </script>
