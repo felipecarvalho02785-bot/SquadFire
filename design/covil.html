@@ -24,18 +24,19 @@
   .app.collapsed{--rail:74px}
 
   /* ===== Rail ===== */
-  .rail{border-right:1px solid var(--border); padding:15px 12px; display:flex; flex-direction:column; gap:14px; position:sticky; top:0; height:100vh; overflow:hidden}
-  .rail .head{display:flex; align-items:center; gap:8px; padding:2px 2px; min-height:30px}
-  .brand{display:flex; align-items:center; gap:9px; min-width:0; overflow:hidden}
-  .brand img{width:27px; height:27px; flex:0 0 auto}
-  .brand .w{font-weight:800; letter-spacing:.13em; font-size:14px; text-transform:uppercase; white-space:nowrap}
+  .rail{border-right:1px solid var(--border); padding:16px 12px; display:flex; flex-direction:column; gap:18px; position:sticky; top:0; height:100vh; overflow:hidden}
+  .rail .head{display:flex; align-items:center; gap:10px; padding:0 4px 0 8px; min-height:44px}
+  .brand{display:flex; align-items:center; gap:11px; min-width:0; overflow:hidden}
+  .brand img{width:36px; height:36px; flex:0 0 auto}
+  .brand .w{font-weight:800; letter-spacing:.12em; font-size:15px; text-transform:uppercase; white-space:nowrap}
   .brand .w b{color:var(--ember)}
   .toggle{margin-left:auto; width:30px; height:30px; flex:0 0 auto; border:1px solid var(--border); background:var(--surface); border-radius:9px; color:var(--muted); cursor:pointer; display:grid; place-items:center; transition:.14s}
   .toggle:hover{border-color:var(--ember); color:var(--ember)}
   .toggle svg{width:16px; height:16px; transition:transform .24s}
 
-  .nav{display:flex; flex-direction:column; gap:6px; overflow:hidden}
-  .nav .lbl{font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); padding:6px 6px 1px; white-space:nowrap}
+  .nav{display:flex; flex-direction:column; gap:7px; overflow:hidden}
+  .nav .lbl{font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); padding:2px 8px 3px; margin-top:8px; white-space:nowrap}
+  .nav .lbl:first-child{margin-top:0}
   .nav a{display:flex; align-items:center; gap:11px; padding:7px; border:1px solid var(--border); background:var(--surface); border-radius:11px; font-size:13px; font-weight:560; color:var(--muted); text-decoration:none; cursor:pointer; transition:.14s; white-space:nowrap}
   .nav a .ico{width:30px; height:30px; flex:0 0 auto; border-radius:8px; background:var(--inset); display:grid; place-items:center; transition:.14s}
   .nav a .ico svg{width:17px; height:17px}
@@ -63,7 +64,7 @@
   .app.collapsed .nav a .lbl2,
   .app.collapsed .insight .txt,
   .app.collapsed .foot .who{display:none}
-  .app.collapsed .rail .head{flex-direction:column; gap:10px}
+  .app.collapsed .rail .head{flex-direction:column; align-items:center; gap:12px; padding:0}
   .app.collapsed .toggle{margin-left:0}
   .app.collapsed .toggle svg{transform:rotate(180deg)}
   .app.collapsed .nav a{justify-content:center; padding:6px}
