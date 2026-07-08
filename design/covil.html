@@ -5,8 +5,8 @@
     --bg:#0B0A09; --surface:#131010; --surface-2:#1A1513; --inset:#0F0D0C;
     --border:#241E1B; --border-2:#2E2723;
     --text:#F3ECE6; --muted:#9A8E85; --faint:#6A605A;
-    --ember:#FF6A00; --ember-hi:#FF8A1F; --ember-deep:#FF3B00; --ember-soft:rgba(255,106,0,.16);
-    --good:#FF7A14; --warn:#FFC400; --crit:#FF2E3F; --ash:#7A6E64;
+    --ember:#FF6A1A; --ember-hi:#FF9436; --ember-deep:#E8450F; --ember-soft:rgba(255,106,26,.14);
+    --good:#FF7A1F; --warn:#FFC531; --crit:#E5484D; --ash:#6B645F;
     --grid:#221D1A;
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -89,13 +89,7 @@
   svg .grid-line{stroke:var(--grid); stroke-width:1}
   svg text{fill:var(--muted); font-family:var(--mono); font-size:10px; font-variant-numeric:tabular-nums}
   svg .axis{fill:var(--faint)}
-  /* glow sutil pras marcas pulsarem no escuro (cores vívidas) */
-  #bars rect, #hbars rect{ filter:drop-shadow(0 0 5px rgba(255,106,0,.7)) }
-  #area path[fill="none"]{ filter:drop-shadow(0 0 8px rgba(255,106,0,.85)) }
-  #donut path{ filter:drop-shadow(0 0 5px rgba(255,130,20,.55)) }
-  .spark polyline{ filter:drop-shadow(0 0 4px rgba(255,106,0,.7)) }
-  .meter .fill{ box-shadow:0 0 16px rgba(255,106,0,.65) }
-  .kpi .k-val{ text-shadow:0 0 26px rgba(255,106,0,.14) }
+  /* cores fortes e sólidas — sem glow/neon (marcas planas) */
 
   /* legend */
   .legend{display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:12px}
@@ -264,7 +258,7 @@
 (function(){
   "use strict";
   var NS="http://www.w3.org/2000/svg";
-  var C={ember:'#FF6A00', emberHi:'#FF8A1F', good:'#FF7A14', warn:'#FFC400', crit:'#FF2E3F', ash:'#7A6E64', muted:'#9A8E85', grid:'#241D18', surface:'#131010'};
+  var C={ember:'#FF6A1A', emberHi:'#FF9436', good:'#FF7A1F', warn:'#FFC531', crit:'#E5484D', ash:'#6B645F', muted:'#9A8E85', grid:'#241D18', surface:'#131010'};
   var el=function(t,a){var e=document.createElementNS(NS,t); if(a) for(var k in a) e.setAttribute(k,a[k]); return e;};
   var tip=document.getElementById('tip');
   function showTip(html,x,y){ tip.innerHTML=html; tip.style.opacity=1; var w=tip.offsetWidth,h=tip.offsetHeight;
@@ -277,7 +271,7 @@
     var W=78,H=30,pad=3, mn=Math.min.apply(0,d), mx=Math.max.apply(0,d), rg=(mx-mn)||1;
     var X=function(i){return pad+i*(W-2*pad)/(d.length-1);}, Y=function(v){return H-pad-(v-mn)/rg*(H-2*pad);};
     var pts=d.map(function(v,i){return X(i)+','+Y(v);}).join(' ');
-    svg.appendChild(el('polyline',{points:pts,fill:'none',stroke:C.ember,'stroke-width':1.8,'stroke-linejoin':'round','stroke-linecap':'round',opacity:.85}));
+    svg.appendChild(el('polyline',{points:pts,fill:'none',stroke:C.ember,'stroke-width':1.8,'stroke-linejoin':'round','stroke-linecap':'round',opacity:.72}));
     svg.appendChild(el('circle',{cx:X(d.length-1),cy:Y(d[d.length-1]),r:2.4,fill:C.ember}));
   });
 
@@ -290,7 +284,7 @@
     [0,6,12,18,24].forEach(function(g){ var y=Y(g); svg.appendChild(el('line',{x1:L,y1:y,x2:W-R,y2:y,class:'grid-line'}));
       var tx=el('text',{x:L-6,y:y+3,'text-anchor':'end'}); tx.textContent=g; svg.appendChild(tx); });
     var line=data.map(function(v,i){return (i?'L':'M')+X(i)+' '+Y(v);}).join(' ');
-    svg.appendChild(el('path',{d:line+' L'+X(data.length-1)+' '+(T+ih)+' L'+X(0)+' '+(T+ih)+' Z', fill:C.ember, opacity:.2}));
+    svg.appendChild(el('path',{d:line+' L'+X(data.length-1)+' '+(T+ih)+' L'+X(0)+' '+(T+ih)+' Z', fill:C.ember, opacity:.13}));
     svg.appendChild(el('path',{d:line, fill:'none', stroke:C.ember, 'stroke-width':2, 'stroke-linejoin':'round','stroke-linecap':'round'}));
     // endpoint
     svg.appendChild(el('circle',{cx:X(data.length-1),cy:Y(data[data.length-1]),r:5,fill:C.ember,stroke:C.surface,'stroke-width':2}));
