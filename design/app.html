@@ -178,6 +178,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
     </div>
+    <button class="faisca" id="faiscaBtn" title="Faísca — assistente IA">
+      <span class="fico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.7 4.8L18.5 8.5 13.7 10.2 12 15l-1.7-4.8L5.5 8.5l4.8-1.7z"/><path d="M18.5 14l.9 2.6L22 17.5l-2.6.9L18.5 21l-.9-2.6L15 17.5l2.6-.9z"/></svg></span>
+      <span class="flbl">Faísca<small>assistente IA · voz &amp; texto</small></span>
+    </button>
     <nav class="nav">
       <span class="lbl">Operação</span>
       <a class="on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><span class="lbl2">Covil</span></a>
@@ -709,6 +713,68 @@
   </div>
 </div>
 
+<style>
+  .faisca{display:flex; align-items:center; gap:11px; width:100%; padding:9px 10px; border:0; border-radius:12px; cursor:pointer; background:linear-gradient(135deg,var(--ember-hi),var(--ember)); color:#160c06; font-family:inherit; box-shadow:0 8px 22px -10px rgba(255,106,26,.6); transition:.14s}
+  .faisca:hover{filter:brightness(1.06)}
+  .faisca .fico{width:30px; height:30px; border-radius:8px; background:rgba(0,0,0,.16); display:grid; place-items:center; flex:0 0 auto} .faisca .fico svg{width:18px; height:18px}
+  .faisca .flbl{font-weight:750; font-size:13.5px; text-align:left; line-height:1.15; white-space:nowrap} .faisca .flbl small{display:block; font-weight:600; font-size:9.5px; opacity:.72}
+  .app.collapsed .faisca{justify-content:center; padding:8px} .app.collapsed .faisca .flbl{display:none}
+  .as-scrim{position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:60; opacity:0; pointer-events:none; transition:.2s; backdrop-filter:blur(2px)}
+  .as-scrim.on{opacity:1; pointer-events:auto}
+  .assistant{position:fixed; top:0; right:0; bottom:0; width:394px; max-width:93vw; z-index:61; background:var(--surface); border-left:1px solid var(--border); display:flex; flex-direction:column; transform:translateX(102%); transition:transform .26s cubic-bezier(.4,0,.2,1)}
+  .assistant.on{transform:none}
+  .as-head{display:flex; align-items:center; gap:11px; padding:15px 16px; border-bottom:1px solid var(--border)}
+  .as-av{width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,var(--ember-hi),var(--ember)); color:#160c06; display:grid; place-items:center; flex:0 0 auto} .as-av svg{width:20px; height:20px}
+  .as-name{font-size:14px; font-weight:700} .as-sub{font-size:11px; color:var(--muted)}
+  .as-close{margin-left:auto; background:transparent; border:0; color:var(--muted); font-size:20px; cursor:pointer; width:30px; height:30px; border-radius:8px; line-height:1} .as-close:hover{background:var(--surface-2); color:var(--text)}
+  .as-body{flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:13px}
+  .msg{max-width:88%; font-size:13px; line-height:1.5}
+  .msg.ai{align-self:flex-start} .msg.me{align-self:flex-end}
+  .msg .who{font-size:10px; color:var(--faint); margin:0 5px 4px; font-weight:600}
+  .msg .bub{padding:10px 13px; border-radius:14px}
+  .msg.ai .bub{background:var(--surface-2); border:1px solid var(--border); border-bottom-left-radius:5px; color:var(--text)}
+  .msg.me .bub{background:var(--ember-soft); border:1px solid color-mix(in srgb,var(--ember) 30%,var(--border)); border-bottom-right-radius:5px; color:var(--text)}
+  .msg .bub b{color:var(--ember)}
+  .voicebar{display:flex; align-items:center; gap:8px; font-size:11px; color:var(--ember); margin-top:7px; padding:0 5px}
+  .voicebar.me{justify-content:flex-end; color:var(--muted)}
+  .voicebar svg{width:13px; height:13px}
+  .wave{display:inline-flex; align-items:center; gap:2px; height:14px}
+  .wave i{width:2px; background:currentColor; border-radius:2px; height:5px; animation:vw 1s ease-in-out infinite}
+  .wave i:nth-child(2){animation-delay:.15s} .wave i:nth-child(3){animation-delay:.3s} .wave i:nth-child(4){animation-delay:.45s} .wave i:nth-child(5){animation-delay:.6s}
+  @keyframes vw{0%,100%{height:4px} 50%{height:13px}}
+  .as-input{display:flex; align-items:center; gap:8px; padding:12px 14px; border-top:1px solid var(--border)}
+  .as-input input{flex:1; background:var(--surface-2); border:1px solid var(--border); border-radius:22px; padding:10px 14px; color:var(--text); font-size:13px; font-family:inherit; outline:0}
+  .as-input input:focus{border-color:var(--ember)}
+  .as-mic,.as-send{width:38px; height:38px; border-radius:50%; border:0; cursor:pointer; flex:0 0 auto; display:grid; place-items:center}
+  .as-mic{background:var(--surface-2); border:1px solid var(--border); color:var(--muted)} .as-mic:hover{border-color:var(--ember); color:var(--ember)} .as-mic svg{width:17px;height:17px}
+  .as-mic.rec{background:var(--ember); color:#160c06; border-color:var(--ember); animation:pulse 1.3s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,106,26,.55)} 50%{box-shadow:0 0 0 9px rgba(255,106,26,0)}}
+  .as-send{background:linear-gradient(135deg,var(--ember-hi),var(--ember)); color:#160c06} .as-send svg{width:17px; height:17px}
+  .as-listen{margin:0 16px 12px; display:none; align-items:center; gap:10px; background:color-mix(in srgb,var(--ember) 9%,transparent); border:1px solid color-mix(in srgb,var(--ember) 30%,var(--border)); border-radius:12px; padding:11px 13px; font-size:12px; color:var(--ember)}
+  .as-listen.on{display:flex}
+</style>
+<div class="as-scrim" id="asScrim"></div>
+<aside class="assistant" id="assistant">
+  <div class="as-head">
+    <span class="as-av"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.7 4.8L18.5 8.5 13.7 10.2 12 15l-1.7-4.8L5.5 8.5l4.8-1.7z"/><path d="M18.5 14l.9 2.6L22 17.5l-2.6.9L18.5 21l-.9-2.6L15 17.5l2.6-.9z"/></svg></span>
+    <div><div class="as-name">Faísca</div><div class="as-sub">assistente do Squad 8 · Gemini + Claude</div></div>
+    <button class="as-close" id="asClose">&times;</button>
+  </div>
+  <div class="as-body">
+    <div class="msg ai"><div class="who">Faísca</div><div class="bub">E aí, Luiz! 🔥 Posso te ajudar em qualquer aba — por texto ou por voz. Pergunta ou pede que eu resolvo.</div></div>
+    <div class="msg me"><div class="bub">Quais Forjas estão atrasadas?</div><div class="voicebar me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>mensagem de voz · 0:04</div></div>
+    <div class="msg ai"><div class="who">Faísca</div><div class="bub">2 Forjas com Estopim estourado: <b>Mendes</b> (Implementação, −2 dias) e <b>Vasconcelos</b> (Diagnóstico, vence amanhã). Quer que eu abra a do Mendes ou avise o gestor?</div><div class="voicebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>respondendo por voz <span class="wave"><i></i><i></i><i></i><i></i><i></i></span></div></div>
+    <div class="msg me"><div class="bub">Agenda uma Fogueira com o Mendes quinta 15h</div></div>
+    <div class="msg ai"><div class="who">Faísca</div><div class="bub">✓ <b>Fogueira agendada</b> — Mendes, quinta 15h, com você e a Marina. Já criei a Lenha e sincronizei no ClickUp.</div></div>
+  </div>
+  <div class="as-listen" id="asListen"><span class="wave" style="color:var(--ember)"><i></i><i></i><i></i><i></i><i></i></span> Ouvindo… fale o que precisa</div>
+  <div class="as-input">
+    <button class="as-mic" id="asMic" title="Falar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
+    <input placeholder="Pergunte ou peça algo…">
+    <button class="as-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+  </div>
+</aside>
+
 <div id="tip"></div>
 
 <script>
@@ -863,6 +929,15 @@
   if(db) db.addEventListener('click',function(){ openScreen('s-crias','Crias',''); });
   var ncb=document.getElementById('novaCriaBtn'); if(ncb) ncb.addEventListener('click',function(){ openScreen('s-nova','Nova Cria','· cadastro'); });
   var nbk=document.getElementById('novaBack'); if(nbk) nbk.addEventListener('click',function(){ openScreen('s-crias','Crias',''); });
+
+  // Faísca — assistente IA global (abre em qualquer aba)
+  var asst=document.getElementById('assistant'), scrim=document.getElementById('asScrim');
+  function asOpen(v){ asst.classList.toggle('on',v); scrim.classList.toggle('on',v); }
+  var fb=document.getElementById('faiscaBtn'); if(fb) fb.addEventListener('click',function(){ asOpen(true); });
+  var ac=document.getElementById('asClose'); if(ac) ac.addEventListener('click',function(){ asOpen(false); });
+  if(scrim) scrim.addEventListener('click',function(){ asOpen(false); });
+  var mic=document.getElementById('asMic'), listen=document.getElementById('asListen');
+  if(mic) mic.addEventListener('click',function(){ var on=mic.classList.toggle('rec'); listen.classList.toggle('on',on); });
   document.querySelectorAll('#s-detalhe .tab').forEach(function(tb){
     tb.addEventListener('click',function(){
       document.querySelectorAll('#s-detalhe .tab').forEach(function(x){x.classList.remove('on');}); tb.classList.add('on');
