@@ -441,6 +441,109 @@
           <div class="card"><div class="c-h"><span class="t">Integrações</span></div><p style="font-size:12.5px;color:var(--muted);margin:9px 0 0">Login com Google (allowlist), ClickUp e Meta Ads.</p></div>
         </div>
       </div>
+
+      <div class="screen" id="s-detalhe">
+        <style>
+          #s-detalhe .back{display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; margin-bottom:16px}
+          #s-detalhe .back:hover{color:var(--ember)}
+          #s-detalhe .dtop{display:flex; align-items:center; gap:14px; margin-bottom:18px}
+          #s-detalhe .dav{width:52px; height:52px; border-radius:13px; display:grid; place-items:center; font-size:16px; font-weight:750; color:#160c06; background:linear-gradient(135deg,var(--ember-hi),var(--ember)); flex:0 0 auto}
+          #s-detalhe .dinfo{flex:1; min-width:0} #s-detalhe .dinfo h2{margin:0; font-size:23px; font-weight:750; letter-spacing:-.01em}
+          #s-detalhe .dinfo p{margin:3px 0 0; color:var(--muted); font-size:13px}
+          #s-detalhe .dbadges{display:flex; gap:8px; flex-wrap:wrap}
+          #s-detalhe .tabs{display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:18px; flex-wrap:wrap}
+          #s-detalhe .tab{border:0; background:transparent; color:var(--muted); font-size:13px; font-weight:600; padding:10px 14px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; font-family:inherit}
+          #s-detalhe .tab:hover{color:var(--text)} #s-detalhe .tab.on{color:var(--ember); border-bottom-color:var(--ember)}
+          #s-detalhe .tabpanel{display:none} #s-detalhe .tabpanel.on{display:block}
+          #s-detalhe .dl .drow{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); font-size:13px}
+          #s-detalhe .dl .drow:last-child{border-bottom:0} #s-detalhe .dl .drow span{color:var(--muted)} #s-detalhe .dl .drow b{color:var(--text); font-weight:600}
+          #s-detalhe .cmt{display:flex; gap:11px; padding:13px 0; border-top:1px solid var(--border)} #s-detalhe .cmt:first-child{border-top:0}
+          #s-detalhe .cmt .av{width:32px; height:32px; font-size:11px; flex:0 0 auto}
+          #s-detalhe .cmt .cn{font-size:12.5px; font-weight:650} #s-detalhe .cmt .cn small{color:var(--faint); font-weight:400; margin-left:6px}
+          #s-detalhe .cmt .ct{font-size:12.5px; color:var(--muted); margin-top:3px}
+          #s-detalhe .audio{display:flex; align-items:center; gap:12px; padding:13px 14px; background:var(--surface-2); border:1px solid var(--border); border-radius:11px; margin-bottom:12px; max-width:520px}
+          #s-detalhe .audio .play{width:36px; height:36px; border-radius:50%; background:var(--ember); color:#160c06; display:grid; place-items:center; flex:0 0 auto} #s-detalhe .audio .play svg{width:16px; height:16px}
+          #s-detalhe .audio .wave{flex:1; height:22px; background:repeating-linear-gradient(90deg, color-mix(in srgb,var(--ember) 45%,transparent) 0 2px, transparent 2px 6px); border-radius:4px}
+        </style>
+        <span class="back" id="detBack">&lsaquo; Voltar pra Crias</span>
+        <div class="dtop">
+          <span class="dav">MA</span>
+          <div class="dinfo"><h2>Mendes Advocacia Previdenciária</h2><p>Previdenciário · Gestor: Luiz Mattos · Início 12/06/2026</p></div>
+          <div class="dbadges"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Apagando</span><span class="chip crit">Forja quente</span></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="k-top"><span class="k-label">Fase atual</span></div><div class="k-val" style="font-size:24px">Fase 5</div><span class="k-delta neu">Implementação CRM + IA</span></div>
+          <div class="kpi"><div class="k-top"><span class="k-label">Dia da Forja</span></div><div class="k-val">29<span style="font-size:16px;color:var(--muted)">/49</span></div><span class="k-delta neu">Estruturação</span></div>
+          <div class="kpi flag-warn"><div class="k-top"><span class="k-label">NPS</span></div><div class="k-val">8</div><span class="k-delta neu">último mês</span></div>
+          <div class="kpi flag-crit"><div class="k-top"><span class="k-label">Briefing</span><span class="chip crit">Pendente</span></div><div class="k-val">1</div><span class="k-delta neu">esta semana</span></div>
+        </div>
+        <div class="card" style="margin:13px 0">
+          <div class="c-h"><span class="t">Termômetro da Forja</span><span class="now">fase 5 de 7</span></div>
+          <div class="funnel">
+            <div class="ph done"><div class="bar"></div><div class="n">FASE 1</div><div class="nm">Alinhamento</div><div class="dd">Dia 1–7</div></div>
+            <div class="ph done"><div class="bar"></div><div class="n">FASE 2</div><div class="nm">Diagnóstico 360</div><div class="dd">Dia 8–14</div></div>
+            <div class="ph done"><div class="bar"></div><div class="n">FASE 3</div><div class="nm">Treinamento</div><div class="dd">Dia 15–21</div></div>
+            <div class="ph done"><div class="bar"></div><div class="n">FASE 4</div><div class="nm">Consultoria</div><div class="dd">Dia 22–28</div></div>
+            <div class="ph now"><span class="nowtag">AGORA</span><div class="bar"></div><div class="n">FASE 5</div><div class="nm">Implementação CRM + IA</div><div class="dd">Dia 29–35</div></div>
+            <div class="ph"><div class="bar"></div><div class="n">FASE 6</div><div class="nm">Auditoria de Mídia</div><div class="dd">Dia 36–42</div></div>
+            <div class="ph"><div class="bar"></div><div class="n">FASE 7</div><div class="nm">Auditoria Criativa</div><div class="dd">Dia 43–49</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="tabs">
+            <button class="tab on" data-tab="geral">Visão geral</button>
+            <button class="tab" data-tab="contrato">Contrato</button>
+            <button class="tab" data-tab="coment">Comentários</button>
+            <button class="tab" data-tab="garg">Gargalos</button>
+            <button class="tab" data-tab="brief">Briefing por áudio</button>
+          </div>
+          <div class="tabpanel on" data-tab="geral">
+            <div class="grid g-2">
+              <div>
+                <div class="c-h" style="margin-bottom:6px"><span class="t">Dados</span></div>
+                <div class="dl">
+                  <div class="drow"><span>E-mail</span><b class="mono">contato@mendesadv.adv.br</b></div>
+                  <div class="drow"><span>Área</span><b>Previdenciário</b></div>
+                  <div class="drow"><span>Produto</span><b>Estruturação</b></div>
+                  <div class="drow"><span>Investimento</span><b class="mono">R$ 15k/mês</b></div>
+                  <div class="drow"><span>Closer</span><b>Marina Alves</b></div>
+                </div>
+              </div>
+              <div>
+                <div class="c-h" style="margin-bottom:6px"><span class="t">Rotina / próximas Lenhas</span></div>
+                <div class="list">
+                  <div class="row"><span class="chk done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Treinar a equipe no CRM</div><div class="s">até 03/07</div></div></div>
+                  <div class="row"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Liberar acesso ao Meta Ads</div><div class="s" style="color:var(--crit)">bloqueado · ver gargalo</div></div></div>
+                  <div class="row"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Coletar briefing de campanha</div><div class="s">pendente esta semana</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabpanel" data-tab="contrato">
+            <div class="dl" style="max-width:540px">
+              <div class="drow"><span>Plano</span><b>Estruturação · 7 fases × 7 dias</b></div>
+              <div class="drow"><span>Investimento</span><b class="mono">R$ 15k/mês</b></div>
+              <div class="drow"><span>Vigência</span><b class="mono">12/06/2026 → 31/07/2026</b></div>
+              <div class="drow"><span>Assinatura</span><b>Assinado · 10/06/2026</b></div>
+            </div>
+            <button class="gbtn2" style="max-width:220px; margin-top:16px">Ver contrato (PDF)</button>
+          </div>
+          <div class="tabpanel" data-tab="coment">
+            <div class="cmt"><span class="av">LM</span><div><div class="cn">Luiz Mattos<small>hoje · 09:12</small></div><div class="ct">Cliente confirmou a call de liberação do Meta Ads pra quinta. Sigo o plano da IA.</div></div></div>
+            <div class="cmt"><span class="av" style="background:linear-gradient(135deg,#8A827B,#6B645F)">MA</span><div><div class="cn">Marina Alves<small>ontem · 16:40</small></div><div class="ct">NPS caiu pra 8 — vale reforçar o acompanhamento nesta fase de Implementação.</div></div></div>
+          </div>
+          <div class="tabpanel" data-tab="garg">
+            <div style="border-left:2px solid var(--crit); padding:2px 0 2px 13px">
+              <div style="font-weight:650; font-size:13px; color:var(--text)">Cliente não liberou acesso ao Meta Ads</div>
+              <div style="font-size:12px; color:var(--muted); margin-top:3px">Trava a automação de leads. Surgiu na Implementação · responsável: Luiz.</div>
+            </div>
+          </div>
+          <div class="tabpanel" data-tab="brief">
+            <div class="audio"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span><div class="wave"></div><span class="mono" style="font-size:12px;color:var(--muted)">02:14</span></div>
+            <p style="font-size:12.5px; color:var(--muted); margin:0; max-width:560px">Transcrição (IA): "O cliente quer focar em captação de casos previdenciários, com o CRM organizando o funil e a IA fazendo o primeiro atendimento dos leads que chegam pelo Meta Ads…"</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -582,5 +685,27 @@
     if(seg) seg.style.display = id==='covil'?'':'none'; if(rg) rg.style.display = id==='covil'?'':'none';
     document.querySelector('.content').scrollTop=0; window.scrollTo(0,0);
   }); });
+
+  // detalhe da cria: clicar numa linha abre; voltar retorna; abas
+  function openScreen(id, title, sub){
+    document.querySelectorAll('.screen').forEach(function(sc){ sc.classList.toggle('on', sc.id===id); });
+    var h=document.querySelector('.topbar h1'), s=document.querySelector('.topbar .sub');
+    if(h) h.textContent=title; if(s) s.textContent=sub||'';
+    var seg=document.querySelector('.topbar .seg'), rg=document.getElementById('range');
+    if(seg) seg.style.display='none'; if(rg) rg.style.display='none';
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('#s-crias .tbl tbody tr').forEach(function(tr){
+    tr.addEventListener('click',function(){ openScreen('s-detalhe','Mendes Advocacia Previdenciária','· detalhe da Cria'); });
+  });
+  var db=document.getElementById('detBack');
+  if(db) db.addEventListener('click',function(){ openScreen('s-crias','Crias',''); });
+  document.querySelectorAll('#s-detalhe .tab').forEach(function(tb){
+    tb.addEventListener('click',function(){
+      document.querySelectorAll('#s-detalhe .tab').forEach(function(x){x.classList.remove('on');}); tb.classList.add('on');
+      var t=tb.getAttribute('data-tab');
+      document.querySelectorAll('#s-detalhe .tabpanel').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-tab')===t); });
+    });
+  });
 })();
 </script>
