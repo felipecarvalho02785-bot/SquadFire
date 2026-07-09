@@ -53,7 +53,10 @@
   .insight .txt .h b{color:var(--ember)}
   .insight .txt .s{font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 
-  .rail .foot{display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:11px; border:1px solid var(--border); background:var(--surface); overflow:hidden}
+  .rail .foot{display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:11px; border:1px solid var(--border); background:var(--surface); overflow:hidden; cursor:pointer; transition:border-color .14s}
+  .rail .foot:hover{border-color:var(--ember)}
+  .foot .swico{margin-left:auto; color:var(--faint); flex:0 0 auto} .foot .swico svg{width:15px; height:15px; display:block} .rail .foot:hover .swico{color:var(--ember)}
+  .app.collapsed .foot .swico{display:none}
   .av{width:30px; height:30px; flex:0 0 auto; border-radius:50%; display:grid; place-items:center; font-size:11px; font-weight:700; color:#160c06; background:linear-gradient(135deg,var(--ember-hi),var(--ember))}
   .foot .who{font-size:12px; font-weight:600; line-height:1.2; white-space:nowrap; overflow:hidden}
   .foot .who small{display:block; color:var(--muted); font-weight:500; font-size:10.5px}
@@ -200,9 +203,10 @@
         <div class="s">3 Forjas quentes · 92% no prazo</div>
       </div>
     </div>
-    <div class="foot">
-      <span class="av" style="background:url('assets/luiz-av.webp') center/cover;color:transparent">LM</span>
-      <span class="who">Luiz Mattos<small>Gestor de Projetos</small></span>
+    <div class="foot" id="userSwitch" title="Trocar de Covil (você / Luiz)">
+      <span class="av" id="footAv" style="background:url('assets/felipe-av.webp') center/cover;color:transparent">FC</span>
+      <span class="who"><span id="footName">Felipe Carvalho</span><small id="footRole">Gestor de Contas · Admin</small></span>
+      <span class="swico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 9l4-4 4 4M16 15l-4 4-4-4"/></svg></span>
     </div>
   </aside>
 
@@ -284,11 +288,11 @@
       <section class="hero">
         <div class="bg"></div>
         <div class="portrait">
-          <img class="member" src="assets/luiz.webp" alt="Luiz Mattos" />
+          <img class="member" id="heroImg" src="assets/felipe.webp" alt="Felipe Carvalho" />
         </div>
         <div class="content">
-          <div class="eye">Gestor de Projetos · Brigada</div>
-          <h2 class="big">Bom dia, Luiz</h2>
+          <div class="eye" id="heroEye">Admin · Gestor de Contas</div>
+          <h2 class="big" id="heroGreet">Bom dia, Felipe</h2>
           <p>Suas Forjas, saúde e SLAs num relance — este é o seu Covil.</p>
           <div class="glass">
             <div class="g-stat"><div class="v">12</div><div class="l">Forjas ativas</div></div>
@@ -433,8 +437,9 @@
       </div>
 
       <div class="screen" id="s-brigada">
-        <div class="head" style="margin-bottom:16px"><div class="eye">Time · 5 membros</div><h2>Brigada</h2><p>Quem toca as Forjas — papéis e carga de Lenhas.</p></div>
+        <div class="head" style="margin-bottom:16px"><div class="eye">Time · 6 membros</div><h2>Brigada</h2><p>Quem toca as Forjas — papéis e carga de Lenhas.</p></div>
         <div class="bgrid">
+          <div class="mcard"><div class="mtop"><span class="av" style="background:url('assets/felipe-av.webp') center/cover;color:transparent">FC</span><div><div class="mn">Felipe Carvalho</div><div class="mr">Gestor de Contas · Admin</div></div></div><div class="roles"><span class="role">Contas</span><span class="role">Admin</span></div><div class="load"><span>Carga</span><span class="mono" style="color:var(--text)">8 Lenhas</span></div><div class="lbar"><i style="width:50%"></i></div></div>
           <div class="mcard"><div class="mtop"><span class="av" style="background:url('assets/luiz-av.webp') center/cover;color:transparent">LM</span><div><div class="mn">Luiz Mattos</div><div class="mr">Gestor de Projetos · Admin</div></div></div><div class="roles"><span class="role">Projetos</span><span class="role">Coordenador</span></div><div class="load"><span>Carga</span><span class="mono" style="color:var(--text)">14 Lenhas</span></div><div class="lbar"><i style="width:88%"></i></div></div>
           <div class="mcard"><div class="mtop"><span class="av" style="background:linear-gradient(135deg,#8A827B,#6B645F)">DM</span><div><div class="mn">Diego Martins</div><div class="mr">Gestor de Projetos</div></div></div><div class="roles"><span class="role">Projetos</span></div><div class="load"><span>Carga</span><span class="mono" style="color:var(--text)">12 Lenhas</span></div><div class="lbar"><i style="width:75%"></i></div></div>
           <div class="mcard"><div class="mtop"><span class="av" style="background:linear-gradient(135deg,#8A827B,#6B645F)">JB</span><div><div class="mn">João Bastos</div><div class="mr">Contas · Tráfego</div></div></div><div class="roles"><span class="role">Contas</span><span class="role">Tráfego</span></div><div class="load"><span>Carga</span><span class="mono" style="color:var(--text)">11 Lenhas</span></div><div class="lbar"><i style="width:69%"></i></div></div>
@@ -1060,7 +1065,7 @@
     <button class="as-close" id="asClose">&times;</button>
   </div>
   <div class="as-body">
-    <div class="msg ai"><div class="who">Faísca</div><div class="bub">E aí, Luiz! 🔥 Posso te ajudar em qualquer aba — por texto ou por voz. Pergunta ou pede que eu resolvo.</div></div>
+    <div class="msg ai"><div class="who">Faísca</div><div class="bub" id="faiscaHi">E aí, Felipe! 🔥 Posso te ajudar em qualquer aba — por texto ou por voz. Pergunta ou pede que eu resolvo.</div></div>
     <div class="msg me"><div class="bub">Quais Forjas estão atrasadas?</div><div class="voicebar me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>mensagem de voz · 0:04</div></div>
     <div class="msg ai"><div class="who">Faísca</div><div class="bub">2 Forjas com Estopim estourado: <b>Mendes</b> (Implementação, −2 dias) e <b>Vasconcelos</b> (Diagnóstico, vence amanhã). Quer que eu abra a do Mendes ou avise o gestor?</div><div class="voicebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>respondendo por voz <span class="wave"><i></i><i></i><i></i><i></i><i></i></span></div></div>
     <div class="msg me"><div class="bub">Agenda uma Roda de Fogo com o Mendes quinta 15h</div></div>
@@ -1237,6 +1242,26 @@
     });
   });
   var pbk=document.getElementById('perfBack'); if(pbk) pbk.addEventListener('click',function(){ openScreen('s-brigada','Brigada',''); });
+
+  // Covil pessoal: alterna o usuário logado (foto no hero + saudação + rodapé + Faísca)
+  var USERS={
+    felipe:{name:'Felipe Carvalho', role:'Gestor de Contas · Admin', eye:'Admin · Gestor de Contas', greet:'Bom dia, Felipe', hero:'assets/felipe.webp', av:'assets/felipe-av.webp', hi:'E aí, Felipe! 🔥 Posso te ajudar em qualquer aba — por texto ou por voz. Pergunta ou pede que eu resolvo.'},
+    luiz:{name:'Luiz Mattos', role:'Gestor de Projetos', eye:'Gestor de Projetos · Brigada', greet:'Bom dia, Luiz', hero:'assets/luiz.webp', av:'assets/luiz-av.webp', hi:'E aí, Luiz! 🔥 Posso te ajudar em qualquer aba — por texto ou por voz. Pergunta ou pede que eu resolvo.'}
+  };
+  var curUser='felipe';
+  function applyUser(k){
+    var u=USERS[k]; if(!u) return; curUser=k;
+    var avstyle="background:url('"+u.av+"') center/cover;color:transparent";
+    var fa=document.getElementById('footAv'); if(fa) fa.setAttribute('style', avstyle);
+    var fn=document.getElementById('footName'); if(fn) fn.textContent=u.name;
+    var fr=document.getElementById('footRole'); if(fr) fr.textContent=u.role;
+    var hi=document.getElementById('heroImg'); if(hi){ hi.src=u.hero; hi.alt=u.name; }
+    var he=document.getElementById('heroEye'); if(he) he.textContent=u.eye;
+    var hg=document.getElementById('heroGreet'); if(hg) hg.textContent=u.greet;
+    var fh=document.getElementById('faiscaHi'); if(fh) fh.textContent=u.hi;
+  }
+  var usw=document.getElementById('userSwitch');
+  if(usw) usw.addEventListener('click',function(){ applyUser(curUser==='felipe'?'luiz':'felipe'); });
   var db=document.getElementById('detBack');
   if(db) db.addEventListener('click',function(){ openScreen('s-crias','Crias',''); });
   var ncb=document.getElementById('novaCriaBtn'); if(ncb) ncb.addEventListener('click',function(){ openScreen('s-nova','Nova Cria','· cadastro'); });
