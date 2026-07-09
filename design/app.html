@@ -235,6 +235,173 @@
 
   @media (max-width:1080px){ .g-2,.g-3{grid-template-columns:1fr} .kpis{grid-template-columns:repeat(2,1fr)} }
   @media (max-width:720px){ .rail{display:none} .app{grid-template-columns:1fr} }
+
+  /* ============================================================
+     SF · VIDA — sistema de animação (cards · gráficos · sinais · reveal)
+     Prefixo sf-. ATENÇÃO: já existem @keyframes NUS 'spin' e 'pulse' no arquivo —
+     nunca soltar o prefixo sf- em nada aqui. Tudo que anima está sob
+     @media (prefers-reduced-motion: no-preference) e degrada para estado final estático.
+     ============================================================ */
+
+  /* ---------- CARDS VIVOS: brasa na borda + glow no cursor + respiração idle + faísca ---------- */
+  @property --sf-ang{ syntax:'<angle>'; inherits:false; initial-value:218deg }
+  .sf-live{ position:relative; isolation:isolate; --sf-edge:var(--ember); --sf-edge-hi:var(--ember-hi) }
+  .sf-live.flag-crit,.sf-live.crit{ --sf-edge:var(--crit); --sf-edge-hi:#FF7079 }
+  .sf-live.flag-warn,.sf-live.warn{ --sf-edge:var(--warn); --sf-edge-hi:#FFD65A }
+  .sf-live > *{ position:relative; z-index:1 }
+  .sf-live::after{
+    content:''; position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
+    background:radial-gradient(200px circle at var(--sf-mx,50%) var(--sf-my,50%),
+      color-mix(in srgb,var(--ember) 24%,transparent), transparent 60%);
+    mix-blend-mode:screen; opacity:0;
+  }
+  .sf-live:hover::after{ opacity:1 }
+  .sf-live::before{
+    content:''; position:absolute; inset:0; z-index:2; border-radius:inherit; padding:1px;
+    pointer-events:none; opacity:0;
+    background:conic-gradient(from var(--sf-ang),
+      transparent 0 55%,
+      color-mix(in srgb,var(--sf-edge) 55%,transparent) 70%,
+      var(--sf-edge-hi) 82%,
+      transparent 92%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+  }
+  .sf-live:hover::before{ opacity:.85 }
+  @media (prefers-reduced-motion: no-preference){
+    .sf-live::after,.sf-live::before{ transition:opacity .28s cubic-bezier(.22,.61,.36,1) }
+    .sf-live:hover::before{ animation:sf-border-run 2.8s linear infinite }
+    @keyframes sf-border-run{ to{ --sf-ang:578deg } }
+    /* respiração idle — só cards de alerta, SÓ opacity (sem repaint contínuo do cônico) */
+    .sf-live.flag-crit::before,.sf-live.flag-warn::before,
+    .sf-live.crit::before,.sf-live.warn::before{ opacity:.2; animation:sf-edge-breathe 3.8s ease-in-out infinite }
+    @keyframes sf-edge-breathe{ 0%,100%{ opacity:.20 } 50%{ opacity:.58 } }
+    .sf-live.flag-crit:hover::before,.sf-live.flag-warn:hover::before,
+    .sf-live.crit:hover::before,.sf-live.warn:hover::before{ opacity:.9; animation:sf-border-run 2.8s linear infinite }
+  }
+  .sf-spark{
+    position:absolute; left:var(--sf-x); top:var(--sf-y);
+    width:3px; height:3px; border-radius:50%; z-index:3; pointer-events:none;
+    background:var(--ember-hi); box-shadow:0 0 6px 1px var(--ember-deep);
+    transform:translate(-50%,-50%);
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .sf-spark{ animation:sf-spark-fly .6s cubic-bezier(.22,.61,.36,1) forwards }
+    @keyframes sf-spark-fly{
+      0%{ opacity:1; transform:translate(-50%,-50%) scale(1) }
+      100%{ opacity:0; transform:translate(calc(-50% + var(--sf-tx,0px)), calc(-50% + var(--sf-ty,0px))) scale(.2) }
+    }
+  }
+
+  /* ---------- GRÁFICOS VIVOS: brasas na linha, aura do donut, pontas de fogo ---------- */
+  .sf-ember{ filter: drop-shadow(0 0 3px rgba(255,106,26,.85)); }
+  .sf-ember-lead{ filter: drop-shadow(0 0 5px rgba(255,162,74,.9)); }
+  .sf-tip{ filter: drop-shadow(0 0 4px rgba(255,106,26,.85)); transform-box: fill-box; transform-origin: 50% 50%; }
+  .sf-donut-aura{ transform-box: fill-box; transform-origin: 50% 50%; }
+  .sf-donut-total{ transform-box: fill-box; transform-origin: 50% 50%; }
+  .sf-spark-halo{ transform-box: fill-box; transform-origin: 50% 50%; }
+  @media (prefers-reduced-motion: no-preference){
+    .sf-donut-aura{ animation: sf-spin 46s linear infinite; }
+    .sf-donut-total{ animation: sf-pulseTotal 4.2s cubic-bezier(.22,.61,.36,1) infinite; }
+    .sf-tip-live{ animation: sf-tipFlick 3.4s ease-in-out infinite; }
+    .sf-tip-live-y{ animation: sf-tipFlickY 3.4s ease-in-out infinite; }
+    .sf-spark-live{ animation: sf-sparkPulse 2.6s cubic-bezier(.22,.61,.36,1) infinite; }
+    @keyframes sf-spin{ to{ transform: rotate(360deg);} }
+    @keyframes sf-pulseTotal{ 0%,100%{ transform: scale(1); opacity:1;} 50%{ transform: scale(1.045); opacity:.9;} }
+    @keyframes sf-tipFlick{ 0%,100%{ transform: scaleX(1); opacity:.6;} 45%{ transform: scaleX(1.18); opacity:.78;} 72%{ transform: scaleX(.9); opacity:.48;} }
+    @keyframes sf-tipFlickY{ 0%,100%{ transform: scaleY(1); opacity:.6;} 45%{ transform: scaleY(1.18); opacity:.78;} 72%{ transform: scaleY(.9); opacity:.48;} }
+    @keyframes sf-sparkPulse{ 0%{ transform: scale(1); opacity:.55;} 70%,100%{ transform: scale(2.6); opacity:0;} }
+  }
+
+  /* ---------- SINAIS VIVOS: pílulas de status, nav, Faísca, Pulso da Squad ---------- */
+  .pill.sf-flame .d,
+  .pill.sf-alert .d{ position:relative }
+  .pill.sf-flame .d::after{
+    content:""; position:absolute; inset:-3px; border-radius:50%; pointer-events:none;
+    background:radial-gradient(closest-side, currentColor, transparent 72%);
+    opacity:.42;
+  }
+  .pill.sf-alert .d::after{
+    content:""; position:absolute; inset:-3px; border-radius:50%; pointer-events:none;
+    background:radial-gradient(closest-side, currentColor, transparent 70%);
+    opacity:0;
+  }
+  .pill.sf-cool{ position:relative; overflow:hidden; isolation:isolate }
+  .pill.sf-cool > *{ position:relative; z-index:1 }
+  .pill.sf-cool::before{                     /* lâmina de shimmer frio (plasma), abaixo do texto */
+    content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+    background:linear-gradient(105deg, transparent 34%,
+      color-mix(in srgb, var(--plasma) 18%, transparent) 50%, transparent 66%);
+    transform:translateX(-130%);
+  }
+  .nav a{ position:relative; overflow:hidden }
+  .nav a::after{
+    content:""; position:absolute; top:0; bottom:0; left:0; width:55%;
+    pointer-events:none; opacity:0; transform:translateX(-180%);
+    background:linear-gradient(105deg, transparent,
+      color-mix(in srgb, var(--ember) 24%, transparent), transparent);
+  }
+  .nav a.on .ico{ position:relative }
+  .nav a.on .ico::before{
+    content:""; position:absolute; inset:-2px; border-radius:inherit; pointer-events:none;
+    background:radial-gradient(closest-side,
+      color-mix(in srgb, var(--ember) 55%, transparent), transparent 75%);
+    opacity:.5;
+  }
+  .nav a.on .ico svg{ position:relative }
+  .faisca{ position:relative }
+  .faisca > *{ position:relative; z-index:1 }
+  .faisca::before{
+    content:""; position:absolute; inset:-5px; border-radius:12px; pointer-events:none; z-index:0;
+    background:radial-gradient(closest-side, transparent 58%,
+      color-mix(in srgb, var(--ember-hi) 85%, transparent) 82%, transparent 100%);
+    filter:blur(7px); opacity:.5;
+  }
+  .insight .fire{ position:relative }
+  .insight .fire::before{
+    content:""; position:absolute; inset:-3px; border-radius:11px; pointer-events:none;
+    background:radial-gradient(closest-side, var(--ember-soft), transparent 78%);
+    opacity:.7;
+  }
+  .insight .fire svg{ position:relative; transform-origin:50% 88% }
+  @media (prefers-reduced-motion: no-preference){
+    .pill.sf-flame .d::after{ animation:sf-flameFlick 2.4s ease-in-out infinite }
+    .pill.sf-alert .d::after{ animation:sf-alertPing 1.3s cubic-bezier(.22,.61,.36,1) infinite }
+    .pill.sf-cool::before{ animation:sf-coolSheen 4.6s cubic-bezier(.22,.61,.36,1) infinite }
+    .nav a:hover::after{ animation:sf-navSweep .7s cubic-bezier(.22,.61,.36,1) }
+    .nav a.on .ico::before{ animation:sf-emberBreath 3.2s ease-in-out infinite }
+    .faisca::before{ animation:sf-faiscaAura 3.6s ease-in-out infinite }
+    .insight .fire::before{ animation:sf-emberBreath 3.9s ease-in-out infinite }
+    .insight .fire svg{ animation:sf-fireSway 2.8s ease-in-out infinite }
+    .insight .txt .h b{ animation:sf-numGlow 3.2s ease-in-out infinite }
+  }
+  @keyframes sf-flameFlick{
+    0%{opacity:.36; transform:scale(.9)} 22%{opacity:.6; transform:scale(1.06)}
+    38%{opacity:.4; transform:scale(.96)} 55%{opacity:.66; transform:scale(1.12)}
+    74%{opacity:.44; transform:scale(1)} 100%{opacity:.36; transform:scale(.9)}
+  }
+  @keyframes sf-alertPing{ 0%{opacity:.55; transform:scale(.85)} 70%{opacity:0; transform:scale(2.4)} 100%{opacity:0; transform:scale(2.4)} }
+  @keyframes sf-coolSheen{ 0%{transform:translateX(-130%)} 55%{transform:translateX(130%)} 100%{transform:translateX(130%)} }
+  @keyframes sf-navSweep{ 0%{opacity:0; transform:translateX(-180%)} 30%{opacity:1} 100%{opacity:0; transform:translateX(320%)} }
+  @keyframes sf-emberBreath{ 0%,100%{opacity:.4; transform:scale(.96)} 50%{opacity:.72; transform:scale(1.04)} }
+  @keyframes sf-faiscaAura{ 0%,100%{opacity:.3; transform:scale(.97)} 50%{opacity:.58; transform:scale(1.03)} }
+  @keyframes sf-fireSway{ 0%,100%{transform:scaleY(1) rotate(0deg)} 30%{transform:scaleY(1.07) rotate(-1.2deg)} 62%{transform:scaleY(.97) rotate(1deg)} }
+  @keyframes sf-numGlow{ 0%,100%{text-shadow:0 0 0 transparent} 50%{text-shadow:0 0 9px color-mix(in srgb, var(--ember) 60%, transparent)} }
+
+  /* ---------- REVEAL + CONTAGEM: números que "forjam" ao aparecer ---------- */
+  .kpi .k-val, .hero .g-stat .v, .meter-tags .big{ transition:text-shadow .6s cubic-bezier(.22,.61,.36,1); }
+  .sf-rv{ opacity:0 }
+  @media (prefers-reduced-motion: reduce){ .sf-rv{ opacity:1 !important } }
+  @media (prefers-reduced-motion: no-preference){
+    .sf-glow{
+      text-shadow:0 0 16px color-mix(in srgb,var(--ember) 52%, transparent),
+                  0 0 4px  color-mix(in srgb,var(--ember-hi) 42%, transparent);
+    }
+    .sf-rv.sf-rvin{ animation:sf-rise .42s cubic-bezier(.22,.61,.36,1) both; will-change:transform,opacity; }
+    @keyframes sf-rise{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+  }
+  /* =================== /SF · VIDA =================== */
 </style>
 
 <div class="dragon-bg" aria-hidden="true"></div>
@@ -1435,4 +1602,298 @@
   }); });
   var lq=document.getElementById('libq'); if(lq) lq.addEventListener('input',function(){ lib.q=lq.value.trim().toLowerCase(); libApply(); });
 })();
+
+/* ============================================================
+   SF · VIDA — comportamento (sinais · cards · gráficos · reveal/contagem)
+   4 IIFEs independentes. Rodam no fim do body: DOM e gráficos já prontos.
+   ============================================================ */
+
+/* ----- 1. SINAIS VIVOS: classifica pílulas de status por texto/semântica ----- */
+(function(){
+  "use strict";
+  var MAP=[
+    {re:/apagando|cinzas/i,        cls:'sf-alert'},
+    {re:/esfriando/i,              cls:'sf-cool'},
+    {re:/em chamas|no ponto/i,     cls:'sf-flame'}
+  ];
+  function tag(){
+    var pills=document.querySelectorAll('.pill');
+    for(var i=0;i<pills.length;i++){
+      var p=pills[i];
+      if(p.classList.contains('live')) continue;
+      if(p.classList.contains('sf-flame')||p.classList.contains('sf-alert')||p.classList.contains('sf-cool')) continue;
+      var t=p.textContent||'', hit=null;
+      for(var j=0;j<MAP.length;j++){ if(MAP[j].re.test(t)){ hit=MAP[j].cls; break; } }
+      if(!hit && !/\d/.test(t)){                 /* fallback só p/ pílulas sem número (evita "2 dias de atraso") */
+        if(p.classList.contains('crit')) hit='sf-alert';
+        else if(p.classList.contains('warn')) hit='sf-cool';
+        else if(p.classList.contains('good')) hit='sf-flame';
+      }
+      if(hit) p.classList.add(hit);
+    }
+  }
+  if(document.readyState!=='loading') tag();
+  else document.addEventListener('DOMContentLoaded', tag);
+})();
+
+/* ----- 2. CARDS VIVOS: glow no cursor + faísca no clique (1 listener delegado cada) ----- */
+(function(){
+  "use strict";
+  var doc=document;
+  var reduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+  var SEL='.kpi,.card,.mcard,.kcard,.libcard,.hero .g-stat';   /* .kcol fora: evita borda dupla no kanban */
+  doc.querySelectorAll(SEL).forEach(function(c){ c.classList.add('sf-live'); });
+  var pend=false;
+  doc.addEventListener('pointermove', function(e){
+    var card = e.target && e.target.closest ? e.target.closest('.sf-live') : null;
+    if(!card || pend) return;
+    pend=true;
+    var cx=e.clientX, cy=e.clientY;
+    requestAnimationFrame(function(){
+      pend=false;
+      var r=card.getBoundingClientRect();
+      if(!r.width || !r.height) return;
+      card.style.setProperty('--sf-mx', (((cx-r.left)/r.width )*100).toFixed(1)+'%');
+      card.style.setProperty('--sf-my', (((cy-r.top )/r.height)*100).toFixed(1)+'%');
+    });
+  }, {passive:true});
+  if(reduce) return;
+  var N=7;
+  doc.addEventListener('pointerdown', function(e){
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    if(doc.hidden) return;
+    var card = e.target && e.target.closest ? e.target.closest('.sf-live') : null;
+    if(!card) return;
+    var r=card.getBoundingClientRect();
+    var x=e.clientX-r.left, y=e.clientY-r.top;
+    var frag=doc.createDocumentFragment();
+    for(var i=0;i<N;i++){
+      var s=doc.createElement('span');
+      s.className='sf-spark';
+      var ang=(Math.PI*2)*(i/N) + Math.random()*0.6;
+      var dist=14 + Math.random()*20;
+      s.style.setProperty('--sf-x', x.toFixed(1)+'px');
+      s.style.setProperty('--sf-y', y.toFixed(1)+'px');
+      s.style.setProperty('--sf-tx', (Math.cos(ang)*dist).toFixed(1)+'px');
+      s.style.setProperty('--sf-ty', (Math.sin(ang)*dist - 6).toFixed(1)+'px');
+      (function(sp){ var tm=setTimeout(function(){ sp.remove(); },700);
+        sp.addEventListener('animationend', function(){ clearTimeout(tm); this.remove(); }); })(s);
+      frag.appendChild(s);
+    }
+    card.appendChild(frag);
+  }, {passive:true});
+})();
+
+/* ----- 3. GRÁFICOS VIVOS: brasas na linha, aura do donut, pontas de fogo ----- */
+(function(){
+  "use strict";
+  var NS="http://www.w3.org/2000/svg";
+  var C={ember:'#FF6A1A',emberHi:'#FFA24A',emberDeep:'#E8450F',plasma:'#2DE1E6',plasmaHi:'#8CF3F6',muted:'#9A8E85'};
+  function el(t,a){var e=document.createElementNS(NS,t); if(a) for(var k in a) e.setAttribute(k,a[k]); return e;}
+  var RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var tickers=[], running=false;
+  function addTicker(fn){ tickers.push(fn); if(!running){ running=true; requestAnimationFrame(loop); } }
+  function loop(ts){ if(!document.hidden){ for(var i=0;i<tickers.length;i++){ try{ tickers[i](ts); }catch(e){} } }
+    if(tickers.length){ requestAnimationFrame(loop); } else { running=false; } }
+
+  /* #area: brasas fluindo pela linha + sheen no gradiente */
+  (function(){
+    var svg=document.getElementById('area'); if(!svg) return;
+    var lp=svg.querySelector('path[stroke^="url"]');
+    if(!lp){ var ps=svg.querySelectorAll('path'); for(var i=0;i<ps.length;i++){ if((ps[i].getAttribute('stroke')||'').indexOf('url')===0){ lp=ps[i]; break; } } }
+    if(!lp) return;
+    var len=0; try{ len=lp.getTotalLength(); }catch(e){ return; }
+    if(!len) return;
+    var mid=document.querySelector('#areaGrad stop:nth-child(2)');
+    if(mid && !RM) addTicker(function(ts){ if(!svg.getClientRects().length) return; mid.setAttribute('offset', (68+Math.sin(ts*0.0006)*9).toFixed(1)+'%'); });
+    if(RM) return;
+    var layer=el('g',{'class':'sf-area-embers','pointer-events':'none'}); svg.appendChild(layer);
+    var N=6, parts=[];
+    for(var k=0;k<N;k++){
+      var lead=(k===0);
+      var c=el('circle',{ r:(lead?2.0:(1.0+Math.random()*0.8)).toFixed(2),
+        fill:(k%3===2?C.plasmaHi:(lead?C.emberHi:C.ember)),
+        'class':'sf-ember'+(lead?' sf-ember-lead':'') });
+      layer.appendChild(c);
+      parts.push({ node:c, t:Math.random(), spd:(lead?0.0012:0.0014+Math.random()*0.0016), wob:1+Math.random()*1.6, ph:Math.random()*6.28 });
+    }
+    var t0=performance.now();
+    addTicker(function(ts){
+      if(!svg.getClientRects().length) return;
+      var warm = ts-t0 > 1250 ? 1 : 0;
+      for(var i=0;i<parts.length;i++){
+        var p=parts[i]; p.t+=p.spd; if(p.t>1) p.t-=1;
+        var q; try{ q=lp.getPointAtLength(p.t*len); }catch(e){ continue; }
+        var life=Math.sin(p.t*Math.PI);
+        var wob=Math.sin(ts*0.0016+p.ph)*p.wob;
+        p.node.setAttribute('cx', q.x.toFixed(2));
+        p.node.setAttribute('cy', (q.y-2 + wob).toFixed(2));
+        p.node.setAttribute('opacity', (warm*(0.12+life*0.5)).toFixed(3));
+      }
+    });
+  })();
+
+  /* #donut: halo girando + bloom no hover + pulsar do total */
+  (function(){
+    var svg=document.getElementById('donut'); if(!svg) return;
+    var cx=80,cy=80;
+    var aura=el('g',{'class':'sf-donut-aura','pointer-events':'none'});
+    var ring=el('circle',{cx:cx,cy:cy,r:70,fill:'none',stroke:C.ember,'stroke-width':2,'stroke-linecap':'round','stroke-dasharray':'2 13',opacity:0});
+    aura.appendChild(ring);
+    svg.insertBefore(aura, svg.firstChild);
+    if(RM){ ring.setAttribute('opacity','0.32'); }
+    else { requestAnimationFrame(function(){ ring.style.transition='opacity 1.2s ease .6s'; ring.setAttribute('opacity','0.5'); }); }
+    var tot=svg.querySelector('text[font-size="26"]');
+    if(tot && !RM) tot.setAttribute('class', ((tot.getAttribute('class')||'')+' sf-donut-total').trim());
+    var segs=svg.querySelectorAll('path.hoverable');
+    for(var i=0;i<segs.length;i++){ (function(p){
+      var col=p.getAttribute('stroke');
+      if(!RM && p.getAttribute('data-sf')!=='1'){ p.style.transition += ', filter .18s ease'; p.setAttribute('data-sf','1'); }
+      p.addEventListener('mouseenter',function(){ p.style.filter='drop-shadow(0 0 5px '+col+')'; });
+      p.addEventListener('mouseleave',function(){ p.style.filter='none'; });
+    })(segs[i]); }
+  })();
+
+  /* #bars: ponta de fogo no topo das barras */
+  (function(){
+    var svg=document.getElementById('bars'); if(!svg) return;
+    var rects=svg.querySelectorAll('rect.bar-grow'); if(!rects.length) return;
+    var layer=el('g',{'class':'sf-bar-tips','pointer-events':'none'}); svg.appendChild(layer);
+    for(var i=0;i<rects.length;i++){ (function(r,idx){
+      var x=+r.getAttribute('x'), y=+r.getAttribute('y'), w=+r.getAttribute('width');
+      var cap=el('ellipse',{cx:(x+w/2),cy:y,rx:(w*0.6).toFixed(1),ry:3.2,fill:C.emberHi,'class':'sf-tip',opacity:0});
+      layer.appendChild(cap);
+      setTimeout(function(){ cap.style.transition='opacity .5s ease'; cap.setAttribute('opacity', RM?'0.5':'0.6'); if(!RM) cap.setAttribute('class','sf-tip sf-tip-live'); }, 60+idx*65+840);
+    })(rects[i], i); }
+  })();
+
+  /* #hbars: ponta de fogo na extremidade direita */
+  (function(){
+    var svg=document.getElementById('hbars'); if(!svg) return;
+    var rects=svg.querySelectorAll('rect.hbar-grow'); if(!rects.length) return;
+    var layer=el('g',{'class':'sf-bar-tips','pointer-events':'none'}); svg.appendChild(layer);
+    for(var i=0;i<rects.length;i++){ (function(r,idx){
+      var x=+r.getAttribute('x'), y=+r.getAttribute('y'), w=+r.getAttribute('width'), h=+r.getAttribute('height');
+      var cap=el('ellipse',{cx:(x+w),cy:(y+h/2),rx:3.2,ry:(h*0.5).toFixed(1),fill:C.emberHi,'class':'sf-tip',opacity:0});
+      layer.appendChild(cap);
+      setTimeout(function(){ cap.style.transition='opacity .5s ease'; cap.setAttribute('opacity', RM?'0.5':'0.6'); if(!RM) cap.setAttribute('class','sf-tip sf-tip-live-y'); }, 120+idx*110+880);
+    })(rects[i], i); }
+  })();
+
+  /* .spark: halo pulsante no endpoint */
+  (function(){
+    var sparks=document.querySelectorAll('.spark');
+    for(var i=0;i<sparks.length;i++){ (function(sp){
+      var cs=sp.querySelectorAll('circle'); if(!cs.length) return;
+      var end=cs[cs.length-1];
+      var halo=el('circle',{cx:end.getAttribute('cx'),cy:end.getAttribute('cy'),r:2.4,fill:'none',stroke:C.ember,'stroke-width':1,opacity:0,'pointer-events':'none','class':'sf-spark-halo'});
+      sp.insertBefore(halo, end);
+      if(RM) halo.setAttribute('opacity','0.3'); else halo.setAttribute('class','sf-spark-halo sf-spark-live');
+    })(sparks[i]); }
+  })();
+})();
+
+/* ----- 4. REVEAL + CONTAGEM: números sobem de 0 ao valor; blocos entram suave ----- */
+(function(){
+  "use strict";
+  var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  var reduce = !!(mq && mq.matches);
+  if(mq && mq.addEventListener) mq.addEventListener('change', function(e){ reduce = e.matches; });
+  if(!('IntersectionObserver' in window)) return;
+  var ease = (function(x1,y1,x2,y2){
+    var cx=3*x1, bx=3*(x2-x1)-cx, ax=1-cx-bx;
+    var cy=3*y1, by=3*(y2-y1)-cy, ay=1-cy-by;
+    function sx(t){return ((ax*t+bx)*t+cx)*t;}
+    function sy(t){return ((ay*t+by)*t+cy)*t;}
+    function dx(t){return (3*ax*t+2*bx)*t+cx;}
+    return function(x){
+      if(x<=0)return 0; if(x>=1)return 1;
+      var t=x,i,e,d;
+      for(i=0;i<8;i++){ e=sx(t)-x; if(Math.abs(e)<1e-4) return sy(t); d=dx(t); if(Math.abs(d)<1e-6) break; t-=e/d; }
+      var a=0,b=1; t=x;
+      while(a<b){ e=sx(t); if(Math.abs(e-x)<1e-4) break; if(x>e) a=t; else b=t; t=(a+b)/2; }
+      return sy(t);
+    };
+  })(.22,.61,.36,1);
+  var NUM_SEL='.kpi .k-val, .hero .g-stat .v, .meter-tags .big';
+  var RV_SEL='.screen .card, .screen .mcard, .screen .kcard, .screen .libcard';
+  function firstDigitNode(elm){
+    for(var i=0;i<elm.childNodes.length;i++){
+      var n=elm.childNodes[i];
+      if(n.nodeType===3 && /\d/.test(n.nodeValue)) return n;
+    }
+    return null;
+  }
+  function parse(tn){
+    var m=tn.nodeValue.match(/^(\s*[+\-]?\s*(?:R\$\s*)?)(\d[\d.]*(?:,\d+)?)([\s\S]*)$/);
+    if(!m) return null;
+    if(/[A-Za-zÀ-ÿ]/.test(m[1])) return null;
+    var raw=m[2], dec=0;
+    if(raw.indexOf(',')>=0) dec=(raw.split(',')[1]||'').length;
+    var val=parseFloat(raw.replace(/\./g,'').replace(',','.'));
+    if(isNaN(val)) return null;
+    return {pre:m[1], suf:m[3], val:val, dec:dec, node:tn};
+  }
+  function fmt(v,dec){ return dec>0 ? v.toFixed(dec).replace('.',',') : String(Math.round(v)); }
+  function setFinal(inf){ inf.node.nodeValue = inf.pre + fmt(inf.val,inf.dec) + inf.suf; }
+  function count(elm){
+    var inf=elm._sfInf; if(!inf) return;
+    if(reduce){ setFinal(inf); return; }
+    if(elm._sfRAF) cancelAnimationFrame(elm._sfRAF);
+    var safeGlow = !elm.closest('.crit,.flag-crit,.warn,.flag-warn');   /* sem halo ember sobre número vermelho/âmbar */
+    if(safeGlow) elm.classList.add('sf-glow');
+    var start=null, dur=1050;
+    function step(ts){
+      if(document.hidden){ setFinal(inf); elm.classList.remove('sf-glow'); elm._sfRAF=0; return; }
+      if(start===null) start=ts;
+      var t=(ts-start)/dur; if(t>1)t=1;
+      inf.node.nodeValue = inf.pre + fmt(inf.val*ease(t), inf.dec) + inf.suf;
+      if(t<1){ elm._sfRAF=requestAnimationFrame(step); }
+      else { setFinal(inf); elm.classList.remove('sf-glow'); elm._sfRAF=0; }
+    }
+    elm._sfRAF=requestAnimationFrame(step);
+  }
+  function armNum(elm){
+    if(elm._sfRAF){ cancelAnimationFrame(elm._sfRAF); elm._sfRAF=0; }
+    elm.classList.remove('sf-glow');
+    if(elm._sfInf) setFinal(elm._sfInf);
+  }
+  function reveal(elm, delay){
+    elm.style.animationDelay=(delay||0)+'ms';
+    elm.classList.add('sf-rvin');
+    function done(){
+      elm.classList.remove('sf-rv','sf-rvin');
+      elm.style.animationDelay='';
+      elm.removeEventListener('animationend', done);
+      io.unobserve(elm);
+    }
+    elm.addEventListener('animationend', done);
+  }
+  var io=new IntersectionObserver(function(entries){
+    var rvi=0;
+    entries.forEach(function(en){
+      var t=en.target;
+      if(en.isIntersecting){
+        if(t._sfNum) count(t);
+        else if(t.classList.contains('sf-rv')){ reveal(t, Math.min(rvi,6)*45); rvi++; }
+      } else if(t._sfNum){ armNum(t); }
+    });
+  }, {root:null, threshold:.18, rootMargin:'0px 0px -6% 0px'});
+  Array.prototype.forEach.call(document.querySelectorAll(NUM_SEL), function(elm){
+    if(elm._sfNum) return;
+    var tn=firstDigitNode(elm); if(!tn) return;
+    var inf=parse(tn); if(!inf) return;
+    elm._sfNum=true; elm._sfInf=inf;
+    io.observe(elm);
+  });
+  if(!reduce){
+    Array.prototype.forEach.call(document.querySelectorAll(RV_SEL), function(elm){
+      if(elm.closest('.hero')) return;
+      if(elm.classList.contains('sf-rv')) return;
+      elm.classList.add('sf-rv');
+      io.observe(elm);
+    });
+  }
+})();
+/* =================== /SF · VIDA =================== */
 </script>
