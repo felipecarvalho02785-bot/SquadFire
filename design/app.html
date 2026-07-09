@@ -62,9 +62,10 @@
   .hbar-grow.in{ transform:scaleX(1) }
   .meter-fill{ transition:width 1.1s cubic-bezier(.22,.61,.36,1) }
   /* dragão de fundo — watermark de brasa no dark */
+  /* sem mix-blend-mode (custava recompor o viewport inteiro a cada frame) — opacity normal já lê no dark */
   .dragon-bg{ position:fixed; inset:0; z-index:0; pointer-events:none;
     background:url('assets/dragon-outline.png') no-repeat 57% 46% / min(1000px,60vw);
-    opacity:.10; mix-blend-mode:screen }
+    opacity:.16 }
   .app{ position:relative; z-index:1 }
   @media (max-width:900px){ .dragon-bg{ background-size:90vw; opacity:.05 } }
   /* cards translúcidos — o dragão do fundo aparece por trás (todas as abas) */
@@ -250,15 +251,22 @@
   .sf-live.flag-warn,.sf-live.warn{ --sf-edge:var(--warn); --sf-edge-hi:#FFD65A }
   .sf-live > *{ position:relative; z-index:1 }
   .sf-live::after{
-    content:''; position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
-    background:radial-gradient(200px circle at var(--sf-mx,50%) var(--sf-my,50%),
-      color-mix(in srgb,var(--ember) 24%,transparent), transparent 60%);
-    mix-blend-mode:screen; opacity:0;
+    content:''; position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none; opacity:0;
   }
-  .sf-live:hover::after{ opacity:1 }
+  /* o glow radial só é pintado no card sob o cursor (sem mix-blend, sem custo em repouso) */
+  .sf-live:hover::after{
+    opacity:1;
+    background:radial-gradient(220px circle at var(--sf-mx,50%) var(--sf-my,50%),
+      color-mix(in srgb,var(--ember) 20%,transparent), transparent 60%);
+  }
   .sf-live::before{
     content:''; position:absolute; inset:0; z-index:2; border-radius:inherit; padding:1px;
     pointer-events:none; opacity:0;
+  }
+  /* o cônico + máscara (caro de pintar) só entra quando precisa: hover ou card de alerta */
+  .sf-live:hover::before,
+  .sf-live.flag-crit::before, .sf-live.flag-warn::before,
+  .sf-live.crit::before, .sf-live.warn::before{
     background:conic-gradient(from var(--sf-ang),
       transparent 0 55%,
       color-mix(in srgb,var(--sf-edge) 55%,transparent) 70%,
@@ -374,8 +382,8 @@
     .faisca::before{ animation:sf-faiscaAura 3.6s ease-in-out infinite }
     .insight .fire::before{ animation:sf-emberBreath 3.9s ease-in-out infinite }
     .insight .fire svg{ animation:sf-fireSway 2.8s ease-in-out infinite }
-    .insight .txt .h b{ animation:sf-numGlow 3.2s ease-in-out infinite }
   }
+  .insight .txt .h b{ text-shadow:0 0 8px color-mix(in srgb, var(--ember) 34%, transparent) }
   @keyframes sf-flameFlick{
     0%{opacity:.36; transform:scale(.9)} 22%{opacity:.6; transform:scale(1.06)}
     38%{opacity:.4; transform:scale(.96)} 55%{opacity:.66; transform:scale(1.12)}
@@ -387,7 +395,6 @@
   @keyframes sf-emberBreath{ 0%,100%{opacity:.4; transform:scale(.96)} 50%{opacity:.72; transform:scale(1.04)} }
   @keyframes sf-faiscaAura{ 0%,100%{opacity:.3; transform:scale(.97)} 50%{opacity:.58; transform:scale(1.03)} }
   @keyframes sf-fireSway{ 0%,100%{transform:scaleY(1) rotate(0deg)} 30%{transform:scaleY(1.07) rotate(-1.2deg)} 62%{transform:scaleY(.97) rotate(1deg)} }
-  @keyframes sf-numGlow{ 0%,100%{text-shadow:0 0 0 transparent} 50%{text-shadow:0 0 9px color-mix(in srgb, var(--ember) 60%, transparent)} }
 
   /* ---------- REVEAL + CONTAGEM: números que "forjam" ao aparecer ---------- */
   .kpi .k-val, .hero .g-stat .v, .meter-tags .big{ transition:text-shadow .6s cubic-bezier(.22,.61,.36,1); }
@@ -1691,10 +1698,22 @@
   var C={ember:'#FF6A1A',emberHi:'#FFA24A',emberDeep:'#E8450F',plasma:'#2DE1E6',plasmaHi:'#8CF3F6',muted:'#9A8E85'};
   function el(t,a){var e=document.createElementNS(NS,t); if(a) for(var k in a) e.setAttribute(k,a[k]); return e;}
   var RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var tickers=[], running=false;
-  function addTicker(fn){ tickers.push(fn); if(!running){ running=true; requestAnimationFrame(loop); } }
-  function loop(ts){ if(!document.hidden){ for(var i=0;i<tickers.length;i++){ try{ tickers[i](ts); }catch(e){} } }
-    if(tickers.length){ requestAnimationFrame(loop); } else { running=false; } }
+  var tickers=[], running=false, visible=false;
+  function loop(ts){
+    if(document.hidden || !visible){ running=false; return; }   /* para o loop: custo ZERO fora do Covil / aba oculta */
+    for(var i=0;i<tickers.length;i++){ try{ tickers[i](ts); }catch(e){} }
+    requestAnimationFrame(loop);
+  }
+  function kick(){ if(!running && visible && !document.hidden && tickers.length){ running=true; requestAnimationFrame(loop); } }
+  function addTicker(fn){ tickers.push(fn); kick(); }
+  /* só anima quando o Covil (que contém os gráficos) está visível — sem getClientRects por frame */
+  (function(){
+    var area=document.getElementById('area');
+    if('IntersectionObserver' in window && area){
+      new IntersectionObserver(function(es){ visible=es[0].isIntersecting; kick(); },{threshold:0.01}).observe(area);
+    } else { visible=true; }
+    document.addEventListener('visibilitychange', kick);
+  })();
 
   /* #area: brasas fluindo pela linha + sheen no gradiente */
   (function(){
@@ -1705,7 +1724,7 @@
     var len=0; try{ len=lp.getTotalLength(); }catch(e){ return; }
     if(!len) return;
     var mid=document.querySelector('#areaGrad stop:nth-child(2)');
-    if(mid && !RM) addTicker(function(ts){ if(!svg.getClientRects().length) return; mid.setAttribute('offset', (68+Math.sin(ts*0.0006)*9).toFixed(1)+'%'); });
+    if(mid && !RM) addTicker(function(ts){ mid.setAttribute('offset', (68+Math.sin(ts*0.0006)*9).toFixed(1)+'%'); });
     if(RM) return;
     var layer=el('g',{'class':'sf-area-embers','pointer-events':'none'}); svg.appendChild(layer);
     var N=6, parts=[];
@@ -1719,7 +1738,6 @@
     }
     var t0=performance.now();
     addTicker(function(ts){
-      if(!svg.getClientRects().length) return;
       var warm = ts-t0 > 1250 ? 1 : 0;
       for(var i=0;i<parts.length;i++){
         var p=parts[i]; p.t+=p.spd; if(p.t>1) p.t-=1;
