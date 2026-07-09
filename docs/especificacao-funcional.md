@@ -381,8 +381,8 @@ _Impacto técnico:_
 ### 3.2 Entidades relacionadas (schema atual)
 
 `Forja` tem várias `FaseDaForja` (instância de cada `Fase` naquela Forja, com prazo previsto ×
-realizado) → cada `FaseDaForja` tem sua `Lenha`. (`Fogueira` e `Comentario` também orbitam a
-Forja — papel exato da `Fogueira` a definir.)
+realizado) → cada `FaseDaForja` tem sua `Lenha`. (`Comentario` também orbita a Forja. A
+`Fogueira` **não** é entidade: é o board Kanban — Linha de Fogo — visão de apresentação das Forjas.)
 
 ### 3.3 FASES REAIS DO PRODUTO (fonte: Felipe)
 
@@ -506,8 +506,8 @@ O Covil **não é uma tela única**. Como definido no Módulo 1, cada papel entr
 
 ### Encaixa direto (consequência do que já foi definido)
 
-- **Linha de Fogo (Kanban)** — board das Forjas pelas 7 fases (ou Lenhas por status). Provável
-  papel da entidade `Fogueira`. _[definir Fogueira]_
+- **Linha de Fogo (Kanban)** — board das Forjas pelas 7 fases (ou Lenhas por status). É o que a
+  identidade chama de **`Fogueira`** — visão de apresentação, **não** é entidade de dados. ✅ resolvido.
 - **Automação do funil** — ao disparar a Estruturação, gerar as Lenhas padrão de cada fase
   automaticamente (checklist pronto, ninguém pula etapa).
 - **Formulários integrados** — Formulário de Acesso + Formulário Diagnóstico dentro do fluxo;
@@ -553,6 +553,8 @@ Entidades citadas ao longo da spec, pra referência de modelagem:
 - **`PlanoDeAcao`** — plano vinculado ao `Gargalo` (passos, responsável, prazo).
 - **`Comentario`** — registro contínuo (→ Cria/Forja).
 - **`Briefing`** — briefing semanal (6 campos); origem áudio e/ou leitura de grupo.
-- **`Fogueira`** — orbita a Forja; papel exato a definir (provável Kanban / Linha de Fogo).
+- **`Fogueira`** — **não** é tabela: é o board Kanban (Linha de Fogo), visão de apresentação das Forjas.
+- **`RodaDeFogo`** — reunião de acompanhamento com a Cria (pauta, gravação de áudio, notas, próximos passos);
+  é onde o `Briefing` semanal é gerado. Vincula à `Cria`/`Forja` e à `FaseDaForja` atual.
 
 > Documento mantido no repositório como fonte viva. Atualizar conforme cada módulo fecha.

@@ -77,7 +77,7 @@ Na stack do produto (**Next.js 15 + TypeScript + Prisma + Supabase**):
 - **Saída estruturada sempre que houver dados** (campos do contrato, seções do briefing,
   itens de plano) — validada por schema, para o resultado ser confiável e cair direto no
   banco/UI.
-- **Tool-calling** para a Faísca **agir** (criar Fogueira, avançar fase, distribuir Lenha,
+- **Tool-calling** para a Faísca **agir** (agendar Roda de Fogo, avançar fase, distribuir Lenha,
   abrir uma Cria) — as ferramentas são funções do próprio backend do CRM.
 - **Templates versionados** (modelo do briefing semanal, schema de extração do contrato,
   regras da marca) — ficam no código, não no prompt solto.
@@ -94,8 +94,8 @@ Na stack do produto (**Next.js 15 + TypeScript + Prisma + Supabase**):
 - Abre um **chat lateral** onde dá pra conversar por **texto ou voz**.
 - **Voz de ponta a ponta:** o usuário fala, a Faísca **responde por voz** (além do texto),
   dando o direcionamento ou **já resolvendo a pendência**.
-- **Age no CRM** via tool-calling: "agenda uma Fogueira com o Mendes quinta 15h" → ela cria
-  a Fogueira, gera a Lenha e sincroniza no ClickUp; "quais Forjas estão atrasadas?" → ela
+- **Age no CRM** via tool-calling: "agenda uma Roda de Fogo com o Mendes quinta 15h" → ela cria
+  a Roda de Fogo, gera a Lenha e sincroniza no ClickUp; "quais Forjas estão atrasadas?" → ela
   responde e oferece abrir/avisar.
 
 Pipeline da Faísca:

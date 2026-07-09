@@ -27,7 +27,8 @@ automaticamente a Estruturação (Forja)** — um funil de **7 fases × 7 dias =
 | **Lenha** | Tarefa |
 | **Covil** | Dashboard (tela-casa por papel) |
 | **Linha de Fogo** | Kanban |
-| **Fogueira** | Entidade que orbita a Forja (papel a definir) |
+| **Fogueira** | Outro nome do board Kanban (Linha de Fogo) — visão, não entidade de dados |
+| **Roda de Fogo** | Reunião de acompanhamento com a Cria (gera o briefing semanal) |
 | **Forja Quente / Brasa Viva** | Flag de contrato: Setup / Manutenção |
 
 ## Papéis
