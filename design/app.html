@@ -61,6 +61,8 @@
     opacity:.10; mix-blend-mode:screen }
   .app{ position:relative; z-index:1 }
   @media (max-width:900px){ .dragon-bg{ background-size:90vw; opacity:.05 } }
+  /* cards com leve transparência — o dragão do fundo aparece por trás */
+  .card,.kpi,.mcard,.kcard,.libcard{ background-color:color-mix(in srgb, var(--surface) 82%, transparent) }
   /* ===== tipografia da marca — serifa display alinhada à logo ===== */
   .brand .w{ font-family:var(--display); font-weight:700; text-transform:uppercase; letter-spacing:.08em; font-size:15px }
   .gate-word{ font-family:var(--display); letter-spacing:.12em }
@@ -1134,44 +1136,6 @@
   </div>
 </aside>
 
-<style>
-  /* ===== Portão do Covil — entrada guardada pelo dragão ===== */
-  #gate{position:fixed; inset:0; z-index:6000; background:#060403; overflow:hidden;
-    display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
-    transition:opacity .9s ease, visibility .9s}
-  #gate.hide{opacity:0; visibility:hidden; pointer-events:none}
-  #gate .gate-dragon{position:absolute; inset:0; background:url('assets/dragon.webp') no-repeat center 40% / contain;
-    -webkit-mask-image:radial-gradient(118% 98% at 50% 43%, #000 50%, transparent 86%);
-    mask-image:radial-gradient(118% 98% at 50% 43%, #000 50%, transparent 86%);
-    filter:contrast(1.05) saturate(1.06); animation:gateBreath 9s ease-in-out infinite}
-  @keyframes gateBreath{0%,100%{transform:scale(1)} 50%{transform:scale(1.028)}}
-  #gate #gateEmbers{position:absolute; inset:0; pointer-events:none}
-  #gate .gate-veil{position:absolute; inset:0; pointer-events:none;
-    background:linear-gradient(0deg, rgba(6,4,3,.97) 3%, rgba(6,4,3,.55) 24%, transparent 50%), radial-gradient(82% 62% at 50% 38%, transparent 46%, rgba(6,4,3,.62))}
-  #gate .gate-content{position:relative; z-index:4; text-align:center; display:flex; flex-direction:column; align-items:center; gap:15px; padding:0 20px 8vh; animation:gateRise 1.1s cubic-bezier(.22,.61,.36,1) both .25s}
-  @keyframes gateRise{from{opacity:0; transform:translateY(22px)} to{opacity:1; transform:none}}
-  #gate .gate-logo{width:64px; height:64px; filter:drop-shadow(0 6px 22px rgba(255,90,20,.45))}
-  #gate .gate-word{font-size:30px; font-weight:800; letter-spacing:.17em; color:#fff}
-  #gate .gate-word b{color:var(--ember); font-weight:800}
-  #gate .gate-tag{font-size:14px; color:var(--muted); letter-spacing:.01em; margin-top:-7px}
-  #gate .gate-btn{margin-top:8px; background:linear-gradient(135deg,var(--ember-hi),var(--ember)); color:#160c06; border:0; border-radius:12px; padding:14px 36px; font-size:15px; font-weight:760; font-family:inherit; cursor:pointer; box-shadow:0 14px 38px -12px rgba(255,106,26,.72); transition:transform .15s, filter .15s}
-  #gate .gate-btn:hover{filter:brightness(1.07); transform:translateY(-2px)}
-  #gate .gate-google{display:inline-flex; align-items:center; gap:9px; color:var(--muted); font-size:13px; cursor:pointer; padding:7px 12px; border-radius:9px; transition:.14s}
-  #gate .gate-google:hover{color:var(--text); background:rgba(255,255,255,.05)}
-  #gate .gate-google svg{width:16px; height:16px}
-</style>
-<div id="gate">
-  <div class="gate-dragon"></div>
-  <canvas id="gateEmbers"></canvas>
-  <div class="gate-veil"></div>
-  <div class="gate-content">
-    <img class="gate-logo" src="assets/squad-icon-128.png" alt="Squad 8">
-    <div class="gate-word">SQUAD<b>FIRE</b></div>
-    <div class="gate-tag">O covil está aceso. Entre e forje. 🔥</div>
-    <button class="gate-btn" id="gateEnter">Entrar no Covil</button>
-    <div class="gate-google" id="gateGoogle"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 11v3.2h4.5c-.2 1.2-1.5 3.5-4.5 3.5-2.7 0-4.9-2.2-4.9-5s2.2-5 4.9-5c1.5 0 2.6.7 3.2 1.2l2.2-2.1C16.7 4.6 14.6 3.7 12 3.7 7.4 3.7 3.7 7.4 3.7 12s3.7 8.3 8.3 8.3c4.8 0 8-3.4 8-8.1 0-.5 0-.9-.1-1.2z"/></svg>Entrar com Google</div>
-  </div>
-</div>
 <div id="tip"></div>
 
 <script>
@@ -1462,27 +1426,5 @@
     lib.nicho=b.getAttribute('data-nicho'); libApply();
   }); });
   var lq=document.getElementById('libq'); if(lq) lq.addEventListener('input',function(){ lib.q=lq.value.trim().toLowerCase(); libApply(); });
-})();
-</script>
-<script>
-/* Portão do Covil: brasas subindo + entrar */
-(function(){
-  var g=document.getElementById('gate'); if(!g) return;
-  var cv=document.getElementById('gateEmbers'), ctx=cv&&cv.getContext&&cv.getContext('2d'); if(!ctx) return;
-  function fit(){ cv.width=g.clientWidth; cv.height=g.clientHeight; } fit(); window.addEventListener('resize',fit);
-  function spawn(){ return {x:Math.random()*cv.width, y:cv.height+Math.random()*40, r:.5+Math.random()*2.1, vy:.35+Math.random()*1.25, vx:(Math.random()-.5)*.4, a:.25+Math.random()*.6, h:16+Math.random()*22, s:Math.random()*6.28}; }
-  var P=[]; for(var i=0;i<80;i++){ var p=spawn(); p.y=Math.random()*cv.height; P.push(p); }
-  function loop(){
-    if(g.classList.contains('hide')){ return; }
-    ctx.clearRect(0,0,cv.width,cv.height); ctx.globalCompositeOperation='lighter';
-    for(var i=0;i<P.length;i++){ var p=P[i]; p.y-=p.vy; p.s+=.05; p.x+=p.vx+Math.sin(p.s)*.3; p.a-=.0016;
-      if(p.y<-12||p.a<=0){ P[i]=spawn(); continue; }
-      ctx.beginPath(); ctx.fillStyle='hsla('+p.h+',100%,'+(56+p.r*7)+'%,'+p.a+')'; ctx.arc(p.x,p.y,p.r,0,6.283); ctx.fill(); }
-    ctx.globalCompositeOperation='source-over'; requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-  function enter(){ g.classList.add('hide'); setTimeout(function(){ g.style.display='none'; }, 950); }
-  var b=document.getElementById('gateEnter'); if(b) b.addEventListener('click',enter);
-  var gg=document.getElementById('gateGoogle'); if(gg) gg.addEventListener('click',enter);
 })();
 </script>
