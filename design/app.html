@@ -246,7 +246,8 @@
         .kcard .kt{font-size:12px; font-weight:600; color:var(--text)} .kcard .ks{font-size:10.5px; color:var(--muted); margin-top:2px}
         .kcard .km{display:flex; align-items:center; justify-content:space-between; margin-top:9px}
         .bgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(244px,1fr)); gap:13px}
-        .mcard{background:var(--surface); border:1px solid var(--border); border-radius:13px; padding:16px}
+        .mcard{background:var(--surface); border:1px solid var(--border); border-radius:13px; padding:16px; cursor:pointer; transition:border-color .14s}
+        .mcard:hover{border-color:var(--ember)}
         .mcard .mtop{display:flex; align-items:center; gap:12px} .mcard .mtop .av{width:42px; height:42px; font-size:14px}
         .mcard .mn{font-size:14px; font-weight:650} .mcard .mr{font-size:11.5px; color:var(--muted)}
         .mcard .roles{display:flex; flex-wrap:wrap; gap:5px; margin:13px 0 12px}
@@ -439,6 +440,100 @@
           <div class="mcard"><div class="mtop"><span class="av" style="background:linear-gradient(135deg,#8A827B,#6B645F)">JB</span><div><div class="mn">João Bastos</div><div class="mr">Contas · Tráfego</div></div></div><div class="roles"><span class="role">Contas</span><span class="role">Tráfego</span></div><div class="load"><span>Carga</span><span class="mono" style="color:var(--text)">11 Lenhas</span></div><div class="lbar"><i style="width:69%"></i></div></div>
           <div class="mcard"><div class="mtop"><span class="av" style="background:linear-gradient(135deg,#8A827B,#6B645F)">MA</span><div><div class="mn">Marina Alves</div><div class="mr">Gestora de Contas</div></div></div><div class="roles"><span class="role">Contas</span></div><div class="load"><span>Carga</span><span class="mono" style="color:var(--text)">9 Lenhas</span></div><div class="lbar"><i style="width:56%"></i></div></div>
           <div class="mcard"><div class="mtop"><span class="av" style="background:linear-gradient(135deg,#8A827B,#6B645F)">RN</span><div><div class="mn">Rafa Nunes</div><div class="mr">Criação · Tráfego</div></div></div><div class="roles"><span class="role">Criação</span><span class="role">Tráfego</span></div><div class="load"><span>Carga</span><span class="mono" style="color:var(--text)">7 Lenhas</span></div><div class="lbar"><i style="width:44%"></i></div></div>
+        </div>
+      </div>
+
+      <div class="screen" id="s-perfil">
+        <style>
+          #s-perfil .back{display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; margin-bottom:16px}
+          #s-perfil .back:hover{color:var(--ember)}
+          #s-perfil .ptop{display:flex; align-items:center; gap:14px; margin-bottom:18px}
+          #s-perfil .p-av{width:56px; height:56px; border-radius:14px; display:grid; place-items:center; font-size:17px; font-weight:750; color:#160c06; background:linear-gradient(135deg,var(--ember-hi),var(--ember)); flex:0 0 auto}
+          #s-perfil .pinfo{flex:1; min-width:0} #s-perfil .pinfo h2{margin:0; font-size:23px; font-weight:750; letter-spacing:-.01em}
+          #s-perfil .pinfo p{margin:3px 0 0; color:var(--muted); font-size:13px}
+          #s-perfil .pbadges{display:flex; gap:6px; flex-wrap:wrap}
+          #s-perfil .pbadges .role{font-size:10px; font-weight:650; padding:3px 9px; border-radius:20px; background:var(--ember-soft); color:var(--ember); text-transform:uppercase; letter-spacing:.03em}
+          #s-perfil .crow{display:flex; align-items:center; gap:11px; padding:11px 0; border-top:1px solid var(--border)} #s-perfil .crow:first-child{border-top:0}
+          #s-perfil .crow .cav{width:32px; height:32px; border-radius:8px; display:grid; place-items:center; font-size:11px; font-weight:700; color:#160c06; background:linear-gradient(135deg,#8A827B,#6B645F); flex:0 0 auto}
+          #s-perfil .crow .cm{flex:1; min-width:0} #s-perfil .crow .cm .t{font-size:13px; font-weight:600} #s-perfil .crow .cm .s{font-size:11.5px; color:var(--muted); margin-top:1px}
+          #s-perfil .crow .cside{font-family:var(--mono); font-size:11.5px; color:var(--muted); text-align:right; flex:0 0 auto}
+          #s-perfil .lrow{display:flex; align-items:flex-start; gap:11px; padding:11px 0; border-top:1px solid var(--border)} #s-perfil .lrow:first-child{border-top:0}
+          #s-perfil .lrow .chk{margin-top:1px}
+          #s-perfil .lrow .lm{flex:1; min-width:0} #s-perfil .lrow .lm .t{font-size:12.5px; color:var(--text)} #s-perfil .lrow .lm .s{font-size:11px; color:var(--muted); margin-top:3px}
+          #s-perfil .lrow .est{font-family:var(--mono); font-size:11.5px; flex:0 0 auto; margin-top:1px}
+          #s-perfil .cbars{display:flex; align-items:flex-end; gap:10px; height:104px; margin-top:14px; padding:0 2px}
+          #s-perfil .cbars .cb{flex:1; display:flex; flex-direction:column; align-items:center; gap:7px; height:100%; justify-content:flex-end}
+          #s-perfil .cbars .cb i{width:100%; max-width:30px; background:var(--ember); border-radius:5px 5px 0 0; display:block}
+          #s-perfil .cbars .cb.today i{background:linear-gradient(180deg,var(--ember-hi),var(--ember))}
+          #s-perfil .cbars .cb span{font-size:10.5px; color:var(--faint)} #s-perfil .cbars .cb.today span{color:var(--ember); font-weight:700}
+          #s-perfil .perm{display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--border); font-size:12.5px} #s-perfil .perm:first-child{border-top:0}
+          #s-perfil .perm b{color:var(--text); font-weight:650; flex:0 0 96px} #s-perfil .perm span{color:var(--muted)}
+          #s-perfil .act{display:flex; gap:11px; padding:11px 0; border-top:1px solid var(--border); font-size:12.5px} #s-perfil .act:first-child{border-top:0}
+          #s-perfil .act .dot{width:7px; height:7px; border-radius:50%; background:var(--ember); margin-top:5px; flex:0 0 auto}
+          #s-perfil .act .amain{flex:1} #s-perfil .act .amain b{color:var(--text); font-weight:600} #s-perfil .act .amain .s{color:var(--muted)}
+          #s-perfil .act .at{color:var(--faint); font-family:var(--mono); font-size:11px; flex:0 0 auto}
+        </style>
+        <span class="back" id="perfBack">&lsaquo; Voltar pra Brigada</span>
+        <div class="ptop">
+          <span class="p-av" id="perfAv">LM</span>
+          <div class="pinfo"><h2 id="perfName">Luiz Mattos</h2><p id="perfRole">Gestor de Projetos · Admin</p></div>
+          <div class="pbadges" id="perfBadges"><span class="role">Projetos</span><span class="role">Coordenador</span></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="k-top"><span class="k-label">Crias</span></div><div class="k-val">6</div><span class="k-delta neu">sob responsabilidade</span></div>
+          <div class="kpi"><div class="k-top"><span class="k-label">Lenhas abertas</span></div><div class="k-val">14</div><span class="k-delta down">2 estouradas</span></div>
+          <div class="kpi flag-warn"><div class="k-top"><span class="k-label">No prazo (SLA)</span></div><div class="k-val">88%</div><span class="k-delta neu">últimos 30 dias</span></div>
+          <div class="kpi"><div class="k-top"><span class="k-label">Rodas de Fogo</span></div><div class="k-val">4</div><span class="k-delta neu">esta semana</span></div>
+        </div>
+        <div class="grid g-2">
+          <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="c-h"><span class="t">Crias sob responsabilidade</span><span class="s">6 Forjas</span></div>
+              <div style="margin-top:8px">
+                <div class="crow"><span class="cav">MA</span><div class="cm"><div class="t">Mendes Advocacia</div><div class="s">Previdenciário · Fase 5 · dia 29/49</div></div><div class="cside"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Apagando</span></div></div>
+                <div class="crow"><span class="cav">VC</span><div class="cm"><div class="t">Vasconcelos &amp; Cia</div><div class="s">Trabalhista · Fase 2 · dia 9/49</div></div><div class="cside"><span class="pill warn"><span class="d" style="background:var(--warn)"></span>Esfriando</span></div></div>
+                <div class="crow"><span class="cav">OK</span><div class="cm"><div class="t">Okawa Advocacia</div><div class="s">Trabalhista · Fase 4 · dia 24/49</div></div><div class="cside"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+                <div class="crow"><span class="cav">PB</span><div class="cm"><div class="t">Prado Bancário</div><div class="s">Bancário · Fase 6 · dia 40/49</div></div><div class="cside"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="c-h"><span class="t">Lenhas em aberto</span><span class="s">14 · 2 estouradas</span></div>
+              <div style="margin-top:8px">
+                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Liberar acesso ao Meta Ads</div><div class="s">Mendes Advocacia · Fase 5</div></div><span class="est" style="color:var(--crit)">quinta</span></div>
+                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Concluir treinamento no CRM</div><div class="s">Mendes Advocacia · Fase 5</div></div><span class="est" style="color:var(--warn)">07/07</span></div>
+                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Rascunhar Diagnóstico 360</div><div class="s">Vasconcelos &amp; Cia · Fase 2</div></div><span class="est" style="color:var(--muted)">08/07</span></div>
+                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Revisar criativos previdenciários</div><div class="s">Okawa Advocacia · Fase 4</div></div><span class="est" style="color:var(--muted)">10/07</span></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="c-h"><span class="t">Carga por dia</span><span class="s">Lenhas concluídas</span></div>
+              <div class="cbars">
+                <div class="cb"><i style="height:52%"></i><span>seg</span></div>
+                <div class="cb"><i style="height:78%"></i><span>ter</span></div>
+                <div class="cb"><i style="height:64%"></i><span>qua</span></div>
+                <div class="cb today"><i style="height:92%"></i><span>qui</span></div>
+                <div class="cb"><i style="height:40%"></i><span>sex</span></div>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="c-h"><span class="t">Papéis &amp; permissões</span></div>
+              <div style="margin-top:8px">
+                <div class="perm"><b>Projetos</b><span>Move fases, distribui Lenha de Forja, gerencia SLA.</span></div>
+                <div class="perm"><b>Coordenador</b><span>Distribui Lenha entre a Brigada e acompanha carga.</span></div>
+                <div class="perm"><b>Admin</b><span>Acesso total + gestão de membros e integrações.</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="c-h"><span class="t">Atividade recente</span></div>
+              <div style="margin-top:8px">
+                <div class="act"><span class="dot"></span><div class="amain"><b>Encerrou a Roda de Fogo</b> <span class="s">— Mendes Advocacia</span></div><span class="at">15:30</span></div>
+                <div class="act"><span class="dot"></span><div class="amain"><b>Avançou pra Fase 4</b> <span class="s">— Okawa Advocacia</span></div><span class="at">ontem</span></div>
+                <div class="act"><span class="dot"></span><div class="amain"><b>Comentou na Cria</b> <span class="s">— Vasconcelos &amp; Cia</span></div><span class="at">2 dias</span></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1129,6 +1224,19 @@
   document.querySelectorAll('#s-crias .tbl tbody tr').forEach(function(tr){
     tr.addEventListener('click',function(){ openScreen('s-detalhe','Mendes Advocacia Previdenciária','· detalhe da Cria'); });
   });
+  // Perfil da Brigada: clicar num membro abre o perfil (cabeçalho puxa a identidade do card)
+  document.querySelectorAll('#s-brigada .mcard').forEach(function(mc){
+    mc.addEventListener('click',function(){
+      var nm=mc.querySelector('.mn').textContent.trim();
+      var av=mc.querySelector('.av'), pa=document.getElementById('perfAv');
+      pa.textContent=av.textContent.trim(); pa.setAttribute('style', av.getAttribute('style')||'');
+      document.getElementById('perfName').textContent=nm;
+      document.getElementById('perfRole').textContent=mc.querySelector('.mr').textContent.trim();
+      document.getElementById('perfBadges').innerHTML=mc.querySelector('.roles').innerHTML;
+      openScreen('s-perfil', nm, '· perfil da Brigada');
+    });
+  });
+  var pbk=document.getElementById('perfBack'); if(pbk) pbk.addEventListener('click',function(){ openScreen('s-brigada','Brigada',''); });
   var db=document.getElementById('detBack');
   if(db) db.addEventListener('click',function(){ openScreen('s-crias','Crias',''); });
   var ncb=document.getElementById('novaCriaBtn'); if(ncb) ncb.addEventListener('click',function(){ openScreen('s-nova','Nova Cria','· cadastro'); });
