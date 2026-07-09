@@ -615,6 +615,7 @@
           <span class="dav">MA</span>
           <div class="dinfo"><h2>Mendes Advocacia Previdenciária</h2><p>Previdenciário · Gestor: Luiz Mattos · Início 12/06/2026</p></div>
           <div class="dbadges"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Apagando</span><span class="chip crit">Forja quente</span></div>
+          <button class="fog-open" id="abrirFogueira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z"/></svg>Abrir Fogueira</button>
         </div>
         <div class="kpis">
           <div class="kpi"><div class="k-top"><span class="k-label">Fase atual</span></div><div class="k-val" style="font-size:24px">Fase 5</div><span class="k-delta neu">Implementação CRM + IA</span></div>
@@ -709,6 +710,209 @@
           </div>
         </div>
       </div>
+
+      <div class="screen" id="s-fogueira">
+        <style>
+          .fog-open{display:inline-flex; align-items:center; gap:7px; background:linear-gradient(135deg,var(--ember-hi),var(--ember)); color:#160c06; border:0; border-radius:10px; padding:9px 14px; font-size:12.5px; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap; transition:.14s; flex:0 0 auto}
+          .fog-open:hover{filter:brightness(1.06)} .fog-open svg{width:15px; height:15px}
+
+          #s-fogueira .back{display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; margin-bottom:16px}
+          #s-fogueira .back:hover{color:var(--ember)}
+          #s-fogueira .fog-top{display:flex; align-items:center; gap:14px; margin-bottom:14px}
+          #s-fogueira .fog-ic{width:52px; height:52px; border-radius:13px; display:grid; place-items:center; color:var(--ember); background:var(--ember-soft); border:1px solid color-mix(in srgb,var(--ember) 30%,var(--border)); flex:0 0 auto}
+          #s-fogueira .fog-ic svg{width:26px; height:26px}
+          #s-fogueira .fog-info{flex:1; min-width:0}
+          #s-fogueira .fog-info h2{margin:0; font-size:23px; font-weight:750; letter-spacing:-.01em}
+          #s-fogueira .fog-info p{margin:3px 0 0; color:var(--muted); font-size:13px}
+          #s-fogueira .fog-badges{display:flex; align-items:center; gap:12px; flex:0 0 auto}
+          #s-fogueira .pill.live{color:var(--ember); background:var(--ember-soft)}
+          #s-fogueira .pill.live .dot{width:7px; height:7px; border-radius:50%; background:var(--ember); animation:fogpulse 1.3s infinite}
+          @keyframes fogpulse{0%,100%{opacity:1} 50%{opacity:.25}}
+          #s-fogueira .fog-timer{font-family:var(--mono); font-size:14px; color:var(--text); font-weight:600}
+
+          #s-fogueira .fog-people{display:flex; align-items:center; gap:8px; margin-bottom:18px; flex-wrap:wrap}
+          #s-fogueira .pav{display:inline-flex; align-items:center; gap:8px; background:var(--surface-2); border:1px solid var(--border); border-radius:22px; padding:4px 12px 4px 4px; font-size:12px; color:var(--text)}
+          #s-fogueira .pav .a{width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-size:9px; font-weight:700; color:#160c06; background:linear-gradient(135deg,var(--ember-hi),var(--ember)); flex:0 0 auto}
+          #s-fogueira .pav.client .a{background:linear-gradient(135deg,#8A827B,#6B645F)}
+          #s-fogueira .pav small{color:var(--faint)}
+
+          #s-fogueira .fog-grid{display:grid; grid-template-columns:1.55fr 1fr; gap:14px; align-items:start}
+          #s-fogueira .fog-main, #s-fogueira .fog-rail{display:flex; flex-direction:column; gap:14px}
+          @media (max-width:960px){ #s-fogueira .fog-grid{grid-template-columns:1fr} }
+
+          #s-fogueira .pauta{margin-top:8px}
+          #s-fogueira .pt{display:flex; align-items:center; gap:11px; padding:10px 0; border-top:1px solid var(--border)}
+          #s-fogueira .pt:first-child{border-top:0}
+          #s-fogueira .pt .tt{flex:1; font-size:13px; color:var(--text)}
+          #s-fogueira .pt.done .tt{color:var(--muted); text-decoration:line-through}
+          #s-fogueira .pt.now .tt{font-weight:650}
+          #s-fogueira .pt .nowtag{font-size:8.5px; font-weight:700; letter-spacing:.05em; color:var(--ember); background:var(--ember-soft); border-radius:20px; padding:2px 7px}
+          #s-fogueira .pt .tm{font-family:var(--mono); font-size:11px; color:var(--faint)}
+
+          #s-fogueira .rec-widget{display:flex; align-items:center; gap:14px; padding:14px; background:var(--inset); border:1px solid var(--border); border-radius:12px; margin-top:12px}
+          #s-fogueira .rec-btn{width:46px; height:46px; border-radius:50%; border:0; cursor:pointer; flex:0 0 auto; display:grid; place-items:center; background:var(--ember); color:#160c06}
+          #s-fogueira .rec-btn svg{width:18px; height:18px}
+          #s-fogueira .rec-btn.rec{animation:recpulse 1.3s infinite}
+          @keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,106,26,.5)} 50%{box-shadow:0 0 0 10px rgba(255,106,26,0)}}
+          #s-fogueira .rec-meta{flex:1; min-width:0}
+          #s-fogueira .rec-meta .rs{font-size:13px; font-weight:650; color:var(--text)}
+          #s-fogueira .rec-meta .rd{font-size:11.5px; color:var(--muted); margin-top:2px}
+          #s-fogueira .liveline{display:inline-flex; align-items:center; gap:2px; height:24px}
+          #s-fogueira .liveline i{width:2.5px; background:var(--ember); border-radius:2px; height:6px; animation:fw 1s ease-in-out infinite}
+          @keyframes fw{0%,100%{height:5px} 50%{height:20px}}
+          #s-fogueira .rec-timer{font-family:var(--mono); font-size:13px; color:var(--ember); font-weight:600; flex:0 0 auto}
+
+          #s-fogueira .transcript{margin-top:14px; font-size:12.5px; color:var(--muted); line-height:1.65; max-height:186px; overflow-y:auto; padding-right:4px}
+          #s-fogueira .transcript p{margin:0 0 8px}
+          #s-fogueira .transcript .sp{color:var(--text); font-weight:600}
+          #s-fogueira .transcript .sp.cli{color:var(--muted)}
+          #s-fogueira .cursor{display:inline-block; width:6px; height:13px; background:var(--ember); margin-left:2px; vertical-align:-2px; animation:blink 1s steps(1) infinite}
+          @keyframes blink{50%{opacity:0}}
+
+          #s-fogueira .notebox{margin-top:11px; width:100%; min-height:64px; background:var(--surface-2); border:1px solid var(--border); border-radius:11px; padding:11px 13px; color:var(--text); font-size:13px; font-family:inherit; resize:vertical; outline:0}
+          #s-fogueira .notebox:focus{border-color:var(--ember)}
+          #s-fogueira .note{display:flex; gap:11px; padding:12px 0; border-top:1px solid var(--border)}
+          #s-fogueira .note .a{width:30px; height:30px; border-radius:50%; display:grid; place-items:center; font-size:10px; font-weight:700; color:#160c06; background:linear-gradient(135deg,#8A827B,#6B645F); flex:0 0 auto}
+          #s-fogueira .note .nn{font-size:12px; font-weight:650} #s-fogueira .note .nn small{color:var(--faint); font-weight:400; margin-left:6px}
+          #s-fogueira .note .ntx{font-size:12.5px; color:var(--muted); margin-top:3px; line-height:1.45}
+
+          #s-fogueira .rail-dl .drow{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:12.5px}
+          #s-fogueira .rail-dl .drow:last-child{border-bottom:0}
+          #s-fogueira .rail-dl .drow span{color:var(--muted)} #s-fogueira .rail-dl .drow b{color:var(--text); font-weight:600}
+
+          #s-fogueira .step{display:flex; align-items:flex-start; gap:11px; padding:12px 0; border-top:1px solid var(--border)}
+          #s-fogueira .step:first-child{border-top:0}
+          #s-fogueira .step .chk{margin-top:1px}
+          #s-fogueira .step .sm{flex:1; min-width:0}
+          #s-fogueira .step .st{font-size:12.5px; color:var(--text); line-height:1.4}
+          #s-fogueira .step .ss{font-size:11px; color:var(--muted); margin-top:5px; display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+          #s-fogueira .step .wa{width:18px; height:18px; border-radius:50%; display:inline-grid; place-items:center; font-size:8px; font-weight:700; color:#160c06; background:linear-gradient(135deg,var(--ember-hi),var(--ember))}
+          #s-fogueira .step .est{font-family:var(--mono); color:var(--warn)}
+          #s-fogueira .sync{margin-top:13px; display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--muted)}
+          #s-fogueira .sync svg{width:14px; height:14px; color:var(--good)}
+
+          #s-fogueira .bx-empty{display:flex; gap:12px; padding:4px 0 2px; margin-top:10px}
+          #s-fogueira .be-ic{width:34px; height:34px; border-radius:9px; background:var(--ember-soft); color:var(--ember); display:grid; place-items:center; flex:0 0 auto} #s-fogueira .be-ic svg{width:18px; height:18px}
+          #s-fogueira .bx-empty p{margin:0; font-size:12.5px; color:var(--muted); line-height:1.5} #s-fogueira .bx-empty p b{color:var(--text)}
+          #s-fogueira .bx-load{margin-top:12px; display:flex; flex-direction:column; gap:10px}
+          #s-fogueira .ld{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--muted)}
+          #s-fogueira .spin{width:14px; height:14px; border-radius:50%; border:2px solid var(--border-2); border-top-color:var(--ember); animation:spin .7s linear infinite; flex:0 0 auto}
+          @keyframes spin{to{transform:rotate(360deg)}}
+          #s-fogueira .report{border:1px solid var(--border); border-radius:11px; overflow:hidden; margin:12px 0 14px}
+          #s-fogueira .rsec{padding:11px 14px; border-bottom:1px solid var(--border)} #s-fogueira .rsec:last-child{border-bottom:0}
+          #s-fogueira .rl{font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ember); font-weight:700; margin-bottom:3px} #s-fogueira .rt{font-size:12.5px; color:var(--text); line-height:1.45}
+
+          #s-fogueira .fog-actions{display:flex; gap:10px; justify-content:flex-end; margin-top:18px; flex-wrap:wrap}
+          #s-fogueira .fog-actions button{border-radius:10px; padding:11px 18px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; transition:.14s}
+          #s-fogueira .fog-actions .ghost{background:var(--surface-2); border:1px solid var(--border-2); color:var(--muted)} #s-fogueira .fog-actions .ghost:hover{border-color:var(--ember); color:var(--ember)}
+          #s-fogueira .fog-actions .primary{background:linear-gradient(135deg,var(--ember-hi),var(--ember)); border:0; color:#160c06; display:inline-flex; align-items:center; gap:8px} #s-fogueira .fog-actions .primary:hover{filter:brightness(1.06)} #s-fogueira .fog-actions .primary svg{width:16px; height:16px}
+        </style>
+
+        <span class="back" id="fogBack">&lsaquo; Voltar pra Cria</span>
+
+        <div class="fog-top">
+          <span class="fog-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z"/></svg></span>
+          <div class="fog-info">
+            <h2>Fogueira · Mendes Advocacia</h2>
+            <p>Reunião semanal · quinta, 09 jul · 15:00 · Fase 5 — Implementação CRM + IA</p>
+          </div>
+          <div class="fog-badges">
+            <span class="pill live" id="fogStatus"><span class="dot"></span>Ao vivo</span>
+            <span class="fog-timer" id="fogClock">14:22</span>
+          </div>
+        </div>
+
+        <div class="fog-people">
+          <span class="pav"><span class="a">LM</span>Luiz Mattos <small>gestor</small></span>
+          <span class="pav"><span class="a" style="background:linear-gradient(135deg,#8A827B,#6B645F)">MA</span>Marina Alves <small>closer</small></span>
+          <span class="pav client"><span class="a">DM</span>Dr. Mendes <small>cliente</small></span>
+        </div>
+
+        <div class="fog-grid">
+          <div class="fog-main">
+            <div class="card">
+              <div class="c-h"><span class="t">Pauta</span><span class="s">4 tópicos · 30 min</span></div>
+              <div class="pauta">
+                <div class="pt done"><span class="chk done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span class="tt">Retrospecto da semana</span><span class="tm">5 min</span></div>
+                <div class="pt now"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span class="tt">Gargalo: acesso ao Meta Ads</span><span class="nowtag">AGORA</span><span class="tm">10 min</span></div>
+                <div class="pt"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span class="tt">Satisfação e NPS</span><span class="tm">7 min</span></div>
+                <div class="pt"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span class="tt">Próximos passos e Lenhas</span><span class="tm">8 min</span></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="c-h"><span class="t">Gravação do briefing</span><span class="s">a Faísca ouve e transcreve em tempo real</span></div>
+              <div class="rec-widget">
+                <button class="rec-btn rec" id="fogRec"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="7" width="10" height="10" rx="2"/></svg></button>
+                <div class="rec-meta"><div class="rs" id="fogRecState">Gravando o briefing…</div><div class="rd">áudio + transcrição são anexados à Cria ao encerrar</div></div>
+                <span class="liveline" id="fogLive"><i style="animation-delay:0s"></i><i style="animation-delay:.12s"></i><i style="animation-delay:.24s"></i><i style="animation-delay:.36s"></i><i style="animation-delay:.48s"></i><i style="animation-delay:.6s"></i><i style="animation-delay:.72s"></i></span>
+                <span class="rec-timer" id="fogRecTime">14:22</span>
+              </div>
+              <div class="c-h" style="margin:16px 0 0"><span class="t">Transcrição ao vivo <span class="chip good" style="margin-left:4px">Gemini</span></span></div>
+              <div class="transcript">
+                <p><span class="sp">Marina:</span> Essa semana a gente fechou o setup do CRM e integrou a IA de atendimento, o treinamento da equipe já começou.</p>
+                <p><span class="sp cli">Dr. Mendes:</span> Show. Minha única preocupação é ver os primeiros leads chegando, tá todo mundo ansioso aqui.</p>
+                <p><span class="sp">Luiz:</span> É o ponto crítico — a gente travou no Meta Ads porque o acesso ainda não foi liberado, então nenhuma campanha subiu. Preciso destravar isso pra rodar a primeira captação<span class="cursor"></span></p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="c-h"><span class="t">Notas</span><span class="s">visíveis pra Brigada</span></div>
+              <div class="note"><span class="a">MA</span><div><div class="nn">Marina Alves<small>agora</small></div><div class="ntx">NPS caiu de 9 pra 8 — reforçar acompanhamento nesta fase de Implementação.</div></div></div>
+              <textarea class="notebox" placeholder="Escreva uma nota da Fogueira…"></textarea>
+            </div>
+          </div>
+
+          <div class="fog-rail">
+            <div class="card">
+              <div class="c-h" style="margin-bottom:6px"><span class="t">Detalhes</span></div>
+              <div class="rail-dl">
+                <div class="drow"><span>Cria</span><b>Mendes Advocacia</b></div>
+                <div class="drow"><span>Tipo</span><b>Reunião semanal</b></div>
+                <div class="drow"><span>Fase</span><b>5 de 7 · Implementação</b></div>
+                <div class="drow"><span>Data</span><b class="mono">09/07 · 15:00</b></div>
+                <div class="drow"><span>Duração</span><b class="mono">30 min</b></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="c-h" style="margin-bottom:6px"><span class="t">Próximos passos</span><span class="chip good">→ Lenhas</span></div>
+              <div class="step"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="sm"><div class="st">Call de 15min pra liberar o acesso ao Meta Ads</div><div class="ss"><span class="wa">LM</span>Luiz · <span class="est">Estopim quinta</span></div></div></div>
+              <div class="step"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="sm"><div class="st">Concluir o treinamento da equipe no CRM</div><div class="ss"><span class="wa" style="background:linear-gradient(135deg,#8A827B,#6B645F)">MA</span>Marina · <span class="est">Estopim 07/07</span></div></div></div>
+              <div class="step"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="sm"><div class="st">Subir a 1ª campanha de captação previdenciária</div><div class="ss"><span class="wa">LM</span>Luiz · <span class="est">após liberar Ads</span></div></div></div>
+              <div class="sync"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>Sincroniza com o ClickUp ao encerrar</div>
+            </div>
+
+            <div class="card" id="fogBrief">
+              <div class="c-h"><span class="t">Briefing semanal</span><span class="chip good bx-chip" style="display:none">Gerado pela IA</span></div>
+              <div class="bx-empty">
+                <span class="be-ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.7 4.8L18.5 8.5 13.7 10.2 12 15l-1.7-4.8L5.5 8.5l4.8-1.7z"/><path d="M18.5 14l.9 2.6L22 17.5l-2.6.9L18.5 21l-.9-2.6L15 17.5l2.6-.9z"/></svg></span>
+                <p>Ao <b>encerrar a Fogueira</b>, a Faísca transcreve o áudio (Gemini) e monta o <b>briefing semanal</b> no seu modelo padrão (Claude) — automaticamente.</p>
+              </div>
+              <div class="bx-load" style="display:none">
+                <div class="ld"><span class="spin"></span>Gemini transcrevendo o áudio…</div>
+                <div class="ld"><span class="spin"></span>Claude montando o briefing semanal…</div>
+              </div>
+              <div class="bx-done-c" style="display:none">
+                <div class="report">
+                  <div class="rsec"><div class="rl">O que aconteceu essa semana</div><div class="rt">Setup do CRM concluído e IA de atendimento integrada; treinamento da equipe iniciado. A conexão do Meta Ads travou — o cliente ainda não liberou o acesso.</div></div>
+                  <div class="rsec"><div class="rl">Satisfação</div><div class="rt">NPS 8 (caiu de 9). Cliente ansioso pra ver os primeiros leads chegando.</div></div>
+                  <div class="rsec"><div class="rl">Campanhas</div><div class="rt">Nenhuma no ar ainda — bloqueadas pela liberação do Meta Ads. Criativos de captação previdenciária já prontos.</div></div>
+                  <div class="rsec"><div class="rl">Nosso desempenho</div><div class="rt">2 de 4 Lenhas da fase concluídas · SLA estourado em 2 dias (Estopim vermelho).</div></div>
+                  <div class="rsec"><div class="rl">Pontos de atenção</div><div class="rt">Acesso ao Meta Ads é o gargalo crítico; sem liberar até 05/07, atrasa a Forja inteira.</div></div>
+                  <div class="rsec"><div class="rl">Próximos passos</div><div class="rt">Call de 15min pra liberar o Meta Ads (quinta) · concluir o treinamento no CRM · subir a 1ª campanha de captação.</div></div>
+                </div>
+                <button class="gbtn2" style="margin-top:0">Baixar relatório (PDF)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fog-actions">
+          <button class="ghost">Salvar rascunho</button>
+          <button class="primary" id="fogEnd"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.7 4.8L18.5 8.5 13.7 10.2 12 15l-1.7-4.8L5.5 8.5l4.8-1.7z"/></svg>Encerrar e gerar briefing</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -765,7 +969,7 @@
     <div class="msg me"><div class="bub">Quais Forjas estão atrasadas?</div><div class="voicebar me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>mensagem de voz · 0:04</div></div>
     <div class="msg ai"><div class="who">Faísca</div><div class="bub">2 Forjas com Estopim estourado: <b>Mendes</b> (Implementação, −2 dias) e <b>Vasconcelos</b> (Diagnóstico, vence amanhã). Quer que eu abra a do Mendes ou avise o gestor?</div><div class="voicebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>respondendo por voz <span class="wave"><i></i><i></i><i></i><i></i><i></i></span></div></div>
     <div class="msg me"><div class="bub">Agenda uma Fogueira com o Mendes quinta 15h</div></div>
-    <div class="msg ai"><div class="who">Faísca</div><div class="bub">✓ <b>Fogueira agendada</b> — Mendes, quinta 15h, com você e a Marina. Já criei a Lenha e sincronizei no ClickUp.</div></div>
+    <div class="msg ai"><div class="who">Faísca</div><div class="bub" id="fogFromAs" style="cursor:pointer">✓ <b>Fogueira agendada</b> — Mendes, quinta 15h, com você e a Marina. Já criei a Lenha e sincronizei no ClickUp. <span style="color:var(--ember); font-weight:600">Abrir Fogueira &rarr;</span></div></div>
   </div>
   <div class="as-listen" id="asListen"><span class="wave" style="color:var(--ember)"><i></i><i></i><i></i><i></i><i></i></span> Ouvindo… fale o que precisa</div>
   <div class="as-input">
@@ -929,6 +1133,46 @@
   if(db) db.addEventListener('click',function(){ openScreen('s-crias','Crias',''); });
   var ncb=document.getElementById('novaCriaBtn'); if(ncb) ncb.addEventListener('click',function(){ openScreen('s-nova','Nova Cria','· cadastro'); });
   var nbk=document.getElementById('novaBack'); if(nbk) nbk.addEventListener('click',function(){ openScreen('s-crias','Crias',''); });
+
+  // Fogueira (reunião) — abre a partir da Cria ou da Faísca
+  var fogBrief=document.getElementById('fogBrief'), fogRec=document.getElementById('fogRec');
+  function resetFogBrief(){
+    if(fogRec) fogRec.classList.add('rec');
+    var st=document.getElementById('fogRecState'); if(st) st.textContent='Gravando o briefing…';
+    var live=document.getElementById('fogLive'); if(live) live.style.visibility='visible';
+    var pill=document.getElementById('fogStatus'); if(pill){ pill.className='pill live'; pill.innerHTML='<span class="dot"></span>Ao vivo'; }
+    if(!fogBrief) return;
+    fogBrief.querySelector('.bx-empty').style.display='';
+    fogBrief.querySelector('.bx-load').style.display='none';
+    fogBrief.querySelector('.bx-done-c').style.display='none';
+    fogBrief.querySelector('.bx-chip').style.display='none';
+  }
+  function openFogueira(){ openScreen('s-fogueira','Fogueira · Mendes Advocacia','· reunião semanal'); resetFogBrief(); }
+  var afb=document.getElementById('abrirFogueira'); if(afb) afb.addEventListener('click',openFogueira);
+  var fromAs=document.getElementById('fogFromAs'); if(fromAs) fromAs.addEventListener('click',function(){ asOpen(false); openFogueira(); });
+  var fbk=document.getElementById('fogBack'); if(fbk) fbk.addEventListener('click',function(){ openScreen('s-detalhe','Mendes Advocacia Previdenciária','· detalhe da Cria'); });
+  if(fogRec) fogRec.addEventListener('click',function(){
+    var on=fogRec.classList.toggle('rec');
+    var st=document.getElementById('fogRecState'); if(st) st.textContent = on?'Gravando o briefing…':'Gravação pausada';
+    var live=document.getElementById('fogLive'); if(live) live.style.visibility = on?'visible':'hidden';
+  });
+  var fogEnd=document.getElementById('fogEnd');
+  if(fogEnd) fogEnd.addEventListener('click',function(){
+    if(fogRec) fogRec.classList.remove('rec');
+    var st=document.getElementById('fogRecState'); if(st) st.textContent='Gravação encerrada · 14:22';
+    var live=document.getElementById('fogLive'); if(live) live.style.visibility='hidden';
+    var pill=document.getElementById('fogStatus'); if(pill){ pill.className='pill good'; pill.innerHTML='<span class="d" style="background:var(--good)"></span>Encerrada'; }
+    if(!fogBrief) return;
+    fogBrief.querySelector('.bx-empty').style.display='none';
+    fogBrief.querySelector('.bx-load').style.display='';
+    fogBrief.querySelector('.bx-done-c').style.display='none';
+    setTimeout(function(){
+      fogBrief.querySelector('.bx-load').style.display='none';
+      fogBrief.querySelector('.bx-done-c').style.display='';
+      fogBrief.querySelector('.bx-chip').style.display='';
+      fogBrief.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }, 1700);
+  });
 
   // Faísca — assistente IA global (abre em qualquer aba)
   var asst=document.getElementById('assistant'), scrim=document.getElementById('asScrim');
