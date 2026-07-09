@@ -1,14 +1,15 @@
 <title>SquadFire — Covil (dark & clean, com gráficos)</title>
 <style>
-  /* ===== Tokens — dark & clean (coal profundo + ember, tudo quente) ===== */
+  /* ===== Tokens — forge stone (basalto + brasa, matte e contrastado) ===== */
   :root{
-    --bg:#0B0A09; --surface:#131010; --surface-2:#1A1513; --inset:#0F0D0C;
-    --border:#241E1B; --border-2:#2E2723;
-    --text:#F3ECE6; --muted:#9A8E85; --faint:#6A605A;
-    --ember:#FF6A1A; --ember-hi:#FFA24A; --ember-deep:#E8450F; --ember-soft:rgba(255,106,26,.16);
-    --plasma:#2DE1E6; --plasma-hi:#8CF3F6; --plasma-deep:#12A7C4; --plasma-soft:rgba(45,225,230,.13);
+    --bg:#080706; --surface:#161210; --surface-2:#221A15; --inset:#0C0A09;
+    --border:#342A22; --border-2:#48392C;
+    --text:#F7F2EC; --muted:#A89A8E; --faint:#736860;
+    --ember:#FF6A1A; --ember-hi:#FF9633; --ember-deep:#E8450F; --ember-soft:rgba(255,106,26,.15);
+    --plasma:#2DE1E6; --plasma-hi:#8CF3F6; --plasma-deep:#12A7C4; --plasma-soft:rgba(45,225,230,.12);
     --good:#FF7E12; --warn:#FFC01A; --crit:#FF3A44; --ash:#7C736B;
     --grid:#241D18;
+    --stone:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23s)'/%3E%3C/svg%3E");
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --r:12px; --r-sm:9px;
@@ -47,7 +48,7 @@
   a,button,input,select,textarea,[tabindex]{ outline:none }
   :focus-visible{ outline:2px solid var(--plasma); outline-offset:2px; border-radius:6px }
   /* animações de gráfico */
-  @keyframes livePulse{ 0%,100%{ opacity:.12; r:8 } 50%{ opacity:.34; r:12 } }
+  @keyframes livePulse{ 0%,100%{ opacity:.07; r:7 } 50%{ opacity:.18; r:10 } }
   @media (prefers-reduced-motion: no-preference){ .livedot{ animation:livePulse 2.4s ease-in-out infinite } }
   .bar-grow{ transform-box:fill-box; transform-origin:bottom; transform:scaleY(0); transition:transform .8s cubic-bezier(.22,.61,.36,1) }
   .bar-grow.in{ transform:scaleY(1) }
@@ -211,6 +212,16 @@
 
   @media (max-width:1080px){ .g-2,.g-3{grid-template-columns:1fr} .kpis{grid-template-columns:repeat(2,1fr)} }
   @media (max-width:720px){ .rail{display:none} .app{grid-template-columns:1fr} }
+
+  /* ===== forge stone: textura de pedra, superfícies esculpidas, matte ===== */
+  body::before{ content:''; position:fixed; inset:0; z-index:1500; pointer-events:none;
+    background:var(--stone); background-size:200px 200px; opacity:.05; mix-blend-mode:overlay }
+  .card,.kpi,.mcard,.kcard,.libcard,.hero,.foot{
+    background-image:var(--stone); background-size:230px; background-blend-mode:soft-light;
+    box-shadow: inset 0 1px 0 rgba(255,236,222,.05), inset 0 -2px 5px rgba(0,0,0,.5) }
+  .kpi,.card,.mcard,.kcard,.libcard{ border-color:var(--border-2) }
+  .hero{ background-size:340px }
+  .hero .grid{ opacity:.26 }
 </style>
 
 <div class="app">
@@ -1210,6 +1221,11 @@
     var svg=document.getElementById('donut'), cx=80,cy=80,r=57, sw=19, gap=0.05;
     var ang=-Math.PI/2;
     function pt(a){return [cx+r*Math.cos(a), cy+r*Math.sin(a)];}
+    // filtro pétreo (borda rústica, esculpida)
+    var fdefs=el('defs'); var flt=el('filter',{id:'stoneRough',x:'-15%',y:'-15%',width:'130%',height:'130%'});
+    flt.appendChild(el('feTurbulence',{type:'fractalNoise',baseFrequency:'0.13',numOctaves:'2',seed:'7',result:'nz'}));
+    flt.appendChild(el('feDisplacementMap',{in:'SourceGraphic',in2:'nz',scale:'2.6',xChannelSelector:'R',yChannelSelector:'G'}));
+    fdefs.appendChild(flt); svg.appendChild(fdefs);
     // trilho de fundo
     svg.appendChild(el('circle',{cx:cx,cy:cy,r:r,fill:'none',stroke:'var(--inset)','stroke-width':sw}));
     var lg=document.getElementById('donut-legend'); lg.innerHTML='';
@@ -1222,8 +1238,7 @@
       lg.appendChild(d); items.push(d);
       if(a1<=a0){ return; }
       var large=(a1-a0)>Math.PI?1:0, p0=pt(a0), p1=pt(a1);
-      var path=el('path',{d:'M'+p0[0]+' '+p0[1]+' A'+r+' '+r+' 0 '+large+' 1 '+p1[0]+' '+p1[1], fill:'none', stroke:s.c, 'stroke-width':sw, 'stroke-linecap':'round', class:'hoverable'});
-      path.style.filter='drop-shadow(0 0 5px '+s.c+')';
+      var path=el('path',{d:'M'+p0[0]+' '+p0[1]+' A'+r+' '+r+' 0 '+large+' 1 '+p1[0]+' '+p1[1], fill:'none', stroke:s.c, 'stroke-width':sw, 'stroke-linecap':'butt', class:'hoverable', filter:'url(#stoneRough)'});
       svg.appendChild(path); paths.push(path);
       var len=path.getTotalLength();
       path.style.strokeDasharray=len; path.style.strokeDashoffset=len;
