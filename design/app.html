@@ -1315,8 +1315,17 @@
             <button class="gbtn2" style="max-width:220px; margin-top:16px">Ver contrato (PDF)</button>
           </div>
           <div class="tabpanel" data-tab="coment">
+            <div class="cmt-new" style="display:flex;gap:10px;margin-bottom:16px">
+              <span class="av" id="cmtAv" style="background:url('assets/felipe-av.webp') center/cover;color:transparent;flex:0 0 auto">FC</span>
+              <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                <textarea id="cmtInput" rows="2" placeholder="Escreva um comentário…" style="width:100%;resize:vertical;background:var(--inset);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font-family:inherit;font-size:13px"></textarea>
+                <button class="btn-primary" id="cmtSend" style="align-self:flex-start;padding:7px 16px;font-size:12.5px">Comentar</button>
+              </div>
+            </div>
+            <div id="cmtList">
             <div class="cmt"><span class="av" style="background:url('assets/luiz-av.webp') center/cover;color:transparent">LM</span><div><div class="cn">Luiz Mattos<small>hoje · 09:12</small></div><div class="ct">Cliente confirmou a call de liberação do Meta Ads pra quinta. Sigo o plano da IA.</div></div></div>
             <div class="cmt"><span class="av" style="background:url('assets/felipe-av.webp') center/cover;color:transparent">FC</span><div><div class="cn">Felipe Carvalho<small>ontem · 16:40</small></div><div class="ct">NPS caiu pra 8 — vale reforçar o acompanhamento nesta fase de Implementação.</div></div></div>
+            </div>
           </div>
           <div class="tabpanel" data-tab="garg">
             <div style="border-left:2px solid var(--crit); padding:2px 0 2px 13px">
@@ -1799,6 +1808,29 @@
   document.querySelectorAll('#s-crias .tbl tbody tr').forEach(function(tr){
     tr.addEventListener('click',function(){ openScreen('s-detalhe','Letícia Stein Carlos de Souza','· detalhe da Cria'); });
   });
+  // Kanban (Linha de Fogo): clicar num card abre a Forja daquela Cria — paridade com a tabela.
+  document.querySelectorAll('#s-linha .kcard').forEach(function(kc){
+    kc.style.cursor='pointer';
+    kc.addEventListener('click',function(){ openScreen('s-detalhe','Letícia Stein Carlos de Souza','· detalhe da Cria'); });
+  });
+  // "Criar Cria e abrir a Forja" (Nova Cria) → conclui o fluxo abrindo a Forja.
+  var criarCria=document.querySelector('#s-nova .btn-primary');
+  if(criarCria) criarCria.addEventListener('click',function(){ openScreen('s-detalhe','Letícia Stein Carlos de Souza','· detalhe da Cria'); });
+  // Compositor de comentários (na sessão — sem backend ainda).
+  var cmtSend=document.getElementById('cmtSend'), cmtInput=document.getElementById('cmtInput'), cmtList=document.getElementById('cmtList');
+  if(cmtSend && cmtInput && cmtList){
+    cmtSend.addEventListener('click',function(){
+      var txt=cmtInput.value.trim(); if(!txt) return;
+      var u=(typeof USERS!=='undefined' && USERS[curUser]) ? USERS[curUser] : {name:'Você', av:'assets/felipe-av.webp'};
+      var ini=u.name.split(' ').map(function(w){return w[0];}).slice(0,2).join('').toUpperCase();
+      var el=document.createElement('div'); el.className='cmt';
+      el.innerHTML='<span class="av" style="background:url(\''+u.av+'\') center/cover;color:transparent">'+ini+'</span>'+
+        '<div><div class="cn">'+u.name+'<small>agora</small></div><div class="ct"></div></div>';
+      el.querySelector('.ct').textContent=txt; // textContent evita injeção de HTML
+      cmtList.insertBefore(el, cmtList.firstChild);
+      cmtInput.value='';
+    });
+  }
   // Perfil da Brigada: clicar num membro abre o perfil (cabeçalho puxa a identidade do card)
   document.querySelectorAll('#s-brigada .mcard').forEach(function(mc){
     mc.addEventListener('click',function(){
