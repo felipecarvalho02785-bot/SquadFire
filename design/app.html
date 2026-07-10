@@ -20,6 +20,22 @@
     --display:"Grenze Gotisch","Cinzel","Trajan Pro",Georgia,"Times New Roman",serif;
     --r:12px; --r-sm:9px;
   }
+  /* ===== Tema claro (ativado por .theme-light na raiz via Configurações) ===== */
+  :root.theme-light{
+    --bg:#F4EFE9; --surface:#FFFFFF; --surface-2:#F5EFE9; --inset:#ECE4DB;
+    --border:#E5DBD0; --border-2:#D8CBBD;
+    --text:#211814; --muted:#6E6157; --faint:#9C8E83;
+    --ember:#E1560B; --ember-hi:#FF8636; --ember-deep:#BF430A; --ember-soft:rgba(225,86,11,.12);
+    --plasma:#0C8CA6; --plasma-hi:#33B3CB; --plasma-deep:#0A7085; --plasma-soft:rgba(12,140,166,.12);
+    --good:#CF6410; --warn:#B37D08; --crit:#D22B38; --ash:#8A7E74;
+    --grid:#E7DED4;
+  }
+  /* no claro o texto é escuro sobre claro — o contorno de leitura (sombra escura) sai */
+  :root.theme-light *{ text-shadow:none !important }
+  :root.theme-light .dragon-bg{ opacity:.09 }
+  :root.theme-light .card,:root.theme-light .kpi,:root.theme-light .mcard,:root.theme-light .kcol,:root.theme-light .libcard{ box-shadow:0 1px 3px rgba(60,40,20,.05) }
+  /* "reduzir animações" (Configurações) */
+  :root.no-anim *, :root.no-anim *::before, :root.no-anim *::after{ animation:none !important; transition:none !important }
   *{box-sizing:border-box}
   html,body{margin:0}
   /* barras de rolagem on-brand (fogo sobre carvão) */
@@ -882,11 +898,145 @@
       </div>
 
       <div class="screen" id="s-forjaria">
-        <div class="head" style="margin-bottom:16px"><div class="eye">Configurações</div><h2>Forjaria</h2><p>Ajustes do Squad 8 — fases, papéis e integrações.</p></div>
-        <div class="grid g-3">
-          <div class="card"><div class="c-h"><span class="t">Fases da Forja</span></div><p style="font-size:12.5px;color:var(--muted);margin:9px 0 0">7 fases × 7 dias de Estopim, do Alinhamento à Auditoria Criativa.</p></div>
-          <div class="card"><div class="c-h"><span class="t">Papéis &amp; Brigada</span></div><p style="font-size:12.5px;color:var(--muted);margin:9px 0 0">Contas, Projetos, Tráfego, Criação e Admin — múltiplos papéis por membro.</p></div>
-          <div class="card"><div class="c-h"><span class="t">Integrações</span></div><p style="font-size:12.5px;color:var(--muted);margin:9px 0 0">Login com Google (allowlist), ClickUp e Meta Ads.</p></div>
+        <style>
+          #s-forjaria .set{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; align-items:start}
+          #s-forjaria .set-sec{padding:16px 18px}
+          #s-forjaria .set-sec.wide{grid-column:1 / -1}
+          #s-forjaria .set-h{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+          #s-forjaria .set-h .ic{width:30px;height:30px;border-radius:9px;background:var(--ember-soft);color:var(--ember);display:grid;place-items:center;flex:0 0 auto} #s-forjaria .set-h .ic svg{width:17px;height:17px}
+          #s-forjaria .set-h .tt{font-family:var(--display); font-size:16px; letter-spacing:.01em}
+          #s-forjaria .set-h .sh{font-size:11px; color:var(--faint); margin-left:auto}
+          #s-forjaria .set-row{display:flex; align-items:center; gap:14px; padding:11px 0; border-top:1px solid var(--border)}
+          #s-forjaria .set-row:first-of-type{border-top:0}
+          #s-forjaria .set-row .lab{flex:1; min-width:0}
+          #s-forjaria .set-row .lab .l{font-size:13px; color:var(--text); font-weight:600}
+          #s-forjaria .set-row .lab .d{font-size:11.5px; color:var(--muted); margin-top:2px; line-height:1.4}
+          #s-forjaria .set-row .ctl{flex:0 0 auto}
+          #s-forjaria .sw{width:40px; height:23px; border-radius:20px; background:var(--inset); border:1px solid var(--border-2); position:relative; cursor:pointer; transition:.16s; flex:0 0 auto}
+          #s-forjaria .sw::after{content:''; position:absolute; top:2px; left:2px; width:17px; height:17px; border-radius:50%; background:var(--muted); transition:.16s}
+          #s-forjaria .sw.on{background:linear-gradient(135deg,var(--ember-hi),var(--ember)); border-color:transparent}
+          #s-forjaria .sw.on::after{left:19px; background:#160c06}
+          #s-forjaria .sw.lock{opacity:.55; pointer-events:none}
+          #s-forjaria .segc{display:flex; gap:2px; padding:3px; background:var(--inset); border:1px solid var(--border); border-radius:10px}
+          #s-forjaria .segc button{border:0; background:transparent; color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; padding:6px 11px; border-radius:7px; font-family:inherit; transition:.14s; display:inline-flex; align-items:center; gap:6px}
+          #s-forjaria .segc button:hover{color:var(--text)}
+          #s-forjaria .segc button.on{background:var(--surface); color:var(--ember)}
+          #s-forjaria .segc button svg{width:14px;height:14px}
+          #s-forjaria select, #s-forjaria .txt{background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:8px 11px; color:var(--text); font-size:12.5px; font-family:inherit; outline:0; min-width:158px}
+          #s-forjaria select:focus, #s-forjaria .txt:focus{border-color:color-mix(in srgb,var(--ember) 45%,var(--border))}
+          #s-forjaria .stp{display:inline-flex; align-items:center; border:1px solid var(--border); border-radius:9px; overflow:hidden; background:var(--surface-2)}
+          #s-forjaria .stp button{border:0; background:transparent; color:var(--muted); width:30px; height:32px; cursor:pointer; font-size:15px; font-family:inherit} #s-forjaria .stp button:hover{color:var(--ember)}
+          #s-forjaria .stp .v{font-family:var(--mono); font-size:13px; color:var(--text); min-width:52px; text-align:center}
+          #s-forjaria .intg{display:flex; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--border)}
+          #s-forjaria .intg:first-of-type{border-top:0}
+          #s-forjaria .intg .ico2{width:34px;height:34px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);display:grid;place-items:center;flex:0 0 auto;font-weight:800;font-size:11px;color:var(--muted);letter-spacing:.02em}
+          #s-forjaria .intg .nm{flex:1;min-width:0} #s-forjaria .intg .nm .l{font-size:13px;font-weight:600} #s-forjaria .intg .nm .d{font-size:11px;color:var(--muted); margin-top:1px}
+          #s-forjaria .btn-sm{border:1px solid var(--border-2); background:var(--surface-2); color:var(--text); font-size:12px; font-weight:600; padding:7px 13px; border-radius:8px; cursor:pointer; font-family:inherit; transition:.14s; white-space:nowrap}
+          #s-forjaria .btn-sm:hover{border-color:var(--ember); color:var(--ember)}
+          #s-forjaria .btn-danger{border-color:color-mix(in srgb,var(--crit) 40%,var(--border)); color:var(--crit)}
+          #s-forjaria .btn-danger:hover{border-color:var(--crit); color:var(--crit); background:color-mix(in srgb,var(--crit) 9%,transparent)}
+          #s-forjaria .cpill{font-size:10.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; padding:3px 9px; border-radius:20px; white-space:nowrap}
+          #s-forjaria .cpill.ok{color:var(--good); background:color-mix(in srgb,var(--good) 13%,transparent)}
+          #s-forjaria .cpill.off{color:var(--faint); background:var(--inset); border:1px solid var(--border)}
+          #s-forjaria .allow{display:flex;flex-wrap:wrap;gap:7px;margin-top:2px}
+          #s-forjaria .allow .em{font-size:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:5px 11px;color:var(--muted);font-family:var(--mono); display:inline-flex; align-items:center; gap:7px}
+          #s-forjaria .allow .em b{color:var(--faint); cursor:pointer; font-family:var(--body)}
+          #s-forjaria .mrow{display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid var(--border)}
+          #s-forjaria .mrow .av{width:34px;height:34px;border-radius:50%;flex:0 0 auto;border:1px solid var(--border-2); background-size:cover; background-position:center; font-size:10px; font-weight:700; color:var(--muted); display:grid; place-items:center}
+          #s-forjaria .mrow .mn{font-size:13px; font-weight:600} #s-forjaria .mrow .me{font-size:11px; color:var(--muted); font-family:var(--mono)}
+          #s-forjaria .rtag{font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; background:var(--ember-soft); color:var(--ember); margin-left:6px}
+          @media (max-width:1000px){ #s-forjaria .set{grid-template-columns:1fr} }
+        </style>
+        <div class="head" style="margin-bottom:16px; display:flex; align-items:flex-end; justify-content:space-between; gap:16px">
+          <div><div class="eye">Forjaria · Sistema</div><h2>Configurações</h2><p>Aparência, conta, notificações, IA, integrações, acessos e segurança do Squad 8.</p></div>
+          <button class="btn-primary">Salvar alterações</button>
+        </div>
+
+        <div class="set">
+          <!-- Aparência -->
+          <div class="card set-sec">
+            <div class="set-h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 000 18c1.7 0 2-1.5 1-2.5s-.7-2.5 1-2.5H18a3 3 0 003-3c0-4.5-4-7-9-7z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="16.5" cy="10.5" r="1" fill="currentColor" stroke="none"/></svg></span><span class="tt">Aparência</span></div>
+            <div class="set-row"><div class="lab"><div class="l">Tema</div><div class="d">Escuro (padrão da marca), claro ou seguir o sistema.</div></div>
+              <div class="ctl"><div class="segc" id="themeSeg">
+                <button data-theme="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>Escuro</button>
+                <button data-theme="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>Claro</button>
+                <button data-theme="system"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Sistema</button>
+              </div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Reduzir animações</div><div class="d">Desliga o movimento contínuo (brasas, pulsos) — respeita acessibilidade.</div></div><div class="ctl"><div class="sw" id="swAnim"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Densidade</div><div class="d">Espaçamento das listas e cards.</div></div>
+              <div class="ctl"><div class="segc" data-seg="dens"><button class="on">Confortável</button><button>Compacto</button></div></div></div>
+          </div>
+
+          <!-- Conta -->
+          <div class="card set-sec">
+            <div class="set-h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></span><span class="tt">Conta</span></div>
+            <div class="set-row"><div class="lab"><div class="l">Nome</div></div><div class="ctl"><input class="txt" value="Felipe Carvalho"></div></div>
+            <div class="set-row"><div class="lab"><div class="l">E-mail</div><div class="d">Login via Google SSO</div></div><div class="ctl"><input class="txt" value="felipecarve3digital@gmail.com" readonly></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Papel primário</div><div class="d">Define a tela-casa do Covil.</div></div><div class="ctl"><select><option>Gestor de Contas</option><option>Gestor de Projetos</option><option>Gestor de Tráfego</option><option>Admin</option></select></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Idioma</div></div><div class="ctl"><select><option>Português (BR)</option><option>English</option><option>Español</option></select></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Fuso horário</div></div><div class="ctl"><select><option>America/São_Paulo (BRT)</option><option>America/Manaus</option><option>UTC</option></select></div></div>
+          </div>
+
+          <!-- Notificações -->
+          <div class="card set-sec">
+            <div class="set-h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></span><span class="tt">Notificações</span></div>
+            <div class="set-row"><div class="lab"><div class="l">Estopim / SLA em risco</div><div class="d">Alerta quando uma Forja está esfriando ou apagando.</div></div><div class="ctl"><div class="sw on"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Roda de Fogo</div><div class="d">Lembrete das reuniões e do briefing pendente.</div></div><div class="ctl"><div class="sw on"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Briefing semanal pronto</div></div><div class="ctl"><div class="sw on"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Menções da Faísca</div></div><div class="ctl"><div class="sw"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Canais</div><div class="d">Onde receber os avisos.</div></div>
+              <div class="ctl" style="display:flex; gap:7px"><span class="cpill ok">In-app</span><span class="cpill ok">E-mail</span><span class="cpill off">WhatsApp</span></div></div>
+          </div>
+
+          <!-- Faísca & IA -->
+          <div class="card set-sec">
+            <div class="set-h"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.7 4.8L18.5 8.5 13.7 10.2 12 15l-1.7-4.8L5.5 8.5l4.8-1.7z"/><path d="M18.5 14l.9 2.6L22 17.5l-2.6.9L18.5 21l-.9-2.6L15 17.5l2.6-.9z"/></svg></span><span class="tt">Faísca &amp; IA</span><span class="sh">Gemini + Claude</span></div>
+            <div class="set-row"><div class="lab"><div class="l">Modelo de ingestão</div><div class="d">Áudio, PDF e imagem (transcrição/extração).</div></div><div class="ctl"><select><option>Gemini Flash</option><option>Gemini Pro</option></select></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Modelo de raciocínio</div><div class="d">Briefing, plano de gargalos, Faísca.</div></div><div class="ctl"><select><option>Claude Sonnet</option><option>Claude Opus</option><option>Claude Haiku</option></select></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Voz da Faísca</div><div class="d">Responder por voz além do texto (TTS).</div></div><div class="ctl"><div class="sw on"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Cross-check em itens críticos</div><div class="d">Uma IA valida a saída da outra (ex.: extração do contrato). Dobra o custo.</div></div><div class="ctl"><div class="sw"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Prompt caching (Claude)</div><div class="d">Reaproveita regras da marca e templates — reduz custo/latência.</div></div><div class="ctl"><div class="sw on"></div></div></div>
+          </div>
+
+          <!-- Integrações -->
+          <div class="card set-sec wide">
+            <div class="set-h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 7V4a2 2 0 012-2h0a2 2 0 012 2v3M12 7V4a2 2 0 012-2h0a2 2 0 012 2v3M6 7h12v5a6 6 0 01-6 6h0a6 6 0 01-6-6zM12 18v4"/></svg></span><span class="tt">Integrações</span></div>
+            <div class="intg"><span class="ico2">CU</span><div class="nm"><div class="l">ClickUp</div><div class="d">Push do briefing e das Lenhas para as listas.</div></div><span class="cpill ok">Conectado</span><button class="btn-sm">Gerenciar</button></div>
+            <div class="intg"><span class="ico2">WA</span><div class="nm"><div class="l">WhatsApp · Evolution API</div><div class="d">SLA dos grupos e disparos.</div></div><span class="cpill ok">Conectado</span><button class="btn-sm">Gerenciar</button></div>
+            <div class="intg"><span class="ico2">GD</span><div class="nm"><div class="l">Google Drive</div><div class="d">Biblioteca de roteiros e criativos.</div></div><span class="cpill ok">Conectado</span><button class="btn-sm">Gerenciar</button></div>
+            <div class="intg"><span class="ico2">GN</span><div class="nm"><div class="l">Google Meu Negócio</div><div class="d">Métricas e avaliações das Crias.</div></div><span class="cpill off">Desconectado</span><button class="btn-sm">Conectar</button></div>
+            <div class="intg"><span class="ico2">SB</span><div class="nm"><div class="l">Supabase</div><div class="d">Banco de dados e Storage de contratos/documentos.</div></div><span class="cpill ok">Conectado</span><button class="btn-sm">Gerenciar</button></div>
+          </div>
+
+          <!-- Equipe & Acessos -->
+          <div class="card set-sec wide">
+            <div class="set-h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-5.2 7-5.2s7 1.9 7 5.2"/><path d="M16 4.5a3 3 0 010 6M22 20c0-2.6-1.6-4.3-4-5"/></svg></span><span class="tt">Equipe &amp; Acessos</span><span class="sh">Admin</span></div>
+            <div class="set-row"><div class="lab"><div class="l">Allowlist (Google SSO)</div><div class="d">Só estes e-mails conseguem entrar no CRM.</div>
+              <div class="allow"><span class="em">felipecarve3digital@gmail.com <b>×</b></span><span class="em">luiz.mattos@e3digital.com <b>×</b></span></div>
+            </div><div class="ctl"><button class="btn-sm">+ Convidar membro</button></div></div>
+            <div class="mrow"><span class="av" style="background-image:url('assets/felipe-av.webp')">FC</span><div class="nm" style="flex:1"><div class="mn">Felipe Carvalho <span class="rtag">Admin</span></div><div class="me">felipecarve3digital@gmail.com</div></div><div style="display:flex;gap:6px"><span class="cpill ok">Contas</span></div><button class="btn-sm">Editar papéis</button></div>
+            <div class="mrow"><span class="av" style="background-image:url('assets/luiz-av.webp')">LM</span><div class="nm" style="flex:1"><div class="mn">Luiz Mattos <span class="rtag">Admin</span></div><div class="me">luiz.mattos@e3digital.com</div></div><div style="display:flex;gap:6px"><span class="cpill ok">Projetos</span></div><button class="btn-sm">Editar papéis</button></div>
+          </div>
+
+          <!-- Operação / Forja -->
+          <div class="card set-sec">
+            <div class="set-h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z"/></svg></span><span class="tt">Operação · Forja</span></div>
+            <div class="set-row"><div class="lab"><div class="l">SLA por fase</div><div class="d">Prazo de cada uma das 7 fases (alerta, não trava).</div></div>
+              <div class="ctl"><div class="stp"><button data-step="-1">−</button><span class="v" id="slaVal">7 dias</span><button data-step="1">+</button></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Criar Estruturação ao cadastrar Cria</div><div class="d">1 Cria = 1 Estruturação, automática.</div></div><div class="ctl"><div class="sw on"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Início da Forja manual</div><div class="d">Avanço de fase por checklist; a IA calcula prazos ao confirmar o contrato.</div></div><div class="ctl"><div class="sw on"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Produto travado em “Estruturação”</div><div class="d">Produto único — sem escolha no cadastro.</div></div><div class="ctl"><div class="sw on lock" title="Travado"></div></div></div>
+          </div>
+
+          <!-- Segurança & LGPD -->
+          <div class="card set-sec">
+            <div class="set-h"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="tt">Segurança &amp; LGPD</span></div>
+            <div class="set-row"><div class="lab"><div class="l">Autenticação em 2 fatores</div><div class="d">Além do Google SSO.</div></div><div class="ctl"><div class="sw"></div></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Sessões ativas</div><div class="d">2 dispositivos conectados.</div></div><div class="ctl"><button class="btn-sm">Encerrar outras</button></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Retenção de dados</div><div class="d">Contratos e briefings enviados às APIs de IA.</div></div><div class="ctl"><select><option>12 meses</option><option>24 meses</option><option>Indeterminado</option></select></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Consentimento LGPD registrado</div><div class="d">Base legal para tratar dados das Crias.</div></div><div class="ctl"><span class="cpill ok">Ativo</span></div></div>
+            <div class="set-row"><div class="lab"><div class="l">Meus dados</div></div><div class="ctl" style="display:flex;gap:8px"><button class="btn-sm">Exportar</button><button class="btn-sm btn-danger">Excluir conta</button></div></div>
+          </div>
         </div>
       </div>
 
@@ -2063,5 +2213,38 @@
   /* Tarefas — filtros (visual) */
   document.querySelectorAll('#s-tarefas .tkfilter button').forEach(function(b){ b.addEventListener('click',function(){
     this.parentElement.querySelectorAll('button').forEach(function(x){x.classList.remove('on');}); this.classList.add('on'); }); });
+})();
+
+/* ----- Configurações (Forjaria): tema claro/escuro/sistema + switches ----- */
+(function(){
+  "use strict";
+  var root=document.documentElement;
+  var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: light)'):null;
+  function eff(mode){ return mode==='system' ? (mq&&mq.matches?'light':'dark') : mode; }
+  function paint(mode){ root.classList.toggle('theme-light', eff(mode)==='light'); }
+  var mode='dark';
+  try{ mode=localStorage.getItem('sf-theme')||'dark'; }catch(e){}
+  paint(mode);
+  function markSeg(){ document.querySelectorAll('#themeSeg button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-theme')===mode); }); }
+  markSeg();
+  document.querySelectorAll('#themeSeg button').forEach(function(b){ b.addEventListener('click',function(){
+    mode=b.getAttribute('data-theme'); paint(mode); markSeg(); try{ localStorage.setItem('sf-theme',mode); }catch(e){}
+  }); });
+  if(mq && mq.addEventListener) mq.addEventListener('change',function(){ if(mode==='system') paint('system'); });
+
+  /* switches genéricos das Configurações */
+  document.querySelectorAll('#s-forjaria .sw').forEach(function(sw){ sw.addEventListener('click',function(){
+    if(sw.classList.contains('lock')) return;
+    var on=sw.classList.toggle('on');
+    if(sw.id==='swAnim') root.classList.toggle('no-anim', on);
+  }); });
+  /* segmentos visuais (densidade) */
+  document.querySelectorAll('#s-forjaria .segc[data-seg] button').forEach(function(b){ b.addEventListener('click',function(){
+    this.parentElement.querySelectorAll('button').forEach(function(x){x.classList.remove('on');}); this.classList.add('on'); }); });
+  /* stepper do SLA por fase */
+  var slaEl=document.getElementById('slaVal'), sla=7;
+  document.querySelectorAll('#s-forjaria .stp button').forEach(function(b){ b.addEventListener('click',function(){
+    sla=Math.max(1, Math.min(30, sla + (+b.getAttribute('data-step')))); if(slaEl) slaEl.textContent=sla+(sla===1?' dia':' dias');
+  }); });
 })();
 </script>
