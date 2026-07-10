@@ -579,7 +579,7 @@
           <h2 class="big" id="heroGreet">Bom dia, Felipe</h2>
           <p>Suas Forjas, saúde e SLAs num relance — este é o seu Covil.</p>
           <div class="glass">
-            <div class="g-stat"><div class="v">12</div><div class="l">Forjas ativas</div></div>
+            <div class="g-stat"><div class="v">21</div><div class="l">Forjas ativas</div></div>
             <div class="g-stat"><div class="v">83%</div><div class="l">No prazo</div></div>
             <div class="g-stat crit"><div class="v">2</div><div class="l">SLA estourando</div></div>
             <div class="g-stat warn"><div class="v">7</div><div class="l">Lenhas na fila</div></div>
@@ -634,28 +634,51 @@
       <div class="card" style="margin-top:13px">
         <div class="c-h"><span class="t">Alertas de SLA</span><span class="s">fases estourando o Estopim</span></div>
         <div class="list">
-          <div class="row"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Vermelho</span><div class="rmain"><div class="t">Mendes Advocacia Previdenciária</div><div class="s">Implementação CRM + IA · +2 dias</div></div><span class="rside">-2d</span></div>
-          <div class="row"><span class="pill warn"><span class="d" style="background:var(--warn)"></span>Atenção</span><div class="rmain"><div class="t">Vasconcelos Advocacia</div><div class="s">Diagnóstico 360 · vence amanhã</div></div><span class="rside">1d</span></div>
-          <div class="row"><span class="pill good"><span class="d" style="background:var(--good)"></span>No ponto</span><div class="rmain"><div class="t">Ribeiro & Advogados Associados</div><div class="s">Treinamento Comercial · 4 dias de folga</div></div><span class="rside">4d</span></div>
+          <div class="row"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Vermelho</span><div class="rmain"><div class="t">Letícia Stein Carlos de Souza</div><div class="s">Treinamento · +2 dias</div></div><span class="rside">-2d</span></div>
+          <div class="row"><span class="pill warn"><span class="d" style="background:var(--warn)"></span>Atenção</span><div class="rmain"><div class="t">Mozini Advocacia</div><div class="s">Diagnóstico 360 · vence amanhã</div></div><span class="rside">1d</span></div>
+          <div class="row"><span class="pill good"><span class="d" style="background:var(--good)"></span>No ponto</span><div class="rmain"><div class="t">Pierre & Cunha Advogados Associados</div><div class="s">Treinamento Comercial · 4 dias de folga</div></div><span class="rside">4d</span></div>
         </div>
       </div>
       </div><!-- /s-covil -->
 
       <div class="screen" id="s-crias">
         <div class="head" style="margin-bottom:16px; display:flex; align-items:flex-end; justify-content:space-between; gap:16px">
-          <div><div class="eye">Carteira · 6 Crias</div><h2>Crias</h2><p>Escritórios em estruturação — clique numa Cria pra abrir a Forja.</p></div>
+          <div><div class="eye">Carteira · 29 Crias</div><h2>Crias</h2><p>Squad 08 · espelho do ClickUp (Estruturação): 21 em execução + 8 no backlog. Clique numa Cria pra abrir a Forja.</p></div>
           <button class="btn-primary" id="novaCriaBtn">+ Nova Cria</button>
         </div>
         <div class="card" style="padding:0; overflow-x:auto">
           <table class="tbl">
             <thead><tr><th>Cria</th><th>Fase</th><th>Saúde</th><th>Gestor</th><th>Estopim</th><th>Status</th></tr></thead>
             <tbody>
-              <tr><td class="crname">Mendes Advocacia Previdenciária<small>Previdenciário</small></td><td class="mono">5 · Implementação</td><td><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Apagando</span></td><td>Luiz M.</td><td class="mono" style="color:var(--crit)">-2d</td><td><span class="chip crit">Forja quente</span></td></tr>
-              <tr><td class="crname">Vasconcelos Advocacia<small>Trabalhista</small></td><td class="mono">2 · Diagnóstico 360</td><td><span class="pill warn"><span class="d" style="background:var(--warn)"></span>Esfriando</span></td><td>Luiz M.</td><td class="mono" style="color:var(--warn)">1d</td><td><span class="chip warn">Atenção</span></td></tr>
-              <tr><td class="crname">Ribeiro &amp; Advogados Associados<small>Cível</small></td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono">4d</td><td><span style="color:var(--faint)">—</span></td></tr>
-              <tr><td class="crname">Costa &amp; Lima Sociedade<small>Empresarial</small></td><td class="mono">1 · Alinhamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono">6d</td><td><span class="chip good">Nova</span></td></tr>
-              <tr><td class="crname">Escritório Andrade Jurídico<small>Tributário</small></td><td class="mono">7 · Auditoria Criativa</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono">3d</td><td><span class="chip good">Reta final</span></td></tr>
-              <tr><td class="crname">Almeida Advocacia Familiar<small>Família</small></td><td class="mono">4 · Consultoria</td><td><span class="pill warn"><span class="d" style="background:var(--warn)"></span>Esfriando</span></td><td>Luiz M.</td><td class="mono">2d</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">M. Oliveira Sociedade de Advogados</td><td class="mono">1 · Alinhamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Edi Carlos</td><td class="mono">2 · Diagnóstico 360</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">EDMILSON FREIRE</td><td class="mono">2 · Diagnóstico 360</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Renato Leo e Advogados Associados</td><td class="mono">2 · Diagnóstico 360</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Bárbara Santos e Lucas Alves</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Giancarlo Terezam Soc. Individual de Advocacia</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Granadas, Carneiro e Domingues Advogados</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Henrique Adriano da Silva T. Werneck</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Igor Freitas Guinot</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">João Paulo Picharra Reis Soc. Individual de Advocacia</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Kezia, Marciely, Thais</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">L.G Polezi Soc. Individual de Advocacia</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Letícia Stein Carlos de Souza</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Mayara Medalha</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Mozini Advocacia</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Pierre &amp; Cunha Advogados Associados</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Raissa Pinto Soc. Individual de Advocacia</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Raphael Souza Soc. Individual de Advocacia</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Roseane Topan Soc. Individual de Advocacia</td><td class="mono">3 · Treinamento</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Giuliane Giorgi Torres</td><td class="mono">4 · Consultoria</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Luzia Barbosa Soc. Individual de Advocacia</td><td class="mono">4 · Consultoria</td><td><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span style="color:var(--faint)">—</span></td></tr>
+              <tr><td class="crname">Agenor de Lima</td><td class="mono" style="color:var(--faint)">—</td><td><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Pré-Forja</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span class="chip" style="color:var(--faint);background:var(--inset);border:1px solid var(--border)">Backlog</span></td></tr>
+              <tr><td class="crname">André Luiz</td><td class="mono" style="color:var(--faint)">—</td><td><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Pré-Forja</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span class="chip" style="color:var(--faint);background:var(--inset);border:1px solid var(--border)">Backlog</span></td></tr>
+              <tr><td class="crname">Cardoso &amp; Martins Advocacia</td><td class="mono" style="color:var(--faint)">—</td><td><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Pré-Forja</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span class="chip" style="color:var(--faint);background:var(--inset);border:1px solid var(--border)">Backlog</span></td></tr>
+              <tr><td class="crname">Cyntia Boregas</td><td class="mono" style="color:var(--faint)">—</td><td><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Pré-Forja</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span class="chip" style="color:var(--faint);background:var(--inset);border:1px solid var(--border)">Backlog</span></td></tr>
+              <tr><td class="crname">Lima &amp; Moraes Advogados Associados</td><td class="mono" style="color:var(--faint)">—</td><td><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Pré-Forja</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span class="chip" style="color:var(--faint);background:var(--inset);border:1px solid var(--border)">Backlog</span></td></tr>
+              <tr><td class="crname">Lourenço de Oliveira</td><td class="mono" style="color:var(--faint)">—</td><td><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Pré-Forja</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span class="chip" style="color:var(--faint);background:var(--inset);border:1px solid var(--border)">Backlog</span></td></tr>
+              <tr><td class="crname">Marcelo Camilo</td><td class="mono" style="color:var(--faint)">—</td><td><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Pré-Forja</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span class="chip" style="color:var(--faint);background:var(--inset);border:1px solid var(--border)">Backlog</span></td></tr>
+              <tr><td class="crname">Valeriano, Oliveira e Advogados Associados</td><td class="mono" style="color:var(--faint)">—</td><td><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Pré-Forja</span></td><td>Luiz M.</td><td class="mono" style="color:var(--faint)">—</td><td><span class="chip" style="color:var(--faint);background:var(--inset);border:1px solid var(--border)">Backlog</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -701,20 +724,20 @@
         </div>
         <div class="card tkgroup">
           <div class="tkg-h"><span class="tt" style="color:var(--crit)">Atrasadas</span><span class="ct">2</span></div>
-          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Conectar Meta Ads da Mendes</div><div class="s">Mendes Advocacia · Fase 5 · Implementação CRM + IA</div></div><span class="ttag forja">Forja</span><span class="who">LM</span><span class="due crit">-2d</span></div>
-          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Revisar briefing semanal · Vasconcelos</div><div class="s">Vasconcelos Advocacia · Fase 2 · Diagnóstico 360</div></div><span class="ttag forja">Forja</span><span class="who">FC</span><span class="due crit">-1d</span></div>
+          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Preparar trilha de Treinamento · Letícia</div><div class="s">Letícia Stein · Fase 3 · Treinamento</div></div><span class="ttag forja">Forja</span><span class="who">LM</span><span class="due crit">-2d</span></div>
+          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Revisar briefing semanal · Mozini</div><div class="s">Mozini Advocacia · Fase 2 · Diagnóstico 360</div></div><span class="ttag forja">Forja</span><span class="who">FC</span><span class="due crit">-1d</span></div>
         </div>
         <div class="card tkgroup">
           <div class="tkg-h"><span class="tt">Hoje</span><span class="ct">4</span></div>
-          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Preparar pauta da Roda de Fogo · Mendes</div><div class="s">Mendes Advocacia · reunião 15h</div></div><span class="ttag forja">Forja</span><span class="who">FC</span><span class="due warn">hoje</span></div>
+          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Preparar pauta da Roda de Fogo · Letícia</div><div class="s">Letícia Stein · reunião 15h</div></div><span class="ttag forja">Forja</span><span class="who">FC</span><span class="due warn">hoje</span></div>
           <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Postar 3 criativos no grupo do cliente</div><div class="s">Rotina diária · Tráfego</div></div><span class="ttag rotina">Rotina</span><span class="who">FC</span><span class="due warn">hoje</span></div>
           <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Checar SLA dos grupos de WhatsApp</div><div class="s">Rotina diária · Contas</div></div><span class="ttag rotina">Rotina</span><span class="who">LM</span><span class="due">17h</span></div>
-          <div class="tk done"><span class="chk done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Aprovar Diagnóstico 360 · Costa &amp; Lima</div><div class="s">Costa &amp; Lima · Fase 1 · Alinhamento</div></div><span class="ttag forja">Forja</span><span class="who">FC</span><span class="due">feito</span></div>
+          <div class="tk done"><span class="chk done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Aprovar Diagnóstico 360 · Igor Freitas Guinot</div><div class="s">Igor Freitas Guinot · Fase 1 · Alinhamento</div></div><span class="ttag forja">Forja</span><span class="who">FC</span><span class="due">feito</span></div>
         </div>
         <div class="card tkgroup">
           <div class="tkg-h"><span class="tt">Esta semana</span><span class="ct">3</span></div>
-          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Treinar equipe do cliente no CRM</div><div class="s">Mendes Advocacia · Fase 5 · Implementação</div></div><span class="ttag forja">Forja</span><span class="who">LM</span><span class="due">qui</span></div>
-          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Montar Diagnóstico 360 · Almeida</div><div class="s">Almeida Advocacia · Fase 4 · Consultoria</div></div><span class="ttag forja">Forja</span><span class="who">LM</span><span class="due">sex</span></div>
+          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Treinar equipe do cliente no CRM</div><div class="s">Letícia Stein · Fase 3 · Treinamento</div></div><span class="ttag forja">Forja</span><span class="who">LM</span><span class="due">qui</span></div>
+          <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Montar Diagnóstico 360 · Luzia Barbosa</div><div class="s">Luzia Barbosa · Fase 4 · Consultoria</div></div><span class="ttag forja">Forja</span><span class="who">LM</span><span class="due">sex</span></div>
           <div class="tk"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Organizar Biblioteca por nicho (IA)</div><div class="s">Rotina semanal · Criativos</div></div><span class="ttag rotina">Rotina</span><span class="who">FC</span><span class="due">sex</span></div>
         </div>
       </div>
@@ -767,12 +790,12 @@
         <div class="card" style="margin-top:13px">
           <div class="c-h"><span class="t">Próximos compromissos</span><span class="s">a partir de hoje</span></div>
           <div style="margin-top:2px">
-            <div class="up"><span class="dt">Hoje</span><span class="dot" style="background:var(--ember)"></span><div class="t">Roda de Fogo · Mendes Advocacia</div><span class="rside mono" style="color:var(--muted)">15:00</span></div>
-            <div class="up"><span class="dt">Amanhã</span><span class="dot" style="background:var(--crit)"></span><div class="t">Estopim de SLA · Vasconcelos (Diagnóstico 360)</div><span class="rside mono" style="color:var(--crit)">vence</span></div>
-            <div class="up"><span class="dt">14 Jul</span><span class="dot" style="background:var(--ember)"></span><div class="t">Roda de Fogo · Vasconcelos Advocacia</div><span class="rside mono" style="color:var(--muted)">10:00</span></div>
-            <div class="up"><span class="dt">16 Jul</span><span class="dot" style="background:var(--ember)"></span><div class="t">Roda de Fogo · Ribeiro &amp; Advogados</div><span class="rside mono" style="color:var(--muted)">14:00</span></div>
-            <div class="up"><span class="dt">16 Jul</span><span class="dot" style="background:var(--plasma)"></span><div class="t">Entrega · Costa &amp; Lima (Alinhamento)</div><span class="rside mono" style="color:var(--muted)">—</span></div>
-            <div class="up"><span class="dt">21 Jul</span><span class="dot" style="background:var(--crit)"></span><div class="t">Estopim de SLA · Almeida Advocacia</div><span class="rside mono" style="color:var(--muted)">vence</span></div>
+            <div class="up"><span class="dt">Hoje</span><span class="dot" style="background:var(--ember)"></span><div class="t">Roda de Fogo · Letícia Stein</div><span class="rside mono" style="color:var(--muted)">15:00</span></div>
+            <div class="up"><span class="dt">Amanhã</span><span class="dot" style="background:var(--crit)"></span><div class="t">Estopim de SLA · Mozini (Diagnóstico 360)</div><span class="rside mono" style="color:var(--crit)">vence</span></div>
+            <div class="up"><span class="dt">14 Jul</span><span class="dot" style="background:var(--ember)"></span><div class="t">Roda de Fogo · Mozini Advocacia</div><span class="rside mono" style="color:var(--muted)">10:00</span></div>
+            <div class="up"><span class="dt">16 Jul</span><span class="dot" style="background:var(--ember)"></span><div class="t">Roda de Fogo · Pierre &amp; Cunha</div><span class="rside mono" style="color:var(--muted)">14:00</span></div>
+            <div class="up"><span class="dt">16 Jul</span><span class="dot" style="background:var(--plasma)"></span><div class="t">Entrega · Igor Freitas Guinot (Alinhamento)</div><span class="rside mono" style="color:var(--muted)">—</span></div>
+            <div class="up"><span class="dt">21 Jul</span><span class="dot" style="background:var(--crit)"></span><div class="t">Estopim de SLA · Luzia Barbosa</div><span class="rside mono" style="color:var(--muted)">vence</span></div>
           </div>
         </div>
       </div>
@@ -780,19 +803,43 @@
       <div class="screen" id="s-linha">
         <div class="head" style="margin-bottom:16px"><div class="eye">Operações</div><h2>Linha de Fogo</h2><p>Todas as Forjas pelas 7 fases da Estruturação.</p></div>
         <div class="kanban">
+          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--faint)"></span>Backlog</span><span class="cnt">8</span></div>
+            <div class="kcard"><div class="kt">Agenor de Lima</div><div class="ks">Pré-Forja · a distribuir</div><div class="km"><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Backlog</span></div></div>
+            <div class="kcard"><div class="kt">André Luiz</div><div class="ks">Pré-Forja · a distribuir</div><div class="km"><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Backlog</span></div></div>
+            <div class="kcard"><div class="kt">Cardoso &amp; Martins Advocacia</div><div class="ks">Pré-Forja · a distribuir</div><div class="km"><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Backlog</span></div></div>
+            <div class="kcard"><div class="kt">Cyntia Boregas</div><div class="ks">Pré-Forja · a distribuir</div><div class="km"><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Backlog</span></div></div>
+            <div class="kcard"><div class="kt">Lima &amp; Moraes Adv.</div><div class="ks">Pré-Forja · a distribuir</div><div class="km"><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Backlog</span></div></div>
+            <div class="kcard"><div class="kt">Lourenço de Oliveira</div><div class="ks">Pré-Forja · a distribuir</div><div class="km"><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Backlog</span></div></div>
+            <div class="kcard"><div class="kt">Marcelo Camilo</div><div class="ks">Pré-Forja · a distribuir</div><div class="km"><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Backlog</span></div></div>
+            <div class="kcard"><div class="kt">Valeriano, Oliveira e Adv.</div><div class="ks">Pré-Forja · a distribuir</div><div class="km"><span class="pill" style="color:var(--faint);background:var(--inset)"><span class="d" style="background:var(--faint)"></span>Backlog</span></div></div></div>
           <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--ash)"></span>1 · Alinhamento</span><span class="cnt">1</span></div>
-            <div class="kcard"><div class="kt">Costa &amp; Lima Sociedade</div><div class="ks">Empresarial · Luiz M.</div><div class="km"><span class="chip good">Nova</span><span class="mono" style="font-size:10.5px;color:var(--faint)">6d</span></div></div></div>
-          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--warn)"></span>2 · Diagnóstico</span><span class="cnt">1</span></div>
-            <div class="kcard"><div class="kt">Vasconcelos Advocacia</div><div class="ks">Trabalhista · Luiz M.</div><div class="km"><span class="pill warn"><span class="d" style="background:var(--warn)"></span>Esfriando</span><span class="mono" style="font-size:10.5px;color:var(--warn)">1d</span></div></div></div>
-          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--good)"></span>3 · Treinamento</span><span class="cnt">1</span></div>
-            <div class="kcard"><div class="kt">Ribeiro &amp; Advogados</div><div class="ks">Cível · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span><span class="mono" style="font-size:10.5px;color:var(--faint)">4d</span></div></div></div>
-          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--warn)"></span>4 · Consultoria</span><span class="cnt">1</span></div>
-            <div class="kcard"><div class="kt">Almeida Adv. Familiar</div><div class="ks">Família · Luiz M.</div><div class="km"><span class="pill warn"><span class="d" style="background:var(--warn)"></span>Esfriando</span><span class="mono" style="font-size:10.5px;color:var(--faint)">2d</span></div></div></div>
-          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--ember)"></span>5 · Implementação</span><span class="cnt">1</span></div>
-            <div class="kcard" style="border-color:color-mix(in srgb,var(--crit) 35%,var(--border))"><div class="kt">Mendes Adv. Previdenciária</div><div class="ks">Previdenciário · Luiz M.</div><div class="km"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Apagando</span><span class="mono" style="font-size:10.5px;color:var(--crit)">-2d</span></div></div></div>
+            <div class="kcard"><div class="kt">M. Oliveira Sociedade de Advogados</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div></div>
+          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--warn)"></span>2 · Diagnóstico</span><span class="cnt">3</span></div>
+            <div class="kcard"><div class="kt">Edi Carlos</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">EDMILSON FREIRE</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Renato Leo e Adv.</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div></div>
+          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--good)"></span>3 · Treinamento</span><span class="cnt">15</span></div>
+            <div class="kcard"><div class="kt">Bárbara Santos e Lucas Alves</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Giancarlo Terezam</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Granadas, Carneiro & Domingues</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Henrique Adriano</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Igor Freitas Guinot</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">João Paulo Picharra Reis</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Kezia, Marciely, Thais</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">L.G Polezi</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Letícia Stein Carlos de Souza</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Mayara Medalha</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Mozini Advocacia</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Pierre &amp; Cunha Adv.</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Raissa Pinto</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Raphael Souza</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Roseane Topan</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div></div>
+          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--warn)"></span>4 · Consultoria</span><span class="cnt">2</span></div>
+            <div class="kcard"><div class="kt">Giuliane Giorgi Torres</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+            <div class="kcard"><div class="kt">Luzia Barbosa</div><div class="ks">Estruturação · Luiz M.</div><div class="km"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div></div>
+          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--ember)"></span>5 · Implementação</span><span class="cnt">0</span></div></div>
           <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--ember-hi)"></span>6 · Aud. Mídia</span><span class="cnt">0</span></div></div>
-          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--ember-hi)"></span>7 · Aud. Criativa</span><span class="cnt">1</span></div>
-            <div class="kcard"><div class="kt">Escritório Andrade</div><div class="ks">Tributário · Luiz M.</div><div class="km"><span class="chip good">Reta final</span><span class="mono" style="font-size:10.5px;color:var(--faint)">3d</span></div></div></div>
+          <div class="kcol"><div class="kh"><span class="kn"><span class="b" style="background:var(--ember-hi)"></span>7 · Aud. Criativa</span><span class="cnt">0</span></div></div>
         </div>
       </div>
 
@@ -840,7 +887,7 @@
           <div class="pbadges" id="perfBadges"><span class="role">Projetos</span><span class="role">Coordenador</span></div>
         </div>
         <div class="kpis">
-          <div class="kpi"><div class="k-top"><span class="k-label">Crias</span></div><div class="k-val">6</div><span class="k-delta neu">sob responsabilidade</span></div>
+          <div class="kpi"><div class="k-top"><span class="k-label">Crias</span></div><div class="k-val">29</div><span class="k-delta neu">sob responsabilidade</span></div>
           <div class="kpi"><div class="k-top"><span class="k-label">Lenhas abertas</span></div><div class="k-val">14</div><span class="k-delta down">2 estouradas</span></div>
           <div class="kpi flag-warn"><div class="k-top"><span class="k-label">No prazo (SLA)</span></div><div class="k-val">88%</div><span class="k-delta neu">últimos 30 dias</span></div>
           <div class="kpi"><div class="k-top"><span class="k-label">Rodas de Fogo</span></div><div class="k-val">4</div><span class="k-delta neu">esta semana</span></div>
@@ -848,21 +895,21 @@
         <div class="grid g-2">
           <div>
             <div class="card" style="margin-bottom:14px">
-              <div class="c-h"><span class="t">Crias sob responsabilidade</span><span class="s">6 Forjas</span></div>
+              <div class="c-h"><span class="t">Crias sob responsabilidade</span><span class="s">29 Forjas</span></div>
               <div style="margin-top:8px">
-                <div class="crow"><span class="cav">MA</span><div class="cm"><div class="t">Mendes Advocacia</div><div class="s">Previdenciário · Fase 5 · dia 29/49</div></div><div class="cside"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Apagando</span></div></div>
-                <div class="crow"><span class="cav">VC</span><div class="cm"><div class="t">Vasconcelos &amp; Cia</div><div class="s">Trabalhista · Fase 2 · dia 9/49</div></div><div class="cside"><span class="pill warn"><span class="d" style="background:var(--warn)"></span>Esfriando</span></div></div>
-                <div class="crow"><span class="cav">OK</span><div class="cm"><div class="t">Okawa Advocacia</div><div class="s">Trabalhista · Fase 4 · dia 24/49</div></div><div class="cside"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
-                <div class="crow"><span class="cav">PB</span><div class="cm"><div class="t">Prado Bancário</div><div class="s">Bancário · Fase 6 · dia 40/49</div></div><div class="cside"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+                <div class="crow"><span class="cav">LS</span><div class="cm"><div class="t">Letícia Stein</div><div class="s">Previdenciário · Fase 3 · dia 17/49</div></div><div class="cside"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Apagando</span></div></div>
+                <div class="crow"><span class="cav">EC</span><div class="cm"><div class="t">Edi Carlos</div><div class="s">Trabalhista · Fase 2 · dia 9/49</div></div><div class="cside"><span class="pill warn"><span class="d" style="background:var(--warn)"></span>Esfriando</span></div></div>
+                <div class="crow"><span class="cav">GT</span><div class="cm"><div class="t">Giuliane Giorgi Torres</div><div class="s">Cível · Fase 4 · dia 24/49</div></div><div class="cside"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
+                <div class="crow"><span class="cav">MO</span><div class="cm"><div class="t">M. Oliveira Soc. de Advogados</div><div class="s">Empresarial · Fase 1 · dia 4/49</div></div><div class="cside"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
               </div>
             </div>
             <div class="card">
               <div class="c-h"><span class="t">Lenhas em aberto</span><span class="s">14 · 2 estouradas</span></div>
               <div style="margin-top:8px">
-                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Liberar acesso ao Meta Ads</div><div class="s">Mendes Advocacia · Fase 5</div></div><span class="est" style="color:var(--crit)">quinta</span></div>
-                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Concluir treinamento no CRM</div><div class="s">Mendes Advocacia · Fase 5</div></div><span class="est" style="color:var(--warn)">07/07</span></div>
-                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Rascunhar Diagnóstico 360</div><div class="s">Vasconcelos &amp; Cia · Fase 2</div></div><span class="est" style="color:var(--muted)">08/07</span></div>
-                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Revisar criativos previdenciários</div><div class="s">Okawa Advocacia · Fase 4</div></div><span class="est" style="color:var(--muted)">10/07</span></div>
+                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Agendar diagnóstico de processos</div><div class="s">Letícia Stein · Fase 3</div></div><span class="est" style="color:var(--crit)">quinta</span></div>
+                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Concluir treinamento no CRM</div><div class="s">Letícia Stein · Fase 3</div></div><span class="est" style="color:var(--warn)">07/07</span></div>
+                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Rascunhar Diagnóstico 360</div><div class="s">Mozini Advocacia · Fase 2</div></div><span class="est" style="color:var(--muted)">08/07</span></div>
+                <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Revisar criativos previdenciários</div><div class="s">Giuliane Giorgi Torres · Fase 4</div></div><span class="est" style="color:var(--muted)">10/07</span></div>
               </div>
             </div>
           </div>
@@ -888,9 +935,9 @@
             <div class="card">
               <div class="c-h"><span class="t">Atividade recente</span></div>
               <div style="margin-top:8px">
-                <div class="act"><span class="dot"></span><div class="amain"><b>Encerrou a Roda de Fogo</b> <span class="s">— Mendes Advocacia</span></div><span class="at">15:30</span></div>
-                <div class="act"><span class="dot"></span><div class="amain"><b>Avançou pra Fase 4</b> <span class="s">— Okawa Advocacia</span></div><span class="at">ontem</span></div>
-                <div class="act"><span class="dot"></span><div class="amain"><b>Comentou na Cria</b> <span class="s">— Vasconcelos &amp; Cia</span></div><span class="at">2 dias</span></div>
+                <div class="act"><span class="dot"></span><div class="amain"><b>Encerrou a Roda de Fogo</b> <span class="s">— Letícia Stein</span></div><span class="at">15:30</span></div>
+                <div class="act"><span class="dot"></span><div class="amain"><b>Avançou pra Fase 4</b> <span class="s">— Giuliane Giorgi Torres</span></div><span class="at">ontem</span></div>
+                <div class="act"><span class="dot"></span><div class="amain"><b>Comentou na Cria</b> <span class="s">— Mozini Advocacia</span></div><span class="at">2 dias</span></div>
               </div>
             </div>
           </div>
@@ -1064,7 +1111,7 @@
             <div class="c-h"><span class="t">Contrato</span><span class="chip good">IA leu · 8 campos</span></div>
             <div class="filedone" style="margin-top:8px">
               <span class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg></span>
-              <div><div class="fn">Contrato_Mendes_Advocacia.pdf</div><div class="fs">2 páginas · lido pela IA</div></div>
+              <div><div class="fn">Contrato_Leticia_Stein.pdf</div><div class="fs">2 páginas · lido pela IA</div></div>
               <span class="rechip">trocar</span>
             </div>
             <p class="s" style="margin:14px 0 12px">A IA leu o contrato e preencheu o cadastro ao lado. Confira e ajuste se precisar.</p>
@@ -1072,7 +1119,7 @@
           </div>
           <div class="card">
             <div class="c-h"><span class="t">Dados da Cria</span></div>
-            <div class="field" style="margin-top:8px"><label>Escritório <span class="iatag">IA</span></label><input value="Mendes Advocacia Previdenciária"></div>
+            <div class="field" style="margin-top:8px"><label>Escritório <span class="iatag">IA</span></label><input value="Letícia Stein Carlos de Souza"></div>
             <div class="grid2">
               <div class="field"><label>Área do direito <span class="iatag">IA</span></label><input value="Previdenciário"></div>
               <div class="field"><label>Produto <span class="iatag">IA</span></label><input value="Estruturação"></div>
@@ -1201,25 +1248,25 @@
         </style>
         <span class="back" id="detBack">&lsaquo; Voltar pra Crias</span>
         <div class="dtop">
-          <span class="dav">MA</span>
-          <div class="dinfo"><h2>Mendes Advocacia Previdenciária</h2><p>Previdenciário · Gestor: Luiz Mattos · Início 12/06/2026</p></div>
+          <span class="dav">LS</span>
+          <div class="dinfo"><h2>Letícia Stein Carlos de Souza</h2><p>Previdenciário · Gestor: Luiz Mattos · Início 12/06/2026</p></div>
           <div class="dbadges"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Apagando</span><span class="chip crit">Forja quente</span></div>
           <button class="fog-open" id="abrirFogueira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z"/></svg>Abrir Roda de Fogo</button>
         </div>
         <div class="kpis">
-          <div class="kpi"><div class="k-top"><span class="k-label">Fase atual</span></div><div class="k-val" style="font-size:24px">Fase 5</div><span class="k-delta neu">Implementação CRM + IA</span></div>
-          <div class="kpi"><div class="k-top"><span class="k-label">Dia da Forja</span></div><div class="k-val">29<span style="font-size:16px;color:var(--muted)">/49</span></div><span class="k-delta neu">Estruturação</span></div>
+          <div class="kpi"><div class="k-top"><span class="k-label">Fase atual</span></div><div class="k-val" style="font-size:24px">Fase 3</div><span class="k-delta neu">Treinamento</span></div>
+          <div class="kpi"><div class="k-top"><span class="k-label">Dia da Forja</span></div><div class="k-val">17<span style="font-size:16px;color:var(--muted)">/49</span></div><span class="k-delta neu">Estruturação</span></div>
           <div class="kpi flag-warn"><div class="k-top"><span class="k-label">NPS</span></div><div class="k-val">8</div><span class="k-delta neu">último mês</span></div>
           <div class="kpi flag-crit"><div class="k-top"><span class="k-label">Briefing</span><span class="chip crit">Pendente</span></div><div class="k-val">1</div><span class="k-delta neu">esta semana</span></div>
         </div>
         <div class="card" style="margin:13px 0">
-          <div class="c-h"><span class="t">Termômetro da Forja</span><span class="now">fase 5 de 7</span></div>
+          <div class="c-h"><span class="t">Termômetro da Forja</span><span class="now">fase 3 de 7</span></div>
           <div class="funnel">
             <div class="ph done"><div class="bar"></div><div class="n">FASE 1</div><div class="nm">Alinhamento</div><div class="dd">Dia 1–7</div></div>
             <div class="ph done"><div class="bar"></div><div class="n">FASE 2</div><div class="nm">Diagnóstico 360</div><div class="dd">Dia 8–14</div></div>
-            <div class="ph done"><div class="bar"></div><div class="n">FASE 3</div><div class="nm">Treinamento</div><div class="dd">Dia 15–21</div></div>
-            <div class="ph done"><div class="bar"></div><div class="n">FASE 4</div><div class="nm">Consultoria</div><div class="dd">Dia 22–28</div></div>
-            <div class="ph now"><span class="nowtag">AGORA</span><div class="bar"></div><div class="n">FASE 5</div><div class="nm">Implementação CRM + IA</div><div class="dd">Dia 29–35</div></div>
+            <div class="ph now"><span class="nowtag">AGORA</span><div class="bar"></div><div class="n">FASE 3</div><div class="nm">Treinamento</div><div class="dd">Dia 15–21</div></div>
+            <div class="ph"><div class="bar"></div><div class="n">FASE 4</div><div class="nm">Consultoria</div><div class="dd">Dia 22–28</div></div>
+            <div class="ph"><div class="bar"></div><div class="n">FASE 5</div><div class="nm">Implementação CRM + IA</div><div class="dd">Dia 29–35</div></div>
             <div class="ph"><div class="bar"></div><div class="n">FASE 6</div><div class="nm">Auditoria de Mídia</div><div class="dd">Dia 36–42</div></div>
             <div class="ph"><div class="bar"></div><div class="n">FASE 7</div><div class="nm">Auditoria Criativa</div><div class="dd">Dia 43–49</div></div>
           </div>
@@ -1242,7 +1289,7 @@
                   <div class="drow"><span>Produto</span><b>Estruturação</b></div>
                   <div class="drow"><span>Investimento</span><b class="mono">R$ 15k/mês</b></div>
                   <div class="drow"><span>Closer</span><b>Felipe Carvalho</b></div>
-                  <div class="drow"><span>Diagnóstico 360</span><span class="docchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>Diagnóstico360_Mendes.pdf</span></div>
+                  <div class="drow"><span>Diagnóstico 360</span><span class="docchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>Diagnostico360_Leticia.pdf</span></div>
                 </div>
               </div>
               <div>
@@ -1402,8 +1449,8 @@
         <div class="fog-top">
           <span class="fog-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z"/></svg></span>
           <div class="fog-info">
-            <h2>Roda de Fogo · Mendes Advocacia</h2>
-            <p>Reunião semanal · quinta, 09 jul · 15:00 · Fase 5 — Implementação CRM + IA</p>
+            <h2>Roda de Fogo · Letícia Stein</h2>
+            <p>Reunião semanal · quinta, 09 jul · 15:00 · Fase 3 — Treinamento</p>
           </div>
           <div class="fog-badges">
             <span class="pill live" id="fogStatus"><span class="dot"></span>Ao vivo</span>
@@ -1414,7 +1461,7 @@
         <div class="fog-people">
           <span class="pav"><span class="a" style="background:url('assets/luiz-av.webp') center/cover;color:transparent">LM</span>Luiz Mattos <small>gestor</small></span>
           <span class="pav"><span class="a" style="background:url('assets/felipe-av.webp') center/cover;color:transparent">FC</span>Felipe Carvalho <small>gestor de contas</small></span>
-          <span class="pav client"><span class="a">DM</span>Dr. Mendes <small>cliente</small></span>
+          <span class="pav client"><span class="a">DL</span>Dra. Letícia <small>cliente</small></span>
         </div>
 
         <div class="fog-grid">
@@ -1440,7 +1487,7 @@
               <div class="c-h" style="margin:16px 0 0"><span class="t">Transcrição ao vivo <span class="chip good" style="margin-left:4px">Gemini</span></span></div>
               <div class="transcript">
                 <p><span class="sp">Felipe:</span> Essa semana a gente fechou o setup do CRM e integrou a IA de atendimento, o treinamento da equipe já começou.</p>
-                <p><span class="sp cli">Dr. Mendes:</span> Show. Minha única preocupação é ver os primeiros leads chegando, tá todo mundo ansioso aqui.</p>
+                <p><span class="sp cli">Dra. Letícia:</span> Show. Minha única preocupação é ver os primeiros leads chegando, tá todo mundo ansioso aqui.</p>
                 <p><span class="sp">Luiz:</span> É o ponto crítico — a gente travou no Meta Ads porque o acesso ainda não foi liberado, então nenhuma campanha subiu. Preciso destravar isso pra rodar a primeira captação<span class="cursor"></span></p>
               </div>
             </div>
@@ -1456,7 +1503,7 @@
             <div class="card">
               <div class="c-h" style="margin-bottom:6px"><span class="t">Detalhes</span></div>
               <div class="rail-dl">
-                <div class="drow"><span>Cria</span><b>Mendes Advocacia</b></div>
+                <div class="drow"><span>Cria</span><b>Letícia Stein</b></div>
                 <div class="drow"><span>Tipo</span><b>Reunião semanal</b></div>
                 <div class="drow"><span>Fase</span><b>5 de 7 · Implementação</b></div>
                 <div class="drow"><span>Data</span><b class="mono">09/07 · 15:00</b></div>
@@ -1556,9 +1603,9 @@
   <div class="as-body">
     <div class="msg ai"><div class="who">Faísca</div><div class="bub" id="faiscaHi">E aí, Felipe! 🔥 Posso te ajudar em qualquer aba — por texto ou por voz. Pergunta ou pede que eu resolvo.</div></div>
     <div class="msg me"><div class="bub">Quais Forjas estão atrasadas?</div><div class="voicebar me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>mensagem de voz · 0:04</div></div>
-    <div class="msg ai"><div class="who">Faísca</div><div class="bub">2 Forjas com Estopim estourado: <b>Mendes</b> (Implementação, −2 dias) e <b>Vasconcelos</b> (Diagnóstico, vence amanhã). Quer que eu abra a do Mendes ou avise o gestor?</div><div class="voicebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>respondendo por voz <span class="wave"><i></i><i></i><i></i><i></i><i></i></span></div></div>
-    <div class="msg me"><div class="bub">Agenda uma Roda de Fogo com o Mendes quinta 15h</div></div>
-    <div class="msg ai"><div class="who">Faísca</div><div class="bub" id="fogFromAs" style="cursor:pointer">✓ <b>Roda de Fogo agendada</b> — Mendes, quinta 15h, com você e o Luiz. Já criei a Lenha e sincronizei no ClickUp. <span style="color:var(--ember); font-weight:600">Abrir Roda de Fogo &rarr;</span></div></div>
+    <div class="msg ai"><div class="who">Faísca</div><div class="bub">2 Forjas com Estopim estourado: <b>Letícia</b> (Implementação, −2 dias) e <b>Mozini</b> (Diagnóstico, vence amanhã). Quer que eu abra a do Letícia ou avise o gestor?</div><div class="voicebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 010 7"/></svg>respondendo por voz <span class="wave"><i></i><i></i><i></i><i></i><i></i></span></div></div>
+    <div class="msg me"><div class="bub">Agenda uma Roda de Fogo com o Letícia quinta 15h</div></div>
+    <div class="msg ai"><div class="who">Faísca</div><div class="bub" id="fogFromAs" style="cursor:pointer">✓ <b>Roda de Fogo agendada</b> — Letícia, quinta 15h, com você e o Luiz. Já criei a Lenha e sincronizei no ClickUp. <span style="color:var(--ember); font-weight:600">Abrir Roda de Fogo &rarr;</span></div></div>
   </div>
   <div class="as-listen" id="asListen"><span class="wave" style="color:var(--ember)"><i></i><i></i><i></i><i></i><i></i></span> Ouvindo… fale o que precisa</div>
   <div class="as-input">
@@ -1746,7 +1793,7 @@
     window.scrollTo(0,0);
   }
   document.querySelectorAll('#s-crias .tbl tbody tr').forEach(function(tr){
-    tr.addEventListener('click',function(){ openScreen('s-detalhe','Mendes Advocacia Previdenciária','· detalhe da Cria'); });
+    tr.addEventListener('click',function(){ openScreen('s-detalhe','Letícia Stein Carlos de Souza','· detalhe da Cria'); });
   });
   // Perfil da Brigada: clicar num membro abre o perfil (cabeçalho puxa a identidade do card)
   document.querySelectorAll('#s-brigada .mcard').forEach(function(mc){
@@ -1800,10 +1847,10 @@
     fogBrief.querySelector('.bx-done-c').style.display='none';
     fogBrief.querySelector('.bx-chip').style.display='none';
   }
-  function openFogueira(){ openScreen('s-fogueira','Roda de Fogo · Mendes Advocacia','· reunião semanal'); resetFogBrief(); }
+  function openFogueira(){ openScreen('s-fogueira','Roda de Fogo · Letícia Stein','· reunião semanal'); resetFogBrief(); }
   var afb=document.getElementById('abrirFogueira'); if(afb) afb.addEventListener('click',openFogueira);
   var fromAs=document.getElementById('fogFromAs'); if(fromAs) fromAs.addEventListener('click',function(){ asOpen(false); openFogueira(); });
-  var fbk=document.getElementById('fogBack'); if(fbk) fbk.addEventListener('click',function(){ openScreen('s-detalhe','Mendes Advocacia Previdenciária','· detalhe da Cria'); });
+  var fbk=document.getElementById('fogBack'); if(fbk) fbk.addEventListener('click',function(){ openScreen('s-detalhe','Letícia Stein Carlos de Souza','· detalhe da Cria'); });
   if(fogRec) fogRec.addEventListener('click',function(){
     var on=fogRec.classList.toggle('rec');
     var st=document.getElementById('fogRecState'); if(st) st.textContent = on?'Gravando o briefing…':'Gravação pausada';
@@ -2177,16 +2224,16 @@
     var first=new Date(year,month,1).getDay();        /* 0=Dom */
     var days=new Date(year,month+1,0).getDate();      /* 31 */
     var EV={
-      3:[{t:'entrega',l:'Entrega · Ribeiro'}],
-      7:[{t:'sla',l:'Estopim · Mendes'}],
-      9:[{t:'rf',l:'Roda de Fogo · Mendes 15h'},{t:'lenha',l:'Lenha vence'}],
-      10:[{t:'sla',l:'Estopim · Vasconcelos'}],
-      14:[{t:'rf',l:'Roda de Fogo · Vasconcelos 10h'}],
-      16:[{t:'rf',l:'Roda de Fogo · Ribeiro 14h'},{t:'entrega',l:'Entrega · Costa'}],
+      3:[{t:'entrega',l:'Entrega · Pierre & Cunha'}],
+      7:[{t:'sla',l:'Estopim · Letícia'}],
+      9:[{t:'rf',l:'Roda de Fogo · Letícia 15h'},{t:'lenha',l:'Lenha vence'}],
+      10:[{t:'sla',l:'Estopim · Mozini'}],
+      14:[{t:'rf',l:'Roda de Fogo · Mozini 10h'}],
+      16:[{t:'rf',l:'Roda de Fogo · Pierre & Cunha 14h'},{t:'entrega',l:'Entrega · Igor Freitas'}],
       17:[{t:'lenha',l:'Lenha · Treinar equipe'}],
-      21:[{t:'sla',l:'Estopim · Almeida'}],
-      22:[{t:'rf',l:'Roda de Fogo · Almeida 16h'}],
-      24:[{t:'entrega',l:'Entrega · Andrade'}],
+      21:[{t:'sla',l:'Estopim · Luzia Barbosa'}],
+      22:[{t:'rf',l:'Roda de Fogo · Luzia Barbosa 16h'}],
+      24:[{t:'entrega',l:'Entrega · Giuliane'}],
       28:[{t:'lenha',l:'Lenha · Auditoria'}],
       30:[{t:'rf',l:'Roda de Fogo · Costa 11h'}]
     };

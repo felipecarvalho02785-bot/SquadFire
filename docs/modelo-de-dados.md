@@ -148,10 +148,19 @@ create type origem_briefing as enum ('audio', 'grupo_whatsapp', 'manual');
 | gestor_contas_id | uuid fk → membro null | responsável (campo de sistema) |
 | status | status_cria default 'ativa' | ciclo de vida |
 | em_risco | boolean default false | **derivado** (SLA/NPS) — recalculado, não editado à mão |
+| clickup_task_id | text null unique | id da task-mestre no ClickUp (list "Estruturação") — **chave de vínculo** |
+| clickup_squad | text null | valor do custom field _Squad_ no ClickUp; no CRM só entra `Squad 08` |
+| clickup_semana | smallint null | ordinal do custom field _Semana_ (1–7) → fase da Forja |
+| sincronizado_em | timestamptz null | último sync bem-sucedido vindo do ClickUp |
 | created_at / updated_at | timestamptz | |
 
 > `em_risco` é materializado por job/trigger (SLA de fase estourando ou NPS baixo). A flag de
 > contrato mora na `forja` (setup × manutenção).
+>
+> **Origem dos dados:** a `cria` é o espelho local de uma task-mestre do ClickUp. O vínculo é por
+> `clickup_task_id` (idempotente); `nome_cliente`, `status`, `clickup_squad`, `clickup_semana` e os
+> gestores chegam do sync. Só sobem pro CRM tasks com `clickup_squad = 'Squad 08'`. Ver
+> [§ Integração ClickUp](#integração-clickup-fonte-das-crias).
 
 ### `contrato`
 
@@ -395,6 +404,65 @@ até o Felipe detalhar. É o **checklist** cuja conclusão habilita avançar a f
 
 ---
 
+## Integração ClickUp (fonte das Crias)
+
+O CRM **não cadastra clientes à mão**: cada Cria é o espelho de uma task-mestre do ClickUp.
+O SquadFire lê o ClickUp (via API/MCP), filtra pelo Squad e materializa/atualiza as `cria`.
+
+### Caminho no workspace
+
+```
+Team  E3 Digital ............................ 9007045289
+└─ Space  Projetos .......................... 901312638575
+   ├─ Folder  Gestão de Projetos ........... 901316177250
+   │  └─ List  Estruturação ............... 901324100247   ← LISTA-MESTRE (1 task = 1 cliente)
+   └─ Folder  Estruturação ................. 901316177650   (listas semanais Semana 1–7+, operacional)
+```
+
+A **lista-mestre `901324100247`** é a fonte de verdade das Crias. Cada task = um escritório, com o
+ciclo de vida no _status_ da task (backlog / onboarding / execução / finalizado / churn) e os
+atributos em _custom fields_.
+
+### Custom fields usados
+
+| Campo ClickUp | field id | Uso no CRM |
+|---|---|---|
+| **Squad** | `280cc0b8-7014-490c-b798-5785b0a9d501` | **filtro de entrada** — só `Squad 08` (orderindex 7, option `745a8f43-44f1-4060-9270-6da328da77d7`) vira Cria |
+| **Semana** | `0b75db7c-c23b-404c-a590-4168337fb39d` | `clickup_semana` → fase da Forja (orderindex 0 = Semana 1 … 6 = Semana 7+) |
+| Link do grupo | — | WhatsApp do grupo (SLA/leitura de briefing) |
+| Gestor de Projetos | — | `forja`/atribuição de papel |
+
+> A API de filtro do ClickUp **não** filtra por custom field diretamente: puxa-se a lista-mestre e
+> filtra-se `Squad = Squad 08` no cliente de integração (ler `custom_fields[].value` por task).
+
+### Mapa de campos (ClickUp → `cria`)
+
+| ClickUp | → | `cria` |
+|---|---|---|
+| `task.id` | → | `clickup_task_id` (chave idempotente) |
+| `task.name` | → | `nome_cliente` |
+| custom _Squad_ (label) | → | `clickup_squad` (gate: precisa ser `Squad 08`) |
+| custom _Semana_ (orderindex+1) | → | `clickup_semana` → `forja` fase 1–7 |
+| `task.status` | → | `status` (backlog→`ativa`/pré-forja; execução→`ativa`; churn→`churn`) |
+| Gestor de Projetos | → | `gestor_contas_id` (resolve por email/nome) |
+| Link do grupo | → | metadado de WhatsApp (SLA) |
+| _now()_ do sync | → | `sincronizado_em` |
+
+### Regras de sincronização
+
+- **Direção:** ClickUp → CRM é a fonte de verdade pros campos acima (read-only no CRM). O caminho de
+  volta (CRM → ClickUp) existe só pro **briefing** (`briefing.clickup_task_id`, push do relatório).
+- **Idempotência:** upsert por `clickup_task_id`. Task que sai do Squad 08 (ou é arquivada) →
+  `status` reflete, não se apaga a Cria.
+- **Fase:** `clickup_semana` dirige a fase da Forja; se a task-mestre não tiver Semana preenchida a
+  Cria fica no **backlog** (pré-forja), sem prazos calculados.
+- **Gatilho:** sync agendado (cron) + webhook do ClickUp (task criada/movida/atualizada na
+  lista-mestre) pra refletir em quase-tempo-real.
+
+> Implementação de referência do cliente de integração: [`integracao/clickup/`](../integracao/clickup/).
+
+---
+
 ## Notas de implementação (Supabase)
 
 - **Auth:** Google SSO; allowlist por `membro.email`; JWT carrega papel(is) + `is_admin` pra RLS.
@@ -404,5 +472,6 @@ até o Felipe detalhar. É o **checklist** cuja conclusão habilita avançar a f
   estruturação do briefing, sugestão de plano de ação) — nunca no client.
 - **Motor de recorrência:** job diário que, a partir de `rotina` + `recorrencia_config` + escopo,
   gera as `lenha` (tipo=rotina) do dia pros membros/papéis certos.
-- **Integrações:** ClickUp (push do briefing), WhatsApp Evolution/Criativivo (SLA de grupos),
-  Google (Meu Negócio na auditoria).
+- **Integrações:** ClickUp — **entrada** das Crias (lista-mestre `901324100247`, filtro Squad 08;
+  ver [§ Integração ClickUp](#integração-clickup-fonte-das-crias)) e **saída** do briefing (push do
+  relatório semanal); WhatsApp Evolution/Criativivo (SLA de grupos), Google (Meu Negócio na auditoria).
