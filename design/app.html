@@ -155,10 +155,13 @@
   .app.collapsed .rail .head{flex-direction:column; align-items:center; gap:12px; padding:0}
   .app.collapsed .toggle{margin-left:0}
   .app.collapsed .toggle svg{transform:rotate(180deg)}
-  .app.collapsed .nav a{justify-content:center; padding:6px}
-  .app.collapsed .nav a .ico{width:36px; height:36px}
-  .app.collapsed .insight{justify-content:center; padding:8px}
-  .app.collapsed .foot{justify-content:center; padding:8px}
+  /* colapsado: itens viram quadradinhos uniformes e centralizados (nada de ícone "flutuando") */
+  .app.collapsed .nav{align-items:center; gap:3px}
+  .app.collapsed .nav a{justify-content:center; width:42px; height:42px; padding:0; border-radius:11px}
+  .app.collapsed .nav a .ico{width:24px; height:24px}
+  .app.collapsed .nav a .ico svg{width:21px; height:21px}
+  .app.collapsed .insight{width:44px; height:44px; padding:0; justify-content:center; margin:0 auto}
+  .app.collapsed .foot{width:44px; height:44px; padding:0; justify-content:center; margin:0 auto}
 
   /* ===== Main ===== */
   .main{min-width:0; display:flex; flex-direction:column}
@@ -448,14 +451,13 @@
       <span class="lbl">Operação</span>
       <a class="on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><span class="lbl2">Covil</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/></svg></span><span class="lbl2">Crias</span></a>
-      <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z"/></svg></span><span class="lbl2">Forjas</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="9.5" y="4" width="5" height="11" rx="1"/><rect x="16" y="4" width="5" height="14" rx="1"/></svg></span><span class="lbl2">Linha de Fogo</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6l1.4 1.4L8 5M4 12l1.4 1.4L8 11M4 18l1.4 1.4L8 17M11 6h9M11 12h9M11 18h9"/></svg></span><span class="lbl2">Tarefas</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg></span><span class="lbl2">Calendário</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5.5A1.5 1.5 0 015.5 4H11v16H5.5A1.5 1.5 0 004 21.5z"/><path d="M20 5.5A1.5 1.5 0 0018.5 4H13v16h5.5A1.5 1.5 0 0120 21.5z"/></svg></span><span class="lbl2">Biblioteca</span></a>
       <span class="lbl">Gestão</span>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></span><span class="lbl2">Brigada</span></a>
-      <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M3 12h2.4M18.6 12H21M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg></span><span class="lbl2">Forjaria</span></a>
+      <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="lbl2">Forjaria</span></a>
     </nav>
     <div class="insight" title="Pulso da Squad">
       <span class="fire"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z"/></svg></span>
@@ -755,46 +757,6 @@
             <div class="up"><span class="dt">16 Jul</span><span class="dot" style="background:var(--ember)"></span><div class="t">Roda de Fogo · Ribeiro &amp; Advogados</div><span class="rside mono" style="color:var(--muted)">14:00</span></div>
             <div class="up"><span class="dt">16 Jul</span><span class="dot" style="background:var(--plasma)"></span><div class="t">Entrega · Costa &amp; Lima (Alinhamento)</div><span class="rside mono" style="color:var(--muted)">—</span></div>
             <div class="up"><span class="dt">21 Jul</span><span class="dot" style="background:var(--crit)"></span><div class="t">Estopim de SLA · Almeida Advocacia</div><span class="rside mono" style="color:var(--muted)">vence</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="screen" id="s-forja">
-        <div class="head" style="margin-bottom:16px"><div class="eye">a Estruturação · Forja</div><h2>Mendes Advocacia Previdenciária</h2><p>Previdenciário · Gestor: Luiz Mattos · Início 12/06/2026</p></div>
-        <div class="card">
-          <div class="c-h"><span class="t">Termômetro da Forja · 7 fases × 7 dias</span><span class="now">Dia 29/49 · fase 5 de 7</span></div>
-          <div class="funnel">
-            <div class="ph done"><div class="bar"></div><div class="n">FASE 1</div><div class="nm">Alinhamento</div><div class="dd">Dia 1–7</div></div>
-            <div class="ph done"><div class="bar"></div><div class="n">FASE 2</div><div class="nm">Diagnóstico 360</div><div class="dd">Dia 8–14</div></div>
-            <div class="ph done"><div class="bar"></div><div class="n">FASE 3</div><div class="nm">Treinamento</div><div class="dd">Dia 15–21</div></div>
-            <div class="ph done"><div class="bar"></div><div class="n">FASE 4</div><div class="nm">Consultoria</div><div class="dd">Dia 22–28</div></div>
-            <div class="ph now"><span class="nowtag">AGORA</span><div class="bar"></div><div class="n">FASE 5</div><div class="nm">Implementação CRM + IA</div><div class="dd">Dia 29–35</div></div>
-            <div class="ph"><div class="bar"></div><div class="n">FASE 6</div><div class="nm">Auditoria de Mídia</div><div class="dd">Dia 36–42</div></div>
-            <div class="ph"><div class="bar"></div><div class="n">FASE 7</div><div class="nm">Auditoria Criativa</div><div class="dd">Dia 43–49</div></div>
-          </div>
-        </div>
-        <div class="grid g-2" style="margin-top:13px">
-          <div class="card">
-            <div class="c-h"><span class="t">Fase atual — Implementação CRM + IA</span><span class="pill warn"><span class="d" style="background:var(--warn)"></span>2 dias de atraso</span></div>
-            <div class="list" style="margin-top:4px">
-              <div class="row"><span class="chk done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t" style="text-decoration:line-through; color:var(--muted)">Setup do CRM + pipeline de leads</div></div></div>
-              <div class="row"><span class="chk done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t" style="text-decoration:line-through; color:var(--muted)">Integração da IA de atendimento</div></div></div>
-              <div class="row"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Treinar a equipe do cliente no CRM</div></div></div>
-              <div class="row"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t">Conectar Meta Ads <span style="color:var(--crit)">(bloqueado — ver gargalo)</span></div></div></div>
-            </div>
-            <button class="gbtn2">Avançar fase — 2 pendências</button>
-          </div>
-          <div class="card">
-            <div class="c-h"><span class="t">Gargalos</span><span class="s">1 aberto</span></div>
-            <div style="border-left:2px solid var(--crit); padding:2px 0 2px 13px; margin-top:8px">
-              <div style="font-weight:650; font-size:13px; color:var(--text)">Cliente não liberou acesso ao Meta Ads</div>
-              <div style="font-size:12px; color:var(--muted); margin-top:3px">Trava a automação de leads. Surgiu na Implementação.</div>
-              <div style="font-size:10px; font-weight:700; letter-spacing:.06em; color:var(--ember); text-transform:uppercase; margin:12px 0 4px">Plano sugerido pela IA · você decide</div>
-              <div class="list">
-                <div class="row" style="padding:7px 0"><span class="chk done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t" style="font-size:12.5px">Reenviar formulário de acesso com tutorial em vídeo</div></div></div>
-                <div class="row" style="padding:7px 0"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="rmain"><div class="t" style="font-size:12.5px">Agendar call de 15min pra liberar em conjunto</div><div class="s">Responsável: Luiz · até 05/07</div></div></div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -1399,7 +1361,7 @@
   .faisca:hover{filter:brightness(1.06)}
   .faisca .fico{width:30px; height:30px; border-radius:8px; background:rgba(0,0,0,.16); display:grid; place-items:center; flex:0 0 auto} .faisca .fico svg{width:18px; height:18px}
   .faisca .flbl{font-weight:750; font-size:13.5px; text-align:left; line-height:1.15; white-space:nowrap} .faisca .flbl small{display:block; font-weight:600; font-size:9.5px; opacity:.72}
-  .app.collapsed .faisca{justify-content:center; padding:8px} .app.collapsed .faisca .flbl{display:none}
+  .app.collapsed .faisca{width:44px; height:44px; padding:0; justify-content:center; margin:0 auto} .app.collapsed .faisca .flbl{display:none}
   .as-scrim{position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:60; opacity:0; pointer-events:none; transition:.2s; backdrop-filter:blur(2px)}
   .as-scrim.on{opacity:1; pointer-events:auto}
   .assistant{position:fixed; top:0; right:0; bottom:0; width:394px; max-width:93vw; z-index:61; background:var(--surface); border-left:1px solid var(--border); display:flex; flex-direction:column; transform:translateX(102%); transition:transform .26s cubic-bezier(.4,0,.2,1)}
@@ -1623,7 +1585,7 @@
   });
 
   // troca de tela pela navbar
-  var SMAP={'Covil':'covil','Crias':'crias','Forjas':'forja','Linha de Fogo':'linha','Tarefas':'tarefas','Calendário':'calendario','Biblioteca':'biblioteca','Brigada':'brigada','Forjaria':'forjaria'};
+  var SMAP={'Covil':'covil','Crias':'crias','Linha de Fogo':'linha','Tarefas':'tarefas','Calendário':'calendario','Biblioteca':'biblioteca','Brigada':'brigada','Forjaria':'forjaria'};
   document.querySelectorAll('.nav a').forEach(function(a){ a.addEventListener('click',function(){
     var lbl=a.querySelector('.lbl2'); if(!lbl) return; var t=lbl.textContent.trim(); var id=SMAP[t]; if(!id) return;
     document.querySelectorAll('.nav a').forEach(function(x){x.classList.remove('on');}); a.classList.add('on');
