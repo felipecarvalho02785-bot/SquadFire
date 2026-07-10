@@ -169,13 +169,14 @@
   .topbar h1{font-size:14px; font-weight:650; margin:0}
   .topbar .sub{color:var(--faint); font-size:12px}
   .spacer{flex:1}
-  .seg{display:flex; gap:2px; padding:3px; background:var(--surface); border:1px solid var(--border); border-radius:10px}
-  .seg button{border:0; background:transparent; color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; padding:6px 12px; border-radius:7px; transition:.14s}
-  .seg button:hover{color:var(--text)}
-  .seg button.on{background:var(--surface-2); color:var(--ember)}
   .range{display:flex; gap:2px; padding:3px; background:var(--surface); border:1px solid var(--border); border-radius:10px}
   .range button{border:0; background:transparent; color:var(--muted); font-size:11.5px; font-weight:600; cursor:pointer; padding:5px 10px; border-radius:7px; font-family:var(--mono)}
   .range button.on{background:var(--surface-2); color:var(--text)}
+  /* filtro segmentado da Biblioteca (Todos/Roteiros/Criativos) — autossuficiente */
+  .libseg{display:flex; gap:2px; padding:3px; background:var(--surface); border:1px solid var(--border); border-radius:10px}
+  .libseg button{border:0; background:transparent; color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; padding:6px 12px; border-radius:7px; transition:.14s; font-family:inherit}
+  .libseg button:hover{color:var(--text)}
+  .libseg button.on{background:var(--surface-2); color:var(--ember)}
 
   .content{padding:22px 24px 56px; max-width:1280px; width:100%}
   .head{margin-bottom:20px}
@@ -477,7 +478,6 @@
     <header class="topbar">
       <h1>Covil</h1><span class="sub">· visão de gestão</span>
       <div class="spacer"></div>
-      <div class="seg"><button>Contas</button><button class="on">Projetos</button><button>Tráfego</button><button>Admin</button></div>
       <div class="range" id="range"><button>4s</button><button class="on">12s</button><button>YTD</button></div>
     </header>
 
@@ -968,7 +968,7 @@
         </style>
         <div class="head" style="margin-bottom:16px"><div class="eye">Acervo · base no Drive</div><h2>Biblioteca</h2><p>Roteiros e criativos estáticos, filtrados por nicho do direito e tese.</p></div>
         <div class="filters">
-          <div class="seg libseg"><button class="on" data-tipo="todos">Todos</button><button data-tipo="roteiro">Roteiros</button><button data-tipo="criativo">Criativos</button></div>
+          <div class="libseg"><button class="on" data-tipo="todos">Todos</button><button data-tipo="roteiro">Roteiros</button><button data-tipo="criativo">Criativos</button></div>
           <div class="chips" id="libnichos">
             <button class="fchip on" data-nicho="todos">Todos os nichos</button>
             <button class="fchip" data-nicho="previdenciario">Previdenciário</button>
@@ -1562,18 +1562,9 @@
     });
   })();
 
-  // range buttons (visual only)
-  document.querySelectorAll('#range button, .seg button').forEach(function(b){ b.addEventListener('click',function(){
-    var sibs=this.parentElement.children; for(var i=0;i<sibs.length;i++) sibs[i].classList.remove('on'); this.classList.add('on'); }); });
-
-  // Perspectiva por papel (Contas/Projetos/Tráfego/Admin) — troca a "lente" do Covil
-  var EYE={ 'Contas':'ADMIN · GESTOR DE CONTAS', 'Projetos':'GESTÃO · PROJETOS & SLA', 'Tráfego':'GESTÃO · TRÁFEGO & CAMPANHAS', 'Admin':'ADMIN · VISÃO DA SQUAD' };
-  document.querySelectorAll('.topbar .seg button').forEach(function(b){ b.addEventListener('click',function(){
-    var papel=this.textContent.trim();
-    var sub=document.querySelector('.topbar .sub'); if(sub) sub.textContent='· visão de '+papel;
-    var eye=document.querySelector('#s-covil .hero .content .eye'); if(eye && EYE[papel]) eye.textContent=EYE[papel];
-  }); });
   // Janela de tempo dos KPIs/gráficos (4 semanas / 12 semanas / no ano)
+  document.querySelectorAll('#range button').forEach(function(b){ b.addEventListener('click',function(){
+    var sibs=this.parentElement.children; for(var i=0;i<sibs.length;i++) sibs[i].classList.remove('on'); this.classList.add('on'); }); });
   var RANGE={ '4s':'Lenhas de Forja concluídas · 4 semanas', '12s':'Lenhas de Forja concluídas · 12 semanas', 'YTD':'Lenhas de Forja concluídas · no ano' };
   document.querySelectorAll('#range button').forEach(function(b){ b.addEventListener('click',function(){
     var cap=document.getElementById('areaCap'); if(cap && RANGE[this.textContent.trim()]) cap.textContent=RANGE[this.textContent.trim()];
@@ -1592,8 +1583,7 @@
     document.querySelectorAll('.screen').forEach(function(sc){ sc.classList.toggle('on', sc.id==='s-'+id); });
     var h=document.querySelector('.topbar h1'), s=document.querySelector('.topbar .sub');
     if(h) h.textContent=t; if(s) s.textContent = id==='covil' ? '· visão de gestão' : '';
-    var seg=document.querySelector('.topbar .seg'), rg=document.getElementById('range');
-    if(seg) seg.style.display = id==='covil'?'':'none'; if(rg) rg.style.display = id==='covil'?'':'none';
+    var rg=document.getElementById('range'); if(rg) rg.style.display = id==='covil'?'':'none';
     document.querySelector('.content').scrollTop=0; window.scrollTo(0,0);
   }); });
 
@@ -1602,8 +1592,7 @@
     document.querySelectorAll('.screen').forEach(function(sc){ sc.classList.toggle('on', sc.id===id); });
     var h=document.querySelector('.topbar h1'), s=document.querySelector('.topbar .sub');
     if(h) h.textContent=title; if(s) s.textContent=sub||'';
-    var seg=document.querySelector('.topbar .seg'), rg=document.getElementById('range');
-    if(seg) seg.style.display='none'; if(rg) rg.style.display='none';
+    var rg=document.getElementById('range'); if(rg) rg.style.display='none';
     window.scrollTo(0,0);
   }
   document.querySelectorAll('#s-crias .tbl tbody tr').forEach(function(tr){
@@ -1715,7 +1704,7 @@
       c.style.display = (okT&&okN&&okQ) ? '' : 'none';
     });
   }
-  document.querySelectorAll('#s-biblioteca .libseg button').forEach(function(b){ b.addEventListener('click',function(){ lib.tipo=b.getAttribute('data-tipo'); libApply(); }); });
+  document.querySelectorAll('#s-biblioteca .libseg button').forEach(function(b){ b.addEventListener('click',function(){ var sibs=this.parentElement.children; for(var i=0;i<sibs.length;i++) sibs[i].classList.remove('on'); this.classList.add('on'); lib.tipo=b.getAttribute('data-tipo'); libApply(); }); });
   document.querySelectorAll('#s-biblioteca #libnichos .fchip').forEach(function(b){ b.addEventListener('click',function(){
     document.querySelectorAll('#s-biblioteca #libnichos .fchip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
     lib.nicho=b.getAttribute('data-nicho'); libApply();
