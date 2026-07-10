@@ -15,6 +15,7 @@ SquadFire. O CRM não cadastra clientes à mão: o ClickUp é a fonte de verdade
 | `client.js` | cliente HTTP fininho da API v2 do ClickUp (`getTasksListaMestre`, `getTask`) |
 | `sync-crias.js` | filtra **Squad 08** e mapeia task → objeto `cria` (puro/testável, não conhece o DB) |
 | `webhook.js` | handler de webhook (verifica assinatura → devolve ação `upsert`/`unlink`/`delete`) |
+| `push-briefing.js` | **CRM → ClickUp**: publica o briefing semanal como **comentário** na task do cliente |
 | `run-sync.js` | runner manual: imprime as Crias mapeadas (não grava) |
 
 ## Como funciona
@@ -64,9 +65,24 @@ backlog), batendo com o protótipo (`design/app.html`).
 Plugue num route handler (Next.js `app/api/clickup/webhook/route.ts`, edge function, etc.) que
 receba o corpo cru, chame `handleWebhook` e aplique a ação no banco.
 
+## Briefing → comentário no ClickUp (CRM → ClickUp)
+
+Único fluxo de **escrita** da integração. `push-briefing.js`:
+
+```js
+import { pushBriefing } from './push-briefing.js';
+// cria.clickup_task_id = task-mestre do cliente; briefing = os 6 campos
+const { clickup_comment_id } = await pushBriefing(cria, briefing);
+// grave clickup_comment_id no briefing pra não duplicar em reenvios
+```
+
+O briefing semanal (6 campos, gerado pela IA a partir do áudio) vira um **comentário na task do
+cliente** — não cria task nova. Assim o time vê o histórico semanal direto no card do ClickUp.
+
 ## O que falta (deploy)
 
 - [ ] Camada de banco: `upsertCria(cria)` / `unlinkCria(taskId)` (Supabase, por `clickup_task_id`).
+- [ ] Ligar `pushBriefing` ao gerar o briefing e gravar `clickup_comment_id` (evita duplicar).
 - [ ] Resolver **Gestor de Projetos** (custom field) → `gestor_contas_id` por email/nome.
 - [ ] Agendar o sync (cron) além do webhook em tempo-real.
 - [ ] Registrar o webhook no ClickUp apontando pra rota pública + setar `CLICKUP_WEBHOOK_SECRET`.

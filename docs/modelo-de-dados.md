@@ -143,7 +143,7 @@ create type origem_briefing as enum ('audio', 'grupo_whatsapp', 'manual');
 | telefone_whatsapp | text | |
 | area_atuacao | text | área do direito |
 | produto | produto default 'estruturacao' | **travado** (não editável na UI) |
-| investimento_midia | numeric(12,2) null | verba de mídia (insumo do Tráfego) |
+| investimento_midia | numeric(12,2) null | **verba de campanha** que o cliente investe em mídia — **editável**, começa null (alinhada com o cliente após onboarding). **≠ valor do contrato** (esse mora em `contrato.valor_contrato`) |
 | closer | text null | quem fechou o contrato |
 | gestor_contas_id | uuid fk → membro null | responsável (campo de sistema) |
 | status | status_cria default 'ativa' | ciclo de vida |
@@ -169,6 +169,7 @@ create type origem_briefing as enum ('audio', 'grupo_whatsapp', 'manual');
 | id | uuid pk | |
 | cria_id | uuid fk → cria | |
 | arquivo_url | text | caminho no Supabase Storage |
+| valor_contrato | numeric(12,2) null | mensalidade/fee da Estruturação (extraído do PDF pela IA). **≠ `cria.investimento_midia`** (verba de campanha) |
 | dados_extraidos | jsonb null | JSON estruturado devolvido pela IA (API Anthropic) |
 | data_inicio_extraida | date null | gatilho dos prazos do funil |
 | confirmado | boolean default false | usuário conferiu/corrigiu a extração |
@@ -241,11 +242,17 @@ create type origem_briefing as enum ('audio', 'grupo_whatsapp', 'manual');
 | audio_url | text null | gravação (MediaRecorder → Storage) |
 | autor_id | uuid fk → membro | |
 | enviado_clickup | boolean default false | |
-| clickup_task_id | text null | id do item criado no ClickUp |
+| clickup_task_id | text null | **task-mestre do cliente** no ClickUp (= `cria.clickup_task_id`) — o briefing é publicado como **comentário** nela, não como task nova |
+| clickup_comment_id | text null | id do comentário criado no ClickUp (idempotência do push / evita duplicar) |
 | created_at / updated_at | timestamptz | |
 
 > Dois caminhos convivem: (a) áudio ditado pelo membro → IA estrutura os 6 campos → push ClickUp;
 > (b) leitura do grupo de WhatsApp (Evolution/Criativivo) → IA pré-preenche → membro revisa.
+>
+> **Ida ao ClickUp (CRM → ClickUp):** ao publicar o briefing, o texto estruturado (6 campos) vira um
+> **comentário na task-mestre do cliente** (`cria.clickup_task_id`), via endpoint de comentários da
+> API. Guarda-se `clickup_comment_id` pra não duplicar em reenvios. É o único fluxo de escrita
+> CRM → ClickUp; todo o resto é leitura (ClickUp → CRM).
 
 ---
 
@@ -450,8 +457,9 @@ atributos em _custom fields_.
 
 ### Regras de sincronização
 
-- **Direção:** ClickUp → CRM é a fonte de verdade pros campos acima (read-only no CRM). O caminho de
-  volta (CRM → ClickUp) existe só pro **briefing** (`briefing.clickup_task_id`, push do relatório).
+- **Direção:** ClickUp → CRM é a fonte de verdade pros campos acima (read-only no CRM). O único
+  caminho de volta (CRM → ClickUp) é o **briefing**, publicado como **comentário na task-mestre do
+  cliente** (`cria.clickup_task_id`) — ver [§ briefing](#briefing-relatório-semanal--6-campos).
 - **Idempotência:** upsert por `clickup_task_id`. Task que sai do Squad 08 (ou é arquivada) →
   `status` reflete, não se apaga a Cria.
 - **Fase:** `clickup_semana` dirige a fase da Forja; se a task-mestre não tiver Semana preenchida a

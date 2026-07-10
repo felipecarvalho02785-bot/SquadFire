@@ -63,4 +63,13 @@ export async function getTask(taskId) {
   return cuFetch(`/task/${taskId}`, { query: { include_subtasks: false } });
 }
 
+// Cria um comentário numa task (usado pelo push do briefing: CRM → ClickUp).
+// Devolve { id, ... } — guardar o id em briefing.clickup_comment_id.
+export async function createTaskComment(taskId, commentText, { notifyAll = false } = {}) {
+  return cuFetch(`/task/${taskId}/comment`, {
+    method: 'POST',
+    body: { comment_text: commentText, notify_all: notifyAll },
+  });
+}
+
 export { cuFetch };
