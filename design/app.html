@@ -69,8 +69,8 @@
   .app{ position:relative; z-index:1 }
   @media (max-width:900px){ .dragon-bg{ background-size:90vw; opacity:.05 } }
   /* cards translúcidos — o dragão do fundo aparece por trás (todas as abas) */
-  .card,.kpi,.mcard,.kcol,.libcard{ background-color:color-mix(in srgb, var(--surface) 64%, transparent) }
-  .kcard{ background-color:color-mix(in srgb, var(--surface-2) 70%, transparent) }
+  .card,.kpi,.mcard,.kcol,.libcard{ background-color:color-mix(in srgb, var(--surface) 46%, transparent) }
+  .kcard{ background-color:color-mix(in srgb, var(--surface-2) 54%, transparent) }
   /* ===== tipografia da marca — gótica (logo) p/ display, serifa p/ corpo ===== */
   .brand .w{ font-family:var(--display); font-weight:700; text-transform:uppercase; letter-spacing:.03em; font-size:17px }
   .gate-word{ font-family:var(--display); letter-spacing:.04em }
@@ -80,6 +80,15 @@
   .hero h2.big{ letter-spacing:.005em; font-weight:700 }
   .head .eye, .hero .content .eye{ font-family:var(--sans) }
   body{font-family:var(--body); color:var(--text); background:var(--bg); -webkit-font-smoothing:antialiased; line-height:1.5}
+  /* ===== contorno de leitura — texto claro sobre cards translúcidos + hero ===== */
+  /* text-shadow é herdado: dá uma base de legibilidade em todo o texto sem quebrar o glow da contagem */
+  body{ text-shadow:0 1px 2px rgba(0,0,0,.45) }
+  svg text{ text-shadow:none }   /* mantém os rótulos dos gráficos nítidos */
+  .brand .w, .topbar h1, .head h2, .head .eye, .hero .content .eye, .hero h2.big, .hero p,
+  .c-h .t, #s-detalhe .dinfo h2, #s-fogueira .fog-info h2, #s-perfil .pinfo h2,
+  #s-tarefas .tkg-h .tt, #s-calendario .cal-nav .mo{
+    text-shadow:0 0 1px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.62), 0 2px 6px rgba(0,0,0,.35);
+  }
   ::selection{background:var(--ember-soft)}
   button{font-family:inherit}
   :focus-visible{outline:2px solid var(--ember); outline-offset:2px; border-radius:6px}
@@ -523,7 +532,7 @@
         .hero h2.big{font-size:36px; font-weight:780; letter-spacing:-.02em; margin:7px 0 8px; line-height:1.05}
         .hero .content p{color:var(--muted); font-size:13.5px; max-width:370px; margin:0 0 22px}
         .hero .glass{display:flex; gap:11px; flex-wrap:wrap}
-        .hero .g-stat{background:color-mix(in srgb,var(--surface-2) 62%, transparent); backdrop-filter:blur(12px); border:1px solid var(--border-2); border-radius:13px; padding:12px 15px; min-width:98px}
+        .hero .g-stat{background:color-mix(in srgb,var(--surface-2) 48%, transparent); backdrop-filter:blur(12px); border:1px solid var(--border-2); border-radius:13px; padding:12px 15px; min-width:98px}
         .hero .g-stat .v{font-size:23px; font-weight:730; letter-spacing:-.01em}
         .hero .g-stat .l{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:3px; white-space:nowrap}
         .hero .g-stat.crit{border-color:color-mix(in srgb,var(--crit) 42%, var(--border))} .hero .g-stat.crit .v{color:var(--crit)}
@@ -694,7 +703,7 @@
           #s-calendario .cal-dow{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:8px}
           #s-calendario .cal-dow span{font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); text-align:center}
           #s-calendario #cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px}
-          #s-calendario .cal-cell{min-height:96px; border:1px solid var(--border); border-radius:11px; background:color-mix(in srgb,var(--surface) 55%,transparent); padding:7px 7px 6px; display:flex; flex-direction:column; gap:4px; overflow:hidden; transition:border-color .14s ease, transform .14s ease}
+          #s-calendario .cal-cell{min-height:96px; border:1px solid var(--border); border-radius:11px; background:color-mix(in srgb,var(--surface) 42%,transparent); padding:7px 7px 6px; display:flex; flex-direction:column; gap:4px; overflow:hidden; transition:border-color .14s ease, transform .14s ease}
           #s-calendario .cal-cell:hover{border-color:color-mix(in srgb,var(--ember) 34%,var(--border)); transform:translateY(-2px)}
           #s-calendario .cal-cell.out{background:transparent; border-color:transparent; min-height:0; pointer-events:none}
           #s-calendario .cal-cell.today{border-color:color-mix(in srgb,var(--ember) 60%,var(--border)); box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ember) 30%,transparent)}
