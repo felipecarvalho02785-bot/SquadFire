@@ -1646,6 +1646,7 @@
     <div class="msg ai"><div class="who">Faísca</div><div class="bub" id="fogFromAs" style="cursor:pointer">✓ <b>Roda de Fogo agendada</b> — Letícia, quinta 15h, com você e o Luiz. Já criei a Lenha e sincronizei no ClickUp. <span style="color:var(--ember); font-weight:600">Abrir Roda de Fogo &rarr;</span></div></div>
   </div>
   <div class="as-listen" id="asListen"><span class="wave" style="color:var(--ember)"><i></i><i></i><i></i><i></i><i></i></span> Ouvindo… fale o que precisa</div>
+  <div class="as-chips" id="asChips" style="display:flex;gap:6px;overflow-x:auto;padding:6px 14px 2px;flex-wrap:nowrap;scrollbar-width:none"></div>
   <div class="as-input">
     <button class="as-mic" id="asMic" title="Falar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></button>
     <input placeholder="Pergunte ou peça algo…">
@@ -1900,6 +1901,37 @@
     document.querySelectorAll('#s-detalhe .tabpanel').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-tab')==='geral'); });
   }
   function openDetalhe(key){ if(!CRIAS[key]) return; renderDetalhe(key); openScreen('s-detalhe', CRIAS[key].nome, '· detalhe da Cria'); }
+
+  /* ===== Faísca — chips de comando (demonstram cada capacidade ao vivo) ===== */
+  (function(){
+    var host=document.getElementById('asChips'), body=document.querySelector('#assistant .as-body');
+    if(!host||!body) return;
+    function post(userText, aiHTML){
+      var me=document.createElement('div'); me.className='msg me'; me.innerHTML='<div class="bub"></div>'; me.querySelector('.bub').textContent=userText; body.appendChild(me);
+      var ai=document.createElement('div'); ai.className='msg ai'; ai.innerHTML='<div class="who">Faísca</div><div class="bub">'+aiHTML+'</div>'; body.appendChild(ai);
+      body.scrollTop=body.scrollHeight;
+    }
+    var CHIPS=[
+      {l:'Forjas atrasadas', u:'Quais Forjas estão atrasadas?', a:'2 Forjas com Estopim estourado: <b>Letícia Stein</b> (Treinamento, -2 dias) e <b>Mozini</b> (Treinamento, vence amanhã). Quer que eu abra a da Letícia ou avise o gestor?'},
+      {l:'Prever SLA', u:'O que vai estourar nos próximos dias?', a:'Risco nos próximos 3 dias: <b>Letícia</b> (hoje), <b>Mozini</b> (amanhã) e <b>Igor Freitas</b> (em 2 dias, se o treinamento não fechar). Priorizo a Letícia?'},
+      {l:'Risco de churn', u:'Alguma Cria com risco de churn?', a:'⚠️ <b>Letícia Stein</b> — NPS caiu de 9→8, SLA estourado e briefing pendente. Sugiro uma Roda de Fogo ainda esta semana. Agendo?'},
+      {l:'Agendar Roda', u:'Agenda uma Roda de Fogo com a Letícia quinta 15h', a:'✓ <b>Roda de Fogo agendada</b> — Letícia, quinta 15h. Criei a Lenha, sincronizei no ClickUp e mandei o convite no Google Calendar.'},
+      {l:'Gerar briefing', u:'Gera o briefing dessa semana da Letícia', a:'✓ Transcrevi o áudio (Gemini) e montei o <b>briefing semanal</b> nos 6 campos (Claude). Publiquei como comentário na task do ClickUp. Quer revisar antes de fechar?'},
+      {l:'Relatório da semana', u:'Me dá o relatório executivo da semana', a:'📊 <b>Semana</b>: 22 Lenhas concluídas · 83% no prazo · 2 SLAs estourados (Letícia, Mozini) · 3 Forjas avançaram de fase. Destaque: gargalo recorrente na <b>liberação de acessos (Meta Ads)</b>.'},
+      {l:'Ata da Roda', u:'Faz a ata da última Roda de Fogo', a:'📝 <b>Ata — Letícia</b>: alinhado destravar o Meta Ads (Luiz, quinta), concluir o treinamento no CRM e subir a 1ª campanha. Gerei <b>3 Lenhas</b> e anexei à Cria.'},
+      {l:'Sobrecarga da Brigada', u:'Alguém sobrecarregado na Brigada?', a:'O <b>Luiz</b> está com 14 Lenhas (88% da capacidade) e o <b>Felipe</b> com 8. Sugiro passar 2 Lenhas de rotina do Luiz pro Felipe. Redistribuo?'},
+      {l:'MRR da carteira', u:'Qual o MRR da carteira e o investimento em mídia?', a:'💰 <b>MRR</b> das 21 Forjas ativas ≈ R$ 104k/mês (contratos). <b>Investimento em mídia</b> sob gestão ≈ R$ 260k/mês. 2 contratos renovam em 30 dias.'}
+    ];
+    CHIPS.forEach(function(c){
+      var b=document.createElement('button'); b.className='as-chip'; b.textContent=c.l;
+      b.style.cssText='flex:0 0 auto;white-space:nowrap;font-size:12px;font-weight:600;padding:6px 12px;border-radius:16px;border:1px solid var(--border);background:var(--surface-2);color:var(--muted);cursor:pointer;font-family:inherit;transition:.14s';
+      b.addEventListener('mouseenter',function(){ b.style.borderColor='var(--ember)'; b.style.color='var(--text)'; });
+      b.addEventListener('mouseleave',function(){ b.style.borderColor='var(--border)'; b.style.color='var(--muted)'; });
+      b.addEventListener('click',function(){ post(c.u, c.a); });
+      host.appendChild(b);
+    });
+  })();
+
 
   /* ===== Item 7 — busca global de Cria + centro de notificações ===== */
   (function(){
