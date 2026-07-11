@@ -798,6 +798,7 @@
         <div class="card">
           <div class="cal-dow"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div>
           <div id="cal-grid"></div>
+          <div id="calNote" style="display:none; margin-top:12px; font-size:12px; color:var(--faint); text-align:center">Sem eventos neste mês — o protótipo cobre <b style="color:var(--muted)">Julho/2026</b>. No app final, cada mês vem dos prazos das fases e das Lenhas.</div>
         </div>
         <div class="card" style="margin-top:13px">
           <div class="c-h"><span class="t">Próximos compromissos</span><span class="s">a partir de hoje</span></div>
@@ -1887,6 +1888,76 @@
     document.querySelectorAll('#s-detalhe .tabpanel').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-tab')==='geral'); });
   }
   function openDetalhe(key){ if(!CRIAS[key]) return; renderDetalhe(key); openScreen('s-detalhe', CRIAS[key].nome, '· detalhe da Cria'); }
+
+  /* ===== Item 4 — controles antes mortos agora respondem (em sessão) ===== */
+  // Faísca: enviar texto -> mensagem + resposta demonstrativa
+  (function(){
+    var inp=document.querySelector('#assistant .as-input input'), snd=document.querySelector('#assistant .as-send'), body=document.querySelector('#assistant .as-body');
+    if(!inp||!snd||!body) return;
+    function send(){ var t=(inp.value||'').trim(); if(!t) return;
+      var me=document.createElement('div'); me.className='msg me'; me.innerHTML='<div class="bub"></div>'; me.querySelector('.bub').textContent=t; body.appendChild(me); inp.value='';
+      var ai=document.createElement('div'); ai.className='msg ai'; ai.innerHTML='<div class="who">Faísca</div><div class="bub"></div>';
+      ai.querySelector('.bub').textContent='Entendi — no app final eu executo isso pra você (abrir Cria, avançar fase, distribuir Lenha, agendar Roda de Fogo). Aqui no protótipo a resposta é demonstrativa.';
+      body.appendChild(ai); body.scrollTop=body.scrollHeight;
+    }
+    snd.addEventListener('click',send);
+    inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); send(); } });
+  })();
+  // Tarefas: "+ Nova Lenha" abre um compositor inline
+  (function(){
+    var btn=document.querySelector('#s-tarefas .head .btn-primary'); if(!btn) return; var head=btn.parentElement, box;
+    btn.addEventListener('click',function(){
+      if(!box){ box=document.createElement('div'); box.style.cssText='display:none;gap:8px;margin:0 0 16px';
+        box.innerHTML='<input placeholder="Título da nova Lenha…" style="flex:1;background:var(--inset);border:1px solid var(--border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:13px"><button class="btn-primary" style="padding:7px 16px;font-size:12.5px">Adicionar</button>';
+        head.parentElement.insertBefore(box, head.nextSibling);
+        var ni=box.querySelector('input'), na=box.querySelector('button');
+        var add=function(){ var v=(ni.value||'').trim(); if(!v) return; var grp=document.querySelector('#s-tarefas .tkgroup'); if(grp){
+            var row=document.createElement('div'); row.className='tk';
+            row.innerHTML='<span class="chk"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\"><path d=\"M20 6L9 17l-5-5\"/></svg></span><div class="rmain"><div class="t"></div><div class="s">Rotina · hoje</div></div><span class="ttag">Rotina</span><span class="who">FC</span><span class="due">hoje</span>';
+            row.querySelector('.t').textContent=v; var first=grp.querySelector('.tk'); grp.insertBefore(row, first);
+            row.addEventListener('click',function(){ var c=row.querySelector('.chk'); var d=c.classList.toggle('done'); row.classList.toggle('done',d); });
+          } ni.value=''; };
+        na.addEventListener('click',add); ni.addEventListener('keydown',function(e){ if(e.key==='Enter'){e.preventDefault();add();} });
+      }
+      var vis=box.style.display!=='none'; box.style.display=vis?'none':'flex'; if(!vis) box.querySelector('input').focus();
+    });
+  })();
+  // Biblioteca: clicar num card abre um preview (modal)
+  (function(){
+    var modal=document.createElement('div'); modal.id='libModal';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:200;padding:24px';
+    modal.innerHTML='<div style="background:var(--surface);border:1px solid var(--border-2);border-radius:16px;max-width:520px;width:100%;overflow:hidden"><div id="libMPrev" style="height:190px;overflow:hidden"></div><div style="padding:18px 20px"><div id="libMTitle" style="font-family:var(--display);font-size:20px;color:var(--text);margin-bottom:8px"></div><div id="libMTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div><div style="font-size:12.5px;color:var(--muted);line-height:1.5">Preview do acervo — no app final abre o arquivo real (roteiro/criativo) direto do Google Drive.</div><button class="btn-primary" id="libMClose" style="margin-top:16px;padding:8px 18px">Fechar</button></div></div>';
+    document.body.appendChild(modal);
+    function close(){ modal.style.display='none'; }
+    modal.addEventListener('click',function(e){ if(e.target===modal) close(); });
+    modal.querySelector('#libMClose').addEventListener('click',close);
+    document.querySelectorAll('#s-biblioteca .libcard').forEach(function(card){
+      card.addEventListener('click',function(){
+        var prev=card.querySelector('.prev'); document.getElementById('libMPrev').innerHTML=prev?prev.outerHTML:'';
+        document.getElementById('libMTitle').textContent=card.getAttribute('data-title')||'';
+        var tags=card.querySelector('.tags'); document.getElementById('libMTags').innerHTML=tags?tags.innerHTML:'';
+        modal.style.display='flex';
+      });
+    });
+  })();
+  // Detalhe: lápis edita o investimento em mídia (inline, em sessão)
+  (function(){
+    var dados=document.getElementById('detDados'); if(!dados) return;
+    dados.addEventListener('click',function(e){
+      var pen=e.target.closest('.editInv'); if(!pen) return; var b=pen.closest('b'); if(!b) return;
+      var cur=(b.textContent||'').trim();
+      var inp=document.createElement('input'); inp.value=cur; inp.style.cssText='width:130px;background:var(--inset);border:1px solid var(--ember);border-radius:8px;padding:2px 8px;color:var(--text);font-family:inherit;font-size:13px';
+      b.innerHTML=''; b.appendChild(inp); inp.focus(); inp.select();
+      var done=false;
+      function save(){ if(done) return; done=true; var v=(inp.value||'').trim()||cur;
+        b.innerHTML=''; b.appendChild(document.createTextNode(v+' ')); b.insertAdjacentHTML('beforeend', PENCIL);
+        try{ if(CRIAS && CRIAS[currentCria]) CRIAS[currentCria].inv=v; }catch(_){}
+      }
+      inp.addEventListener('keydown',function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} else if(ev.key==='Escape'){done=true; b.innerHTML=''; b.appendChild(document.createTextNode(cur+' ')); b.insertAdjacentHTML('beforeend', PENCIL);} });
+      inp.addEventListener('blur',save);
+    });
+  })();
+
   document.querySelectorAll('#s-crias .tbl tbody tr').forEach(function(tr){
     tr.addEventListener('click',function(){ var nm=(tr.querySelector('.crname')||{}).textContent; openDetalhe(CRIA_BY_NAME[(nm||'').trim()]); });
   });
@@ -2345,12 +2416,8 @@
 (function(){
   "use strict";
   var grid=document.getElementById('cal-grid');
-  if(grid && !grid.getAttribute('data-built')){
-    grid.setAttribute('data-built','1');
-    var year=2026, month=6, today=9;                 /* Julho 2026 — mês fixo do protótipo */
-    var first=new Date(year,month,1).getDay();        /* 0=Dom */
-    var days=new Date(year,month+1,0).getDate();      /* 31 */
-    var EV={
+  var CAL_MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var EV_JUL={
       3:[{t:'entrega',l:'Entrega · Pierre & Cunha'}],
       7:[{t:'sla',l:'Estopim · Letícia'}],
       9:[{t:'rf',l:'Roda de Fogo · Letícia 15h'},{t:'lenha',l:'Lenha vence'}],
@@ -2362,8 +2429,13 @@
       22:[{t:'rf',l:'Roda de Fogo · Luzia Barbosa 16h'}],
       24:[{t:'entrega',l:'Entrega · Giuliane'}],
       28:[{t:'lenha',l:'Lenha · Auditoria'}],
-      30:[{t:'rf',l:'Roda de Fogo · Costa 11h'}]
-    };
+      30:[{t:'rf',l:'Roda de Fogo · Raphael Souza 11h'}]
+  };
+  var calY=2026, calM=6;
+  function renderCal(y,m){
+    if(!grid) return; grid.innerHTML='';
+    var first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+    var isJul=(y===2026&&m===6), today=isJul?9:-1, EV=isJul?EV_JUL:{};
     var frag=document.createDocumentFragment(), i, c, d, j, evs, e, n;
     for(i=0;i<first;i++){ c=document.createElement('div'); c.className='cal-cell out'; frag.appendChild(c); }
     for(d=1; d<=days; d++){
@@ -2374,7 +2446,15 @@
       frag.appendChild(c);
     }
     grid.appendChild(frag);
+    var mo=document.querySelector('#s-calendario .cal-nav .mo'); if(mo) mo.textContent=CAL_MONTHS[m]+' '+y;
+    var note=document.getElementById('calNote'); if(note) note.style.display=isJul?'none':'';
   }
+  var calNav=document.querySelectorAll('#s-calendario .cal-nav button');
+  if(calNav.length>=2){
+    calNav[0].addEventListener('click',function(){ calM--; if(calM<0){calM=11;calY--;} renderCal(calY,calM); });
+    calNav[1].addEventListener('click',function(){ calM++; if(calM>11){calM=0;calY++;} renderCal(calY,calM); });
+  }
+  if(grid) renderCal(calY,calM);
   /* Tarefas — marcar/desmarcar Lenha ao clicar na linha */
   document.querySelectorAll('#s-tarefas .tk').forEach(function(tk){
     tk.addEventListener('click',function(ev){
