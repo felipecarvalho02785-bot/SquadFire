@@ -88,6 +88,57 @@ A IA mantém o acervo em ordem (ver `camada-ia.md` §6).
 
 ---
 
+## 7. Capacidades avançadas
+
+Além do núcleo acima, a Faísca cresce para **interpretar, antecipar e automatizar**.
+
+### 7.1 Inteligência & análise
+- **Gargalo recorrente:** "onde as Forjas mais travam?" — identifica a fase que mais prende a carteira.
+- **Previsão de SLA:** "o que vai estourar nos próximos dias?" — antecipa antes do Estopim.
+- **Risco de churn:** cruza NPS em queda + SLA + silêncio → sinaliza cliente em perigo.
+- **Comparativos:** membro × membro, semana × semana, nicho × nicho.
+- **Explicar o número:** "por que o SLA caiu essa semana?" — mostra a causa, não só o valor.
+
+### 7.2 Relatórios & comunicação
+- **Relatório executivo semanal** (Covil em texto) gerado automaticamente pro Admin.
+- **Pauta da Roda de Fogo** montada a partir do estado atual da Cria.
+- **Digest matinal** por membro ("suas 3 prioridades hoje").
+- **Status pro cliente:** rascunha e-mail/mensagem de acompanhamento (a pessoa revisa e envia).
+- **Post-mortem** de uma Forja concluída — o que funcionou e o que travou.
+
+### 7.3 Automação & rotinas (proativo/agendado)
+- **Cobrança de briefing:** toda quinta, cutuca quem não entregou.
+- **Nudge de Lenha atrasada:** lembra o responsável sozinha.
+- **Cliente sem resposta há X horas** → alerta + rascunho de resposta.
+- **Onboarding guiado:** conduz o passo a passo de iniciar uma Forja.
+
+### 7.4 Memória & conhecimento (busca na base)
+- **Histórico da Cria:** "o que a gente combinou com a Letícia mês passado?" — busca em briefings/comentários antigos.
+- **Q&A do Diagnóstico 360:** pergunta sobre o diagnóstico de uma Cria.
+- **Playbook do Squad:** "como a gente faz auditoria de mídia?" — base de conhecimento interna.
+
+### 7.5 Voz & multimodal avançado
+- **Ata da Roda de Fogo:** transcreve a reunião inteira → resumo + Lenhas automáticas.
+- **Ler um print:** cole uma imagem (tela/métrica) e ela extrai os dados.
+- **Áudio do cliente:** transcreve + resume um áudio que o cliente enviou.
+
+### 7.6 Agenda (Google Calendar)
+- Agenda a Roda de Fogo direto na **agenda dos participantes** (Google Calendar).
+
+### 7.7 Gestão de pessoas
+- **"Alguém sobrecarregado?"** → sugere redistribuir Lenhas.
+- **"Quem é o melhor pra essa Lenha?"** — por papel, carga e nicho.
+
+### 7.8 Financeiro & comercial
+- **MRR da carteira** (soma dos contratos) e **investimento total em mídia** sob gestão.
+- **Contratos vencendo/renovação** — alerta com antecedência.
+
+> **Fora do escopo da Faísca (por decisão):** consultar métricas de **Meta/Google Ads**,
+> **responder/monitorar grupos de WhatsApp** e **Google Meu Negócio** não passam pela Faísca.
+> Essas integrações podem existir em outras partes do produto, mas o assistente não as opera.
+
+---
+
 ## Guardrails (limites)
 
 1. **Permissões por papel (RLS):** a Faísca só executa o que o papel do usuário pode — mover
@@ -105,10 +156,17 @@ A IA mantém o acervo em ordem (ver `camada-ia.md` §6).
 Funções do backend que a Faísca aciona — casam com o módulo de orquestração de IA
 (`camada-ia.md` §4) e com o roteiro (`roteiro-producao.md` §4.3):
 
-`buscarCrias` · `listarForjasAtrasadas` · `resumirCria` · `agendarRodaDeFogo` · `avancarFase` ·
-`criarLenha` · `concluirLenha` · `abrirCria` · `comentarNaCria` · `registrarGargalo` ·
-`editarInvestimentoMidia` · `setarInicioForja` · `gerarBriefing` · `publicarBriefing` ·
-`planoDoGargalo` · `sugerirLenhas` · `extrairContrato` · `classificarAsset`
+**Núcleo:** `buscarCrias` · `listarForjasAtrasadas` · `resumirCria` · `agendarRodaDeFogo` ·
+`avancarFase` · `criarLenha` · `concluirLenha` · `abrirCria` · `comentarNaCria` ·
+`registrarGargalo` · `editarInvestimentoMidia` · `setarInicioForja` · `gerarBriefing` ·
+`publicarBriefing` · `planoDoGargalo` · `sugerirLenhas` · `extrairContrato` · `classificarAsset`
+
+**Avançadas:** `analisarFunil` · `preverRiscoSLA` · `avaliarRiscoChurn` · `compararDesempenho` ·
+`explicarMetrica` · `relatorioExecutivo` · `gerarPautaRoda` · `digestMatinal` ·
+`redigirStatusCliente` · `postMortemForja` · `cobrarBriefing` · `nudgeLenha` · `onboardingGuiado` ·
+`buscarHistorico` · `perguntarDiagnostico` · `consultarPlaybook` · `ataDaRoda` · `lerImagem` ·
+`transcreverAudio` · `agendarNoCalendar` · `sugerirRedistribuicao` · `sugerirResponsavel` ·
+`resumoFinanceiro` · `alertarRenovacao`
 
 ## Faseamento sugerido
 
@@ -116,8 +174,12 @@ Funções do backend que a Faísca aciona — casam com o módulo de orquestraç
   `concluirLenha`, `comentarNaCria`) e o pipeline do briefing (§3, áudio → briefing → ClickUp).
   Voz de entrada (Gemini).
 - **V2:** avançar fase com gate, plano de gargalo, sugerir Lenhas, editar mídia/início da Forja,
-  voz de saída (TTS), alertas proativos.
-- **V3:** organização da Biblioteca, resumo pelo WhatsApp, rascunho de mensagens, resumo
-  executivo do Covil.
+  voz de saída (TTS); **alertas proativos** (§7.3: cobrança de briefing, nudge de Lenha);
+  **previsão de SLA e risco de churn** (§7.1); **ata da Roda de Fogo** (§7.5); **Google
+  Calendar** (§7.6).
+- **V3:** **inteligência** completa (§7.1 comparativos/explicar métrica); **relatórios** (§7.2:
+  executivo semanal, pauta, digest, post-mortem); **memória/RAG** (§7.4); **ler print/áudio**
+  (§7.5); **gestão de pessoas** (§7.7); **financeiro** (§7.8); organização da Biblioteca (§5) e
+  rascunho de mensagens.
 
 > Este catálogo é a referência de escopo da Faísca — ajuste conforme a operação for pedindo.
