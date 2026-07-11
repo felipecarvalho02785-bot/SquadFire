@@ -898,7 +898,7 @@
           <div class="pinfo"><h2 id="perfName">Luiz Mattos</h2><p id="perfRole">Gestor de Projetos · Admin</p></div>
           <div class="pbadges" id="perfBadges"><span class="role">Projetos</span><span class="role">Coordenador</span></div>
         </div>
-        <div class="kpis">
+        <div class="kpis" id="perfKpis">
           <div class="kpi"><div class="k-top"><span class="k-label">Crias</span></div><div class="k-val">29</div><span class="k-delta neu">sob responsabilidade</span></div>
           <div class="kpi"><div class="k-top"><span class="k-label">Lenhas abertas</span></div><div class="k-val">14</div><span class="k-delta down">2 estouradas</span></div>
           <div class="kpi flag-warn"><div class="k-top"><span class="k-label">No prazo (SLA)</span></div><div class="k-val">83%</div><span class="k-delta neu">últimos 30 dias</span></div>
@@ -906,7 +906,7 @@
         </div>
         <div class="grid g-2">
           <div>
-            <div class="card" style="margin-bottom:14px">
+            <div class="card" id="perfCrias" style="margin-bottom:14px">
               <div class="c-h"><span class="t">Crias sob responsabilidade</span><span class="s">29 Forjas</span></div>
               <div style="margin-top:8px">
                 <div class="crow"><span class="cav">LS</span><div class="cm"><div class="t">Letícia Stein</div><div class="s">Previdenciário · Fase 3 · dia 17/49</div></div><div class="cside"><span class="pill crit"><span class="d" style="background:var(--crit)"></span>Apagando</span></div></div>
@@ -915,7 +915,7 @@
                 <div class="crow"><span class="cav">MO</span><div class="cm"><div class="t">M. Oliveira Soc. de Advogados</div><div class="s">Empresarial · Fase 1 · dia 4/49</div></div><div class="cside"><span class="pill good"><span class="d" style="background:var(--good)"></span>Em Chamas</span></div></div>
               </div>
             </div>
-            <div class="card">
+            <div class="card" id="perfLenhas">
               <div class="c-h"><span class="t">Lenhas em aberto</span><span class="s">14 · 2 estouradas</span></div>
               <div style="margin-top:8px">
                 <div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">Agendar diagnóstico de processos</div><div class="s">Letícia Stein · Fase 3</div></div><span class="est" style="color:var(--crit)">quinta</span></div>
@@ -928,7 +928,7 @@
           <div>
             <div class="card" style="margin-bottom:14px">
               <div class="c-h"><span class="t">Carga por dia</span><span class="s">Lenhas concluídas</span></div>
-              <div class="cbars">
+              <div class="cbars" id="perfCarga">
                 <div class="cb"><i style="height:52%"></i><span>seg</span></div>
                 <div class="cb"><i style="height:78%"></i><span>ter</span></div>
                 <div class="cb"><i style="height:64%"></i><span>qua</span></div>
@@ -938,7 +938,7 @@
             </div>
             <div class="card" style="margin-bottom:14px">
               <div class="c-h"><span class="t">Papéis &amp; permissões</span></div>
-              <div style="margin-top:8px">
+              <div style="margin-top:8px" id="perfPerms">
                 <div class="perm"><b>Projetos</b><span>Move fases, distribui Lenha de Forja, gerencia SLA.</span></div>
                 <div class="perm"><b>Coordenador</b><span>Distribui Lenha entre a Brigada e acompanha carga.</span></div>
                 <div class="perm"><b>Admin</b><span>Acesso total + gestão de membros e integrações.</span></div>
@@ -946,7 +946,7 @@
             </div>
             <div class="card">
               <div class="c-h"><span class="t">Atividade recente</span></div>
-              <div style="margin-top:8px">
+              <div style="margin-top:8px" id="perfAtiv">
                 <div class="act"><span class="dot"></span><div class="amain"><b>Encerrou a Roda de Fogo</b> <span class="s">— Letícia Stein</span></div><span class="at">15:30</span></div>
                 <div class="act"><span class="dot"></span><div class="amain"><b>Avançou pra Fase 4</b> <span class="s">— Giuliane Giorgi Torres</span></div><span class="at">ontem</span></div>
                 <div class="act"><span class="dot"></span><div class="amain"><b>Comentou na Cria</b> <span class="s">— Mozini Advocacia</span></div><span class="at">2 dias</span></div>
@@ -1914,14 +1914,35 @@
     });
   }
   // Perfil da Brigada: clicar num membro abre o perfil (cabeçalho puxa a identidade do card)
+
+  /* ===== Perfil da Brigada data-driven por membro (item 2) ===== */
+  var MEMBROS = {"Luiz Mattos": {"ini": "LM", "av": "assets/luiz-av.webp", "role": "Gestor de Projetos · Admin", "badges": ["Projetos", "Coordenador"], "k": {"criasLabel": "Crias que acompanha", "crias": 18, "lenhas": 14, "lenhasDelta": "2 estouradas", "down": true, "sla": 83, "slaWarn": true, "rodas": 4}, "criasCount": "18 · via Lenha de Forja", "crias": [["LS", "Letícia Stein", "Previdenciário · Fase 3 · dia 17/49", "crit", "Apagando"], ["GT", "Giuliane Giorgi Torres", "Cível · Fase 4 · dia 24/49", "good", "Em Chamas"], ["MO", "M. Oliveira Soc. de Advogados", "Empresarial · Fase 1 · dia 4/49", "good", "Em Chamas"], ["IG", "Igor Freitas Guinot", "Cível · Fase 3 · dia 17/49", "good", "Em Chamas"]], "lenhasCount": "14 · 2 estouradas", "lenhas": [["Concluir treinamento no CRM", "Letícia Stein · Fase 3", "quinta", "crit"], ["Montar trilha de Treinamento", "Mozini Advocacia · Fase 3", "08/07", "muted"], ["Revisar criativos previdenciários", "Giuliane Giorgi Torres · Fase 4", "10/07", "muted"], ["Avançar fase — checklist", "Igor Freitas Guinot · Fase 3", "11/07", "muted"]], "carga": [52, 78, 64, 92, 40], "today": 3, "perms": [["Projetos", "Move fases, distribui Lenha de Forja, gerencia SLA."], ["Coordenador", "Distribui Lenha entre a Brigada e acompanha carga."], ["Admin", "Acesso total + gestão de membros e integrações."]], "ativ": [["Encerrou a Roda de Fogo", "— Letícia Stein", "15:30"], ["Avançou pra Fase 4", "— Giuliane Giorgi Torres", "ontem"], ["Distribuiu Lenha", "— Mozini Advocacia", "2 dias"]]}, "Felipe Carvalho": {"ini": "FC", "av": "assets/felipe-av.webp", "role": "Gestor de Contas · Admin", "badges": ["Contas", "Admin"], "k": {"criasLabel": "Crias que acompanha", "crias": 11, "lenhas": 8, "lenhasDelta": "1 estourada", "down": true, "sla": 88, "slaWarn": false, "rodas": 3}, "criasCount": "11 · via contas & briefing", "crias": [["LS", "Letícia Stein", "Previdenciário · briefing pendente", "crit", "Apagando"], ["MO", "Mozini Advocacia", "Trabalhista · NPS 8", "warn", "Esfriando"], ["EC", "Edi Carlos", "Trabalhista · Fase 2", "good", "Em Chamas"], ["RS", "Raphael Souza", "Cível · Fase 3", "good", "Em Chamas"]], "lenhasCount": "8 · 1 estourada", "lenhas": [["Revisar briefing semanal · Mozini", "Mozini Advocacia · Fase 3", "quinta", "crit"], ["Follow-up de NPS", "Letícia Stein · Fase 3", "07/07", "warn"], ["Alinhar investimento em mídia", "Edi Carlos · Fase 2", "09/07", "muted"]], "carga": [40, 58, 48, 70, 36], "today": 3, "perms": [["Contas", "Cadastra Crias/contratos, acompanha saúde e NPS."], ["Admin", "Acesso total + gestão de membros e integrações."]], "ativ": [["Publicou briefing no ClickUp", "— Letícia Stein", "16:40"], ["Comentou na Cria", "— Mozini Advocacia", "ontem"], ["Registrou NPS", "— Edi Carlos", "2 dias"]]}};
+  function kv(label,val,delta,flag,down){ return '<div class="kpi '+(flag||'')+'"><div class="k-top"><span class="k-label">'+label+'</span></div><div class="k-val">'+val+'</div><span class="k-delta '+(down?'down':'neu')+'">'+delta+'</span></div>'; }
+  function renderPerfil(nome){
+    var m=MEMBROS[nome]; if(!m) return;
+    var pa=document.getElementById('perfAv'); pa.textContent=m.ini; pa.setAttribute('style','background:url(\''+m.av+'\') center/cover;color:transparent');
+    document.getElementById('perfName').textContent=nome;
+    document.getElementById('perfRole').textContent=m.role;
+    document.getElementById('perfBadges').innerHTML=m.badges.map(function(b){return '<span class="role">'+b+'</span>';}).join('');
+    document.getElementById('perfKpis').innerHTML =
+        kv(m.k.criasLabel, m.k.crias, 'na sua alçada')
+      + kv('Lenhas abertas', m.k.lenhas, m.k.lenhasDelta, '', m.k.down)
+      + kv('No prazo (SLA)', m.k.sla+'%', 'últimos 30 dias', m.k.slaWarn?'flag-warn':'')
+      + kv('Rodas de Fogo', m.k.rodas, 'esta semana');
+    document.getElementById('perfCrias').innerHTML =
+      '<div class="c-h"><span class="t">Crias que acompanha</span><span class="s">'+m.criasCount+'</span></div><div style="margin-top:8px">'
+      + m.crias.map(function(c){ return '<div class="crow"><span class="cav">'+c[0]+'</span><div class="cm"><div class="t">'+c[1]+'</div><div class="s">'+c[2]+'</div></div><div class="cside"><span class="pill '+c[3]+'"><span class="d" style="background:var(--'+c[3]+')"></span>'+c[4]+'</span></div></div>'; }).join('') + '</div>';
+    document.getElementById('perfLenhas').innerHTML =
+      '<div class="c-h"><span class="t">Lenhas em aberto</span><span class="s">'+m.lenhasCount+'</span></div><div style="margin-top:8px">'
+      + m.lenhas.map(function(l){ return '<div class="lrow"><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><div class="lm"><div class="t">'+l[0]+'</div><div class="s">'+l[1]+'</div></div><span class="est" style="color:var(--'+l[3]+')">'+l[2]+'</span></div>'; }).join('') + '</div>';
+    document.getElementById('perfCarga').innerHTML = m.carga.map(function(hh,i){ var d=['seg','ter','qua','qui','sex'][i]; return '<div class="cb'+(i===m.today?' today':'')+'"><i style="height:'+hh+'%"></i><span>'+d+'</span></div>'; }).join('');
+    document.getElementById('perfPerms').innerHTML = m.perms.map(function(pp){ return '<div class="perm"><b>'+pp[0]+'</b><span>'+pp[1]+'</span></div>'; }).join('');
+    document.getElementById('perfAtiv').innerHTML = m.ativ.map(function(a){ return '<div class="act"><span class="dot"></span><div class="amain"><b>'+a[0]+'</b> <span class="s">'+a[1]+'</span></div><span class="at">'+a[2]+'</span></div>'; }).join('');
+  }
   document.querySelectorAll('#s-brigada .mcard').forEach(function(mc){
     mc.addEventListener('click',function(){
       var nm=mc.querySelector('.mn').textContent.trim();
-      var av=mc.querySelector('.av'), pa=document.getElementById('perfAv');
-      pa.textContent=av.textContent.trim(); pa.setAttribute('style', av.getAttribute('style')||'');
-      document.getElementById('perfName').textContent=nm;
-      document.getElementById('perfRole').textContent=mc.querySelector('.mr').textContent.trim();
-      document.getElementById('perfBadges').innerHTML=mc.querySelector('.roles').innerHTML;
+      renderPerfil(nm);
       openScreen('s-perfil', nm, '· perfil da Brigada');
     });
   });
