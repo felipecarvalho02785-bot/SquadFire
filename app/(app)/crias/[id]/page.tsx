@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { Topbar } from '@/components/Topbar';
 import { LenhaCheck } from '@/components/LenhaCheck';
 import { AvancarFaseBtn } from '@/components/AvancarFaseBtn';
-import { getCriaDetalhe } from '@/lib/data/crias';
+import { ComentarioForm } from '@/components/ComentarioForm';
+import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
 import { brl, statusLabel, iniciais } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
@@ -12,6 +13,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
   const { id } = await params;
   const det = await getCriaDetalhe(id);
   if (!det) notFound();
+  const comentarios = await getComentarios(id);
 
   const { cria, forja, fases, lenhas, gestor } = det;
   const faseAtual = fases.find((f) => f.id === forja?.fase_atual_id);
@@ -134,6 +136,31 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
               <div className="s">Sincronizado do ClickUp</div>
               <div className="t">{cria.sincronizado_em ?? 'nunca'}</div>
             </div>
+          </div>
+        </div>
+
+        {/* comentários (registro contínuo) */}
+        <div className="card">
+          <div className="eyebrow">💬 Comentários</div>
+          <ComentarioForm criaId={cria.id} />
+          <div style={{ marginTop: 14 }}>
+            {comentarios.length === 0 ? (
+              <div className="s">Nenhum comentário ainda.</div>
+            ) : (
+              comentarios.map((c) => (
+                <div className="row" key={c.id}>
+                  <div className="avatar" style={{ width: 28, height: 28, fontSize: 11 }}>
+                    {iniciais(c.autor_nome)}
+                  </div>
+                  <div className="grow">
+                    <div className="t" style={{ fontWeight: 500 }}>{c.corpo}</div>
+                    <div className="s">
+                      {c.autor_nome} · {new Date(c.created_at).toLocaleString('pt-BR')}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

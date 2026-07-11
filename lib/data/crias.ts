@@ -69,6 +69,27 @@ export async function getCriaDetalhe(id: string): Promise<CriaDetalhe | null> {
   return { cria: cria as Cria, forja: (forja as Forja) ?? null, fases, lenhas, gestor };
 }
 
+export interface ComentarioView {
+  id: string;
+  corpo: string;
+  created_at: string;
+  autor_nome: string;
+}
+
+export async function getComentarios(criaId: string): Promise<ComentarioView[]> {
+  if (!isSupabaseConfigured) return [];
+  const supabase = await getSupabaseServer();
+  const { data } = await supabase
+    .from('comentario')
+    .select('id, corpo, created_at, autor:autor_id(nome)')
+    .eq('cria_id', criaId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  return ((data as unknown as { id: string; corpo: string; created_at: string; autor: { nome: string } | null }[]) ?? []).map(
+    (c) => ({ id: c.id, corpo: c.corpo, created_at: c.created_at, autor_nome: c.autor?.nome ?? '—' }),
+  );
+}
+
 // KPIs simples do panorama (Covil).
 export async function getCovilResumo() {
   const crias = await listCrias();

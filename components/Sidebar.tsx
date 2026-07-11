@@ -7,7 +7,9 @@ const NAV = [
   { href: '/meu-dia', ic: '🔥', label: 'Meu Dia' },
   { href: '/covil', ic: '🐉', label: 'Covil' },
   { href: '/crias', ic: '⚒️', label: 'Crias' },
+  { href: '/fogueira', ic: '🔥', label: 'Fogueira' },
   { href: '/tarefas', ic: '🪵', label: 'Tarefas' },
+  { href: '/brigada', ic: '🛡️', label: 'Brigada' },
   { href: '/calendario', ic: '📅', label: 'Calendário' },
   { href: '/faisca', ic: '✨', label: 'Faísca' },
 ];
