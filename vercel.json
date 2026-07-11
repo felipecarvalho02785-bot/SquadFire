@@ -4,6 +4,10 @@
     {
       "path": "/api/clickup/sync",
       "schedule": "*/20 * * * *"
+    },
+    {
+      "path": "/api/rotinas/gerar",
+      "schedule": "0 6 * * *"
     }
   ]
 }

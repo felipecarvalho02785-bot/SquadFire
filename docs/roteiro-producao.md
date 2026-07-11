@@ -36,8 +36,15 @@ O P0 saiu do papel. Já no repositório e **validado**:
   Calendário/Faísca como placeholders das integrações P1; modo demonstração
   quando o Supabase não está configurado.
 - **Sync ClickUp** — `status_cria` reconciliado (churn/finalizada→encerrada,
-  hold→pausada) e rota server `POST /api/clickup/sync` fazendo upsert por
-  `clickup_task_id` com service_role (o trigger cria a Forja).
+  hold→pausada), rota `/api/clickup/sync` (upsert por `clickup_task_id`,
+  service_role) e **webhook** `/api/clickup/webhook` (HMAC → upsert em quase-tempo-real).
+- **Ações interativas** — Server Actions: concluir a própria Lenha (RLS decide) e
+  **avançar fase** via RPC `public.avancar_fase` (checklist + gate de papel no banco).
+- **Motor de recorrência** — `app.gerar_lenhas_do_dia` gera as Lenhas de Rotina do
+  dia por papel (idempotente); cron `/api/rotinas/gerar` (diário). Cadências
+  fechadas ativas; sprint/NPS/tráfego seguem parqueadas (seed `ativo=false`).
+- **CI verde** — GitHub Actions: build + typecheck + `node --test` + testes de
+  banco (migrations/seed/RLS/triggers/recorrência contra Postgres 16).
 
 **Falta pra ir ao ar:** provisionar o Supabase (projeto + Google OAuth) e a
 Vercel, e preencher as envs. Ver [`docs/deploy.md`](deploy.md).

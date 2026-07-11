@@ -29,7 +29,7 @@ grant usage on schema public to public;
 SQL
 
 echo "▸ aplicando migrations…"
-for f in "$DIR"/migrations/000*_*.sql; do
+for f in "$DIR"/migrations/*.sql; do
   $PSQL -f "$f"
 done
 
@@ -100,6 +100,20 @@ begin
   if (select fdf.ordem from forja f join fase_da_forja fdf on fdf.id=f.fase_atual_id) <> 3 then
     raise exception 'RPC pública avancar_fase não moveu para fase 3';
   end if;
+
+  -- Motor de recorrência: gera Lenhas do dia e é idempotente
+  n := app.gerar_lenhas_do_dia(date '2026-08-03');
+  if n < 1 then raise exception 'recorrência não gerou Lenhas'; end if;
+  if app.gerar_lenhas_do_dia(date '2026-08-03') <> 0 then
+    raise exception 'recorrência não é idempotente';
+  end if;
+  -- Daily (diária, coletiva) gerou Lenha pro admin (gestor_projetos)
+  if not exists (
+    select 1 from lenha l join rotina r on r.id = l.rotina_id
+    where r.titulo = 'Daily (alinhamento interno)'
+      and l.data_referencia = date '2026-08-03'
+      and l.responsavel_id = (select id from membro where is_admin limit 1)
+  ) then raise exception 'Daily não gerada pro admin'; end if;
 
   raise notice '✓ triggers/regras OK';
 end $$;
