@@ -48,13 +48,26 @@ automaticamente a Estruturação (Forja)** — um funil de **7 fases × 7 dias =
 4. **Covil (Dashboard)** — por papel.
 5. **Backlog** — Kanban, automação do funil, formulários, IA de entregáveis, NPS, notificações, analytics, portal do cliente, compliance OAB.
 
-## Stack prevista (implícita na spec)
+## Stack
 
-- **Next.js** (front + rotas de API server-side)
-- **Supabase** (banco + Storage para contratos/documentos)
-- **API Anthropic** (leitura de contrato, briefing por áudio, sugestões de plano de ação)
-- **Google SSO + JWT** (login com allowlist)
-- **Integrações:** ClickUp (push de briefing), WhatsApp (Evolution API / Criativivo — SLA de grupos), Google (Meu Negócio, Drive/Storage)
+- **Next.js 15** (App Router + TypeScript) — front + rotas de API server-side. Já no repo (`app/`, `lib/`, `components/`).
+- **Supabase** (Postgres + RLS + Storage + Auth) — schema completo em `supabase/` (migrations 0001–0008 + seed), **validado contra Postgres 16**.
+- **API Anthropic** (leitura de contrato, briefing por áudio, sugestões de plano de ação) — camada de IA P1.
+- **Google SSO + JWT** (login com allowlist por `membro.email`) — implementado via `@supabase/ssr` + middleware.
+- **Integrações:** ClickUp (fonte das Crias + push de briefing), WhatsApp (Evolution API / Criativivo — SLA de grupos), Google (Calendar, Meu Negócio, Drive/Storage).
+
+## Rodar / Deploy
+
+```bash
+npm install
+cp .env.example .env.local     # preencha as chaves (ou rode sem, em modo demo)
+npm run dev                    # http://localhost:3000
+npm run build                  # build de produção (passa limpo)
+```
+
+- **Banco:** `supabase/` — ver [`supabase/README.md`](supabase/README.md) (migrations + seed + como aplicar).
+- **Subir no ar:** passo a passo em [`docs/deploy.md`](docs/deploy.md) (Supabase + Google OAuth + Vercel).
+- Sem `.env.local`, o app sobe em **modo demonstração** (UI navegável, estados vazios).
 
 ## Decisões já fechadas
 
@@ -84,9 +97,13 @@ automaticamente a Estruturação (Forja)** — um funil de **7 fases × 7 dias =
 
 - 📄 [Especificação Funcional completa](docs/especificacao-funcional.md) — o documento vivo, organizado por módulo.
 - 🗂️ [Modelo de Dados](docs/modelo-de-dados.md) — entidades, enums, relacionamentos e regras de negócio (base Supabase/Postgres).
+- 🗄️ [Banco de dados](supabase/README.md) — migrations, RLS, triggers e seed (materialização do modelo).
+- 🚀 [Deploy](docs/deploy.md) — subir no ar (Supabase + Google OAuth + Vercel).
+- 🛣️ [Roteiro de produção](docs/roteiro-producao.md) — P0/P1/P2 e o que já foi feito.
+- 🤖 [Camada de IA](docs/camada-ia.md) · [Capacidades da Faísca](docs/faisca-capacidades.md).
 - 🔁 [Catálogo de Rotinas](docs/rotinas.md) — Lenha de Rotina por papel, pronta pra seed (com pendências marcadas).
 - 🎨 [Protótipo de interface](design/prototipo.html) — layout clicável (tema forja escura); ver [design/README](design/README.md).
 
 ---
 
-> _Status: projeto em fase de estruturação. Este repositório ainda não tem código de aplicação — a base é a especificação funcional._
+> _Status: **P0 de produção no repositório** — banco Supabase validado (migrations + RLS + seed) e app Next.js 15 com build limpo. Falta provisionar Supabase/Vercel e preencher as envs pra ir ao ar (ver [docs/deploy.md](docs/deploy.md)). Integrações de IA e recorrência são P1._

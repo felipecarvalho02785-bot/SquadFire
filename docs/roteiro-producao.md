@@ -16,7 +16,31 @@ Google). Prioridades: **P0** = bloqueia o MVP no ar · **P1** = importante ·
   funcional e rotinas.
 - **Integração ClickUp** `integracao/clickup/` — esqueleto (client, sync das
   Crias com filtro Squad 08, webhook, push de briefing). **Pendente de deploy**:
-  falta a camada de banco e registrar o webhook.
+  registrar o webhook e mapear os custom fields que faltam.
+
+### ✅ Feito nesta rodada de produção (jul/2026)
+
+O P0 saiu do papel. Já no repositório e **validado**:
+
+- **Banco `supabase/`** — migrations 0001–0008 (extensões/helpers, 12 enums,
+  todas as tabelas dos Mód. 1-3 com constraints/índices, regras de negócio como
+  triggers, auth+RLS por papel, grants) + `seed.sql` (7 fases, checklists, 18
+  rotinas, admin inicial). **Validado contra Postgres 16**: 100% dos testes de
+  trigger e da matriz de RLS passando (ver `supabase/README.md`).
+  - Regra 1 (Cria→Forja+7 fases+Lenhas), Regra 2 (contrato→cascata de prazos),
+    Regra 3 (`avancar_fase` com checklist + gate de papel), Regra 6 (papel
+    primário mantido automaticamente — compatível com o modelo REST).
+- **App `Next.js 15`** (App Router + TS + `@supabase/ssr`) — `next build` limpo,
+  13 rotas. Auth Google SSO + middleware + allowlist; shell da Forja; telas
+  data-driven (Meu Dia, Covil, Crias + detalhe, Tarefas) com RLS aplicada;
+  Calendário/Faísca como placeholders das integrações P1; modo demonstração
+  quando o Supabase não está configurado.
+- **Sync ClickUp** — `status_cria` reconciliado (churn/finalizada→encerrada,
+  hold→pausada) e rota server `POST /api/clickup/sync` fazendo upsert por
+  `clickup_task_id` com service_role (o trigger cria a Forja).
+
+**Falta pra ir ao ar:** provisionar o Supabase (projeto + Google OAuth) e a
+Vercel, e preencher as envs. Ver [`docs/deploy.md`](deploy.md).
 
 ## 2. Diagnóstico da auditoria (jul/2026)
 
@@ -207,8 +231,9 @@ em PR.
 
 ## 5. Pontos de atenção (reconciliações antes do deploy)
 
-1. **`status_cria` × sync** — enum do doc não cobre `churn`/`finalizada` que o
-   `sync-crias.js` emite. Estender o enum ou mapear no upsert. *(bloqueia o sync)*
+1. ~~**`status_cria` × sync**~~ — ✅ **resolvido**: `sync-crias.js` mapeia
+   churn/finalizada→`encerrada` e hold→`pausada`; a distinção fina vai em
+   `_source.motivo`. O enum permanece `('ativa','pausada','encerrada')`.
 2. **Custom fields faltando no `config.js`** — "Gestor de Projetos" e "Link do
    grupo" não têm field id mapeado (só Squad e Semana).
 3. **Idempotência do briefing** — falta `updateTaskComment` pra reenvio não
