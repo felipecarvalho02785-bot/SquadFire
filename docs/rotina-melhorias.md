@@ -27,6 +27,7 @@ Resultado: o time **pensava a rotina** em vez de **executar** o que o app já sa
 | 8 | **NPS registrável** — clicar em "registrar mês →" grava o NPS do mês | detalhe da Cria |
 | 10 | **Modelos** — templates de comentário (confirmação de call, follow-up NPS, pedido de acesso, alinhamento) | compositor de comentários |
 | 12 | **Sprint tracker** — "Sprint S_/4" derivado do dia da Forja | detalhe da Cria |
+| 📅 | **Agenda do dia (Google Agenda)** — "Agenda de hoje" com as reuniões do dia; selo "Sincronizado com Google Agenda" e reuniões de cliente no Calendário | Meu Dia + Calendário |
 
 > Tudo em sessão (sem persistência) — demonstra o comportamento; a versão real depende do backend.
 
@@ -38,6 +39,9 @@ Resultado: o time **pensava a rotina** em vez de **executar** o que o app já sa
 - **Notificações por ritual** — quinta=briefing, sexta=weekly+BSC, fim de dia=relatório
   (o centro de notificações já existe; falta a lógica de agenda).
 - **Atalho do grupo** ligado ao campo "Link do grupo" do ClickUp.
+- **Google Agenda** — conexão real (OAuth Google Calendar API) pra puxar as reuniões do dia dos
+  membros no Calendário e no Meu Dia, e criar o evento ao agendar uma Roda de Fogo. Ver
+  [`roteiro-producao.md` § Integrações](roteiro-producao.md) e [`faisca-capacidades.md` § 7.6](faisca-capacidades.md).
 
 ## Pendências de decisão (de `rotinas.md`)
 - Dia do mês do NPS · data-âncora do ciclo de sprint.

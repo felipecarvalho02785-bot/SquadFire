@@ -123,7 +123,9 @@ Além do núcleo acima, a Faísca cresce para **interpretar, antecipar e automat
 - **Áudio do cliente:** transcreve + resume um áudio que o cliente enviou.
 
 ### 7.6 Agenda (Google Calendar)
-- Agenda a Roda de Fogo direto na **agenda dos participantes** (Google Calendar).
+- **Leitura:** o Calendário e o "Meu Dia" mostram as **reuniões do dia** puxadas da
+  Google Agenda dos membros ("quais reuniões tenho hoje?").
+- **Escrita:** agenda a Roda de Fogo direto na **agenda dos participantes** (Google Calendar).
 
 ### 7.7 Gestão de pessoas
 - **"Alguém sobrecarregado?"** → sugere redistribuir Lenhas.

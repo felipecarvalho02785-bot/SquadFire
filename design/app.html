@@ -586,6 +586,13 @@
           #s-meudia .pend-row .cav{width:28px; height:28px; border-radius:8px; background:var(--surface-2); color:var(--muted); font-size:10.5px; font-weight:700; display:grid; place-items:center; flex:0 0 auto}
           #s-meudia .pend-row .pact{margin-left:auto; font-size:11.5px; font-weight:600; color:var(--ember); cursor:pointer; white-space:nowrap}
           #s-meudia .rep-out{margin-top:12px; padding:14px; border:1px dashed var(--border-2); border-radius:12px; background:var(--inset); font-size:12.5px; color:var(--muted); line-height:1.55; white-space:pre-wrap; display:none}
+          #s-meudia .ag-row{display:flex; align-items:center; gap:11px; padding:9px 0; border-top:1px solid var(--border); font-size:13px; color:var(--text)}
+          #s-meudia .ag-row:first-child{border-top:0}
+          #s-meudia .ag-row .ah{font-family:var(--mono); font-size:12px; color:var(--ember-hi); min-width:42px}
+          #s-meudia .ag-row .atag{margin-left:auto; font-size:10px; font-weight:700; padding:2px 9px; border-radius:20px; white-space:nowrap}
+          #s-meudia .atag.cliente{background:color-mix(in oklab,var(--plasma) 16%,transparent); color:var(--plasma)}
+          #s-meudia .atag.roda{background:color-mix(in oklab,var(--ember) 18%,transparent); color:var(--ember-hi)}
+          #s-meudia .atag.interna{background:var(--inset); color:var(--faint)}
         </style>
         <div class="ritual" id="mdRitual"></div>
         <div class="head" style="margin-bottom:16px"><div class="eye">Operação · seu dia</div><h2 id="mdHi">Meu Dia</h2><p id="mdSub">O que pega fogo primeiro hoje — Lenhas, rituais e pendências suas.</p></div>
@@ -602,6 +609,10 @@
             </div>
           </div>
           <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="c-h"><span class="t">Agenda de hoje</span><span class="s" style="display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--plasma)" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg>Google Agenda</span></div>
+              <div id="mdAgenda" style="margin-top:6px"></div>
+            </div>
             <div class="card" style="margin-bottom:14px">
               <div class="c-h"><span class="t">Rituais da semana</span><span class="s">recorrentes</span></div>
               <div id="mdRituais" style="margin-top:4px"></div>
@@ -842,6 +853,7 @@
           #s-calendario .ev.sla{background:color-mix(in srgb,var(--crit) 13%,transparent); color:#FF8A90; border-color:var(--crit)}
           #s-calendario .ev.lenha{background:color-mix(in srgb,var(--good) 12%,transparent); color:var(--good); border-color:var(--good)}
           #s-calendario .ev.entrega{background:color-mix(in srgb,var(--plasma) 11%,transparent); color:var(--plasma-hi); border-color:var(--plasma)}
+          #s-calendario .ev.reuniao{background:color-mix(in srgb,var(--warn) 13%,transparent); color:var(--warn); border-color:var(--warn)}
           #s-calendario .up{display:flex; align-items:center; gap:11px; padding:10px 0; border-top:1px solid var(--border)}
           #s-calendario .up:first-of-type{border-top:0}
           #s-calendario .up .dt{font-family:var(--mono); font-size:11px; color:var(--faint); flex:0 0 auto; width:52px}
@@ -849,10 +861,14 @@
           #s-calendario .up .t{font-size:13px; color:var(--text); font-weight:580; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
           @media (max-width:820px){ #s-calendario .cal-cell{min-height:72px} #s-calendario .ev{font-size:9px} }
         </style>
-        <div class="head" style="margin-bottom:14px"><div class="eye">Operação · Agenda</div><h2>Calendário</h2><p>Rodas de Fogo, estopins de SLA e entregas do mês.</p></div>
+        <div class="head" style="margin-bottom:14px; display:flex; align-items:flex-end; justify-content:space-between; gap:16px">
+          <div><div class="eye">Operação · Agenda</div><h2>Calendário</h2><p>Reuniões, Rodas de Fogo, estopins de SLA e entregas do mês.</p></div>
+          <span style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:var(--plasma); border:1px solid color-mix(in oklab,var(--plasma) 35%,var(--border)); border-radius:20px; padding:5px 12px; white-space:nowrap"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg>Sincronizado com Google Agenda</span>
+        </div>
         <div class="cal-top">
           <div class="cal-nav"><button aria-label="Mês anterior">‹</button><span class="mo">Julho 2026</span><button aria-label="Próximo mês">›</button></div>
           <div class="cal-legend">
+            <span><i style="background:var(--warn)"></i>Reunião (cliente)</span>
             <span><i style="background:var(--ember)"></i>Roda de Fogo</span>
             <span><i style="background:var(--crit)"></i>Estopim (SLA)</span>
             <span><i style="background:var(--good)"></i>Lenha</span>
@@ -2022,6 +2038,11 @@
   /* ===== Meu Dia — cockpit diário por membro (facilita a rotina) ===== */
   var MEUDIA = {"felipe": {"sub": "Felipe — o que pega fogo primeiro hoje.", "ritual": {"t": "Quinta-feira · dia do briefing semanal", "s": "colete os briefings das suas Crias e publique no ClickUp"}, "kpis": [{"l": "Lenhas de hoje", "v": 6, "d": "2 de rotina"}, {"l": "SLA quente", "v": 2, "d": "estourando", "flag": "flag-crit"}, {"l": "Briefings", "v": 3, "d": "faltam esta semana", "flag": "flag-warn"}, {"l": "Check-ins", "v": 4, "d": "a fazer"}], "lenhas": [{"t": "Coletar briefing · Letícia", "s": "Contas · SLA vermelho", "crit": true}, {"t": "Follow-up de NPS · Mozini", "s": "Contas · Fase 3"}, {"t": "Relatório diário das tarefas", "s": "fim de expediente", "rep": "repete diariamente"}, {"t": "Check-in semanal · Edi Carlos", "s": "Contas · Fase 2", "rep": "repete semanal"}, {"t": "Enviar conteúdo pra aprovação · Raphael", "s": "Contas", "done": true}], "pendTitle": "Briefings & check-ins da semana", "pend": [{"ini": "LS", "nome": "Letícia Stein", "nm": "Letícia Stein Carlos de Souza", "s": "briefing pendente · SLA vermelho", "act": "Coletar →"}, {"ini": "MO", "nome": "Mozini Advocacia", "nm": "Mozini Advocacia", "s": "check-in não feito", "act": "Check-in →"}, {"ini": "EC", "nome": "Edi Carlos", "nm": "Edi Carlos", "s": "briefing pendente", "act": "Coletar →"}], "rituais": [{"t": "Daily (alinhamento)", "d": "todo dia · 09:00", "st": "done", "stl": "feito"}, {"t": "Briefing semanal", "d": "quinta · hoje", "st": "now", "stl": "hoje"}, {"t": "Weekly + BSC", "d": "sexta", "st": "next", "stl": "amanhã"}, {"t": "Medir NPS", "d": "mensal", "st": "next", "stl": "dia 30"}], "report": "Relatório do dia — Felipe (Contas)\n\nConcluído hoje:\n• Conteúdo enviado pra aprovação · Raphael\n\nEm andamento:\n• Coletar briefing · Letícia (SLA vermelho)\n• Follow-up de NPS · Mozini\n• Check-in semanal · Edi Carlos\n\nAtenção: Letícia com Estopim estourado (−2d) — sugerida Roda de Fogo."}, "luiz": {"sub": "Luiz — o que pega fogo primeiro hoje.", "ritual": {"t": "Quinta-feira · relatório de saúde no ClickUp", "s": "atualize o relatório semanal das Forjas do Squad 08"}, "kpis": [{"l": "Lenhas de hoje", "v": 9, "d": "3 de rotina"}, {"l": "SLA quente", "v": 2, "d": "estourando", "flag": "flag-crit"}, {"l": "Grupos p/ dar oi", "v": 5, "d": "comunicação ativa"}, {"l": "Forjas na sua mão", "v": 18, "d": "via Lenha"}], "lenhas": [{"t": "Comunicação ativa nos grupos", "s": "rotina · WhatsApp", "rep": "repete diariamente"}, {"t": "Liberar acesso ao Meta Ads · Letícia", "s": "Forja · Fase 3 · bloqueado", "crit": true}, {"t": "Concluir treinamento no CRM · Letícia", "s": "Forja · Fase 3"}, {"t": "Relatório de saúde no ClickUp", "s": "Projetos + Tráfego", "rep": "repete quinta"}, {"t": "Acompanhamento + pontuação de pendências", "s": "rotina", "rep": "repete diariamente", "done": true}], "pendTitle": "Briefings da semana", "pend": [{"ini": "LS", "nome": "Letícia Stein", "nm": "Letícia Stein Carlos de Souza", "s": "briefing pendente · Fase 3", "act": "Gerar →"}, {"ini": "MO", "nome": "Mozini Advocacia", "nm": "Mozini Advocacia", "s": "briefing pendente · Fase 3", "act": "Gerar →"}], "rituais": [{"t": "Daily (alinhamento)", "d": "todo dia · 09:00", "st": "done", "stl": "feito"}, {"t": "Relatório de saúde", "d": "quinta · hoje", "st": "now", "stl": "hoje"}, {"t": "Weekly + BSC", "d": "sexta", "st": "next", "stl": "amanhã"}, {"t": "Ciclo de sprint", "d": "S2 de 4", "st": "next", "stl": "S2"}], "report": "Relatório do dia — Luiz (Projetos)\n\nConcluído hoje:\n• Acompanhamento + pontuação de pendências\n• Comunicação nos grupos (5/5)\n\nEm andamento:\n• Liberar acesso ao Meta Ads · Letícia (bloqueado)\n• Concluir treinamento no CRM · Letícia\n\nFases: nenhuma avançou hoje · 2 SLAs quentes (Letícia, Mozini)."}};
   var MD_CHK='<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\"><path d=\"M20 6L9 17l-5-5\"/></svg>', MD_CAL='<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M3 9.5h18M8 3v4M16 3v4\"/></svg>';
+  /* Reuniões do dia — vêm do Google Agenda (item: Calendário × Google) */
+  var REUNIOES={
+    felipe:[{h:'09:00',t:'Daily · Squad',tag:'interna'},{h:'11:00',t:'Reunião · Letícia Stein',tag:'cliente'},{h:'15:00',t:'Roda de Fogo · Letícia',tag:'roda'},{h:'17:30',t:'Alinhamento de contas',tag:'interna'}],
+    luiz:[{h:'09:00',t:'Daily · Squad',tag:'interna'},{h:'10:00',t:'Roda de Fogo · Mozini',tag:'roda'},{h:'14:00',t:'Reunião · Pierre & Cunha',tag:'cliente'},{h:'16:00',t:'Alinhamento de tráfego',tag:'interna'}]
+  };
   function renderMeuDia(user){
     var m=MEUDIA[user]; if(!m || !document.getElementById('mdKpis')) return;
     document.getElementById('mdRitual').innerHTML='<span class="ic">'+MD_CAL+'</span><div><div class="rt">'+m.ritual.t+'</div><div class="rs">'+m.ritual.s+'</div></div>';
@@ -2034,6 +2055,8 @@
     document.getElementById('mdPendCount').textContent=m.pend.length+' pendente'+(m.pend.length===1?'':'s');
     document.getElementById('mdPend').innerHTML=m.pend.map(function(p){ return '<div class="pend-row"><span class="cav">'+p.ini+'</span><div><div style="font-size:12.5px;color:var(--text);font-weight:600">'+p.nome+'</div><div style="font-size:11.5px;color:var(--muted)">'+p.s+'</div></div><span class="pact" data-nm="'+p.nm+'">'+p.act+'</span></div>'; }).join('');
     document.querySelectorAll('#mdPend .pact').forEach(function(a){ a.addEventListener('click',function(){ var k=CRIA_BY_NAME[a.getAttribute('data-nm')]; if(k) openDetalhe(k); }); });
+    var ag=REUNIOES[user]||[]; var age=document.getElementById('mdAgenda');
+    if(age) age.innerHTML=ag.map(function(r){ return '<div class="ag-row"><span class="ah">'+r.h+'</span><span>'+r.t+'</span><span class="atag '+r.tag+'">'+(r.tag==='roda'?'Roda':r.tag==='cliente'?'Cliente':'Interna')+'</span></div>'; }).join('');
     document.getElementById('mdRituais').innerHTML=m.rituais.map(function(r){ return '<div class="rit-row"><div><div>'+r.t+'</div><div class="rd">'+r.d+'</div></div><span class="st '+r.st+'">'+r.stl+'</span></div>'; }).join('');
     var rep=document.getElementById('mdReportOut'), btn=document.getElementById('mdReport');
     rep.style.display='none'; rep.textContent=m.report; btn.textContent='Gerar relatório do dia';
@@ -2649,8 +2672,9 @@
   var CAL_MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   var EV_JUL={
       3:[{t:'entrega',l:'Entrega · Pierre & Cunha'}],
-      7:[{t:'sla',l:'Estopim · Letícia'}],
-      9:[{t:'rf',l:'Roda de Fogo · Letícia 15h'},{t:'lenha',l:'Lenha vence'}],
+      7:[{t:'sla',l:'Estopim · Letícia'},{t:'reuniao',l:'Reunião · Edi Carlos 14h'}],
+      8:[{t:'reuniao',l:'Reunião · Pierre & Cunha 11h'}],
+      9:[{t:'reuniao',l:'Reunião · Letícia 11h'},{t:'rf',l:'Roda de Fogo · Letícia 15h'},{t:'lenha',l:'Lenha vence'}],
       10:[{t:'sla',l:'Estopim · Mozini'}],
       14:[{t:'rf',l:'Roda de Fogo · Mozini 10h'}],
       16:[{t:'rf',l:'Roda de Fogo · Pierre & Cunha 14h'},{t:'entrega',l:'Entrega · Igor Freitas'}],

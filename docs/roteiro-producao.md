@@ -106,7 +106,8 @@ onboarding, não cadastro manual) · comentários reais (Server Action) · Faís
 ligada ao Drive · componentizar gráficos + motor SF·VIDA · tema persistido +
 passe de acessibilidade.
 
-**P2** — Calendário data-driven · estados de loading/erro/vazio.
+**P2** — Calendário data-driven (prazos de fase + Lenhas + **reuniões da Google
+Agenda**) · "Agenda de hoje" no Meu Dia · estados de loading/erro/vazio.
 
 ### 4.2 Backend & dados (Supabase)
 
@@ -172,6 +173,13 @@ guardada de avanço de fase (checklist + gate) · persistência do push de brief
 `extrairContrato` (Gemini) → cascade de prazos · `planoDoGargalo` (Claude) ·
 ingestão WhatsApp (Evolution/Criativivo) dos grupos · SLA de grupos →
 `em_risco` + briefing · briefing pré-preenchido pela leitura do grupo.
+
+- **[médio] Google Calendar (agenda) — P1.** O Calendário e o "Meu Dia" mostram
+  as **reuniões do dia** puxadas da **Google Agenda** dos membros (leitura: OAuth
+  Google Calendar API, eventos do dia/mês por membro). **Escrita:** ao agendar
+  uma Roda de Fogo, criar o evento na agenda dos participantes (Faísca § 7.6).
+  No protótipo isso já aparece demonstrado (selo "Sincronizado com Google Agenda"
+  no Calendário + bloco "Agenda de hoje" no Meu Dia).
 
 **P2** — Faísca (chat global com tool-calling + voz) · Google Meu Negócio
 (Business Profile API) na Auditoria de Mídia.
