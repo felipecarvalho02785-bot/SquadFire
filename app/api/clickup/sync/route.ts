@@ -8,7 +8,16 @@ export const runtime = 'nodejs';
 // Sincroniza as Crias do ClickUp (lista-mestre, Squad 08) → tabela `cria`.
 // Protegido por CRON_SECRET (header Authorization: Bearer <segredo>).
 // Escreve com service_role (bypassa RLS). O trigger cria a Forja nos inserts.
+// GET = Vercel Cron (que injeta o Bearer automaticamente); POST = manual.
+export async function GET(request: Request) {
+  return runSync(request);
+}
+
 export async function POST(request: Request) {
+  return runSync(request);
+}
+
+async function runSync(request: Request) {
   const secret = process.env.CRON_SECRET;
   const auth = request.headers.get('authorization');
   if (secret && auth !== `Bearer ${secret}`) {
