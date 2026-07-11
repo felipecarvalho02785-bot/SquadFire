@@ -1394,7 +1394,7 @@
               <span class="av" id="cmtAv" style="background:url('assets/felipe-av.webp') center/cover;color:transparent;flex:0 0 auto">FC</span>
               <div style="flex:1;display:flex;flex-direction:column;gap:8px">
                 <textarea id="cmtInput" rows="2" placeholder="Escreva um comentário…" style="width:100%;resize:vertical;background:var(--inset);border:1px solid var(--border);border-radius:10px;padding:9px 11px;color:var(--text);font-family:inherit;font-size:13px"></textarea>
-                <button class="btn-primary" id="cmtSend" style="align-self:flex-start;padding:7px 16px;font-size:12.5px">Comentar</button>
+                <div style="display:flex;align-items:center;gap:10px"><button class="btn-primary" id="cmtSend" style="padding:7px 16px;font-size:12.5px">Comentar</button><select id="cmtTpl" style="background:var(--inset);border:1px solid var(--border);border-radius:8px;padding:6px 9px;color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer"><option value="">Modelos ▾</option><option>Confirmação de call</option><option>Follow-up de NPS</option><option>Pedido de acesso (Ads)</option><option>Alinhamento de expectativa</option></select></div>
               </div>
             </div>
             <div id="cmtList">
@@ -1909,7 +1909,7 @@
     if(atv){
       k.innerHTML = kpiHTML('Fase atual','Fase '+c.fase,FASES[c.fase-1].n)
         + kpiHTML('Dia da Forja', c.dia+'<span style="font-size:16px;color:var(--muted)">/49</span>','Estruturação')
-        + kpiHTML('NPS', c.nps, 'último mês', c.nps<=8?'flag-warn':'')
+        + kpiHTML('NPS', '<span id="npsVal">'+c.nps+'</span>', '<span id="npsReg" style="cursor:pointer;color:var(--ember)">registrar mês →</span>', c.nps<=8?'flag-warn':'')
         + kpiHTML('Briefing', c.brief, 'esta semana', c.brief?'flag-crit':'', c.brief?'Pendente':'Em dia');
     } else {
       k.innerHTML = kpiHTML('Fase atual','—','no backlog')
@@ -1924,7 +1924,9 @@
       + drowHTML('Área','<b>'+c.area+'</b>')
       + drowHTML('Produto','<b>Estruturação</b>')
       + drowHTML('Investimento em mídia', atv?('<b class="mono" style="display:inline-flex;align-items:center;gap:7px">'+c.inv+' '+PENCIL+'</b>'):'<b class="mono" style="color:var(--faint)">a alinhar</b>')
-      + drowHTML('Closer','<b>'+c.closer+'</b>');
+      + drowHTML('Closer','<b>'+c.closer+'</b>')
+      + (atv?drowHTML('Sprint','<b>S'+(((Math.ceil(c.dia/7)-1)%4)+1)+' de 4</b>'):'')
+      + drowHTML('Grupo (WhatsApp)', atv?('<b style="display:inline-flex;align-items:center;gap:9px"><span class="grupoLink" style="cursor:pointer;color:var(--good)">abrir grupo</span><span style="color:var(--faint);font-weight:400;font-size:11.5px">último contato há 3h</span></b>'):'<b class="mono" style="color:var(--faint)">—</b>');
     var rot=document.getElementById('detRotina');
     if(c.rico){ rot.innerHTML=RICO_ROTINA; }
     else if(atv){ rot.innerHTML=
@@ -1951,6 +1953,69 @@
     document.querySelectorAll('#s-detalhe .tabpanel').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-tab')==='geral'); });
   }
   function openDetalhe(key){ if(!CRIAS[key]) return; renderDetalhe(key); openScreen('s-detalhe', CRIAS[key].nome, '· detalhe da Cria'); }
+
+  /* ===== Item 4 — ações rápidas nas Tarefas + Item 10 — modelos ===== */
+  (function(){
+    function firstName(s){ return (s||'').split('·')[0].trim(); }
+    function keyFuzzy(nm){ nm=(nm||'').toLowerCase(); var found=null; Object.keys(CRIAS).some(function(k){ if(CRIAS[k].nome.toLowerCase().indexOf(nm)===0){found=k;return true;} return false; }); return found; }
+    // "✓ todas" por grupo de Tarefas
+    document.querySelectorAll('#s-tarefas .tkgroup').forEach(function(grp){
+      var hd=grp.querySelector('.tkg-h'); if(!hd) return;
+      var btn=document.createElement('button'); btn.textContent='✓ todas';
+      btn.style.cssText='margin-left:auto;font-size:11px;font-weight:600;padding:3px 11px;border-radius:16px;border:1px solid var(--border);background:var(--surface-2);color:var(--muted);cursor:pointer;font-family:inherit';
+      btn.addEventListener('mouseenter',function(){ btn.style.color='var(--good)'; btn.style.borderColor='var(--good)'; });
+      btn.addEventListener('mouseleave',function(){ btn.style.color='var(--muted)'; btn.style.borderColor='var(--border)'; });
+      btn.addEventListener('click',function(e){ e.stopPropagation(); grp.querySelectorAll('.tk').forEach(function(tk){ var c=tk.querySelector('.chk'); if(c&&!c.classList.contains('done')){ c.classList.add('done'); tk.classList.add('done'); var due=tk.querySelector('.due'); if(due){ if(due.dataset.prev==null)due.dataset.prev=due.textContent; due.textContent='feito'; due.className='due'; } } }); });
+      hd.appendChild(btn);
+    });
+    // por linha: abrir a Cria (aparece no hover)
+    document.querySelectorAll('#s-tarefas .tk').forEach(function(tk){
+      var sub=tk.querySelector('.s'); if(!sub) return; var key=keyFuzzy(firstName(sub.textContent)); if(!key) return;
+      var a=document.createElement('span'); a.textContent='abrir →'; a.title='Abrir a Cria';
+      a.style.cssText='font-size:11px;font-weight:600;color:var(--ember);cursor:pointer;margin-left:6px;opacity:0;transition:.12s;white-space:nowrap';
+      tk.addEventListener('mouseenter',function(){ a.style.opacity='1'; });
+      tk.addEventListener('mouseleave',function(){ a.style.opacity='0'; });
+      a.addEventListener('click',function(e){ e.stopPropagation(); openDetalhe(key); });
+      tk.appendChild(a);
+    });
+    // Item 10 — modelos de comentário
+    var tpl=document.getElementById('cmtTpl'), inp=document.getElementById('cmtInput');
+    var MODELOS={
+      'Confirmação de call':'Confirmando nossa call de quinta às 15h. Qualquer coisa me avisa por aqui!',
+      'Follow-up de NPS':'Passando pra saber como está a experiência de vocês até aqui — de 0 a 10, como avalia nosso trabalho?',
+      'Pedido de acesso (Ads)':'Pra subir a campanha, preciso do acesso ao Gerenciador de Anúncios (Meta). Consegue me liberar como admin?',
+      'Alinhamento de expectativa':'Nesta fase o foco é o Treinamento da equipe. Os primeiros resultados de captação costumam aparecer a partir da fase de Implementação.'
+    };
+    if(tpl&&inp) tpl.addEventListener('change',function(){ var v=MODELOS[tpl.value]; if(v){ inp.value=v; inp.focus(); } tpl.value=''; });
+  })();
+
+
+  /* ===== Detalhe — NPS registrável (item 8) + link do grupo (item 5) ===== */
+  (function(){
+    var kp=document.getElementById('detKpis');
+    if(kp) kp.addEventListener('click',function(e){
+      var reg=e.target.closest('#npsReg'); if(!reg) return;
+      var val=document.getElementById('npsVal'); if(!val) return; var cur=val.textContent;
+      var inp=document.createElement('input'); inp.type='number'; inp.min='0'; inp.max='10'; inp.value=cur;
+      inp.style.cssText='width:56px;background:var(--inset);border:1px solid var(--ember);border-radius:6px;padding:1px 6px;color:var(--text);font-family:inherit;font-size:22px;font-weight:700';
+      val.replaceWith(inp); inp.focus(); inp.select(); reg.textContent='Enter p/ salvar';
+      var done=false;
+      function save(){ if(done)return; done=true; var v=(inp.value||'').trim()||cur; if(+v>10)v='10'; if(+v<0)v='0';
+        var nv=document.createElement('span'); nv.id='npsVal'; nv.textContent=v; inp.replaceWith(nv);
+        reg.textContent='registrado ✓'; reg.style.color='var(--good)';
+        try{ if(CRIAS&&CRIAS[currentCria]) CRIAS[currentCria].nps=+v; }catch(_){}
+      }
+      inp.addEventListener('keydown',function(ev){ if(ev.key==='Enter'){ev.preventDefault();save();} });
+      inp.addEventListener('blur',save);
+    });
+    var dd=document.getElementById('detDados');
+    if(dd) dd.addEventListener('click',function(e){
+      var g=e.target.closest('.grupoLink'); if(!g) return; if(g.dataset.busy) return; g.dataset.busy='1';
+      var orig=g.textContent; g.textContent='abrindo no WhatsApp…';
+      setTimeout(function(){ g.textContent=orig; g.removeAttribute('data-busy'); }, 1400);
+    });
+  })();
+
 
   /* ===== Meu Dia — cockpit diário por membro (facilita a rotina) ===== */
   var MEUDIA = {"felipe": {"sub": "Felipe — o que pega fogo primeiro hoje.", "ritual": {"t": "Quinta-feira · dia do briefing semanal", "s": "colete os briefings das suas Crias e publique no ClickUp"}, "kpis": [{"l": "Lenhas de hoje", "v": 6, "d": "2 de rotina"}, {"l": "SLA quente", "v": 2, "d": "estourando", "flag": "flag-crit"}, {"l": "Briefings", "v": 3, "d": "faltam esta semana", "flag": "flag-warn"}, {"l": "Check-ins", "v": 4, "d": "a fazer"}], "lenhas": [{"t": "Coletar briefing · Letícia", "s": "Contas · SLA vermelho", "crit": true}, {"t": "Follow-up de NPS · Mozini", "s": "Contas · Fase 3"}, {"t": "Relatório diário das tarefas", "s": "fim de expediente", "rep": "repete diariamente"}, {"t": "Check-in semanal · Edi Carlos", "s": "Contas · Fase 2", "rep": "repete semanal"}, {"t": "Enviar conteúdo pra aprovação · Raphael", "s": "Contas", "done": true}], "pendTitle": "Briefings & check-ins da semana", "pend": [{"ini": "LS", "nome": "Letícia Stein", "nm": "Letícia Stein Carlos de Souza", "s": "briefing pendente · SLA vermelho", "act": "Coletar →"}, {"ini": "MO", "nome": "Mozini Advocacia", "nm": "Mozini Advocacia", "s": "check-in não feito", "act": "Check-in →"}, {"ini": "EC", "nome": "Edi Carlos", "nm": "Edi Carlos", "s": "briefing pendente", "act": "Coletar →"}], "rituais": [{"t": "Daily (alinhamento)", "d": "todo dia · 09:00", "st": "done", "stl": "feito"}, {"t": "Briefing semanal", "d": "quinta · hoje", "st": "now", "stl": "hoje"}, {"t": "Weekly + BSC", "d": "sexta", "st": "next", "stl": "amanhã"}, {"t": "Medir NPS", "d": "mensal", "st": "next", "stl": "dia 30"}], "report": "Relatório do dia — Felipe (Contas)\n\nConcluído hoje:\n• Conteúdo enviado pra aprovação · Raphael\n\nEm andamento:\n• Coletar briefing · Letícia (SLA vermelho)\n• Follow-up de NPS · Mozini\n• Check-in semanal · Edi Carlos\n\nAtenção: Letícia com Estopim estourado (−2d) — sugerida Roda de Fogo."}, "luiz": {"sub": "Luiz — o que pega fogo primeiro hoje.", "ritual": {"t": "Quinta-feira · relatório de saúde no ClickUp", "s": "atualize o relatório semanal das Forjas do Squad 08"}, "kpis": [{"l": "Lenhas de hoje", "v": 9, "d": "3 de rotina"}, {"l": "SLA quente", "v": 2, "d": "estourando", "flag": "flag-crit"}, {"l": "Grupos p/ dar oi", "v": 5, "d": "comunicação ativa"}, {"l": "Forjas na sua mão", "v": 18, "d": "via Lenha"}], "lenhas": [{"t": "Comunicação ativa nos grupos", "s": "rotina · WhatsApp", "rep": "repete diariamente"}, {"t": "Liberar acesso ao Meta Ads · Letícia", "s": "Forja · Fase 3 · bloqueado", "crit": true}, {"t": "Concluir treinamento no CRM · Letícia", "s": "Forja · Fase 3"}, {"t": "Relatório de saúde no ClickUp", "s": "Projetos + Tráfego", "rep": "repete quinta"}, {"t": "Acompanhamento + pontuação de pendências", "s": "rotina", "rep": "repete diariamente", "done": true}], "pendTitle": "Briefings da semana", "pend": [{"ini": "LS", "nome": "Letícia Stein", "nm": "Letícia Stein Carlos de Souza", "s": "briefing pendente · Fase 3", "act": "Gerar →"}, {"ini": "MO", "nome": "Mozini Advocacia", "nm": "Mozini Advocacia", "s": "briefing pendente · Fase 3", "act": "Gerar →"}], "rituais": [{"t": "Daily (alinhamento)", "d": "todo dia · 09:00", "st": "done", "stl": "feito"}, {"t": "Relatório de saúde", "d": "quinta · hoje", "st": "now", "stl": "hoje"}, {"t": "Weekly + BSC", "d": "sexta", "st": "next", "stl": "amanhã"}, {"t": "Ciclo de sprint", "d": "S2 de 4", "st": "next", "stl": "S2"}], "report": "Relatório do dia — Luiz (Projetos)\n\nConcluído hoje:\n• Acompanhamento + pontuação de pendências\n• Comunicação nos grupos (5/5)\n\nEm andamento:\n• Liberar acesso ao Meta Ads · Letícia (bloqueado)\n• Concluir treinamento no CRM · Letícia\n\nFases: nenhuma avançou hoje · 2 SLAs quentes (Letícia, Mozini)."}};
