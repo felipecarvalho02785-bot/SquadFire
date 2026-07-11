@@ -25,7 +25,9 @@ o que falta é **provisionar as contas** (Supabase + Google OAuth + Vercel) e
    - `https://<seu-app>.vercel.app/auth/callback` (prod)
 4. **Auth › Providers**: desligue "Enable email signups" — o acesso é por
    allowlist (`membro`). Só quem está na tabela `membro` entra.
-5. **Storage**: crie os buckets `contratos`, `briefings`, `entregaveis` (privados).
+5. **Storage**: aplique [`supabase/storage.sql`](../supabase/storage.sql) no SQL Editor — cria os
+   buckets `contratos`, `briefings`, `entregaveis` (privados) e as policies de acesso da squad.
+   (Fica fora de `migrations/` porque o schema `storage` só existe no Supabase.)
 6. Anote em **Project Settings › API**: `Project URL`, `anon key`, `service_role key`.
 
 ## 2. Google OAuth (SSO)

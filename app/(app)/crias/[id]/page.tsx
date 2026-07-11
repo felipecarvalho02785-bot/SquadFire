@@ -4,6 +4,7 @@ import { Topbar } from '@/components/Topbar';
 import { LenhaCheck } from '@/components/LenhaCheck';
 import { AvancarFaseBtn } from '@/components/AvancarFaseBtn';
 import { ComentarioForm } from '@/components/ComentarioForm';
+import { AudioRecorder } from '@/components/AudioRecorder';
 import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
 import { brl, statusLabel, iniciais } from '@/lib/format';
 
@@ -137,6 +138,16 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
               <div className="t">{cria.sincronizado_em ?? 'nunca'}</div>
             </div>
           </div>
+        </div>
+
+        {/* briefing por áudio → Faísca estrutura os 6 campos */}
+        <div className="card">
+          <div className="eyebrow">🎙️ Briefing por áudio · Faísca</div>
+          <p className="s" style={{ marginBottom: 10 }}>
+            Grave o áudio da Roda de Fogo — a Faísca transcreve (Gemini) e estrutura os 6 campos
+            (Claude). Requer as chaves de IA configuradas.
+          </p>
+          <AudioRecorder criaId={cria.id} />
         </div>
 
         {/* comentários (registro contínuo) */}
