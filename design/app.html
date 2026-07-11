@@ -478,7 +478,8 @@
     </button>
     <nav class="nav">
       <span class="lbl">Operação</span>
-      <a class="on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><span class="lbl2">Covil</span></a>
+      <a class="on"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="lbl2">Meu Dia</span></a>
+      <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><span class="lbl2">Covil</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/></svg></span><span class="lbl2">Crias</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="9.5" y="4" width="5" height="11" rx="1"/><rect x="16" y="4" width="5" height="14" rx="1"/></svg></span><span class="lbl2">Linha de Fogo</span></a>
       <a><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6l1.4 1.4L8 5M4 12l1.4 1.4L8 11M4 18l1.4 1.4L8 17M11 6h9M11 12h9M11 18h9"/></svg></span><span class="lbl2">Tarefas</span></a>
@@ -504,7 +505,7 @@
 
   <div class="main">
     <header class="topbar">
-      <h1>Covil</h1><span class="sub">· visão de gestão</span>
+      <h1>Meu Dia</h1><span class="sub">· seu foco de hoje</span>
       <div class="spacer"></div>
       <div style="position:relative;margin-right:8px">
         <input id="globalSearch" placeholder="Buscar Cria…" autocomplete="off" style="width:190px;background:var(--inset);border:1px solid var(--border);border-radius:20px;padding:7px 12px 7px 32px;color:var(--text);font-family:inherit;font-size:12.5px">
@@ -518,7 +519,7 @@
         </button>
         <div id="notifPanel" style="display:none;position:absolute;top:46px;right:0;width:300px;background:var(--surface);border:1px solid var(--border-2);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:120;overflow:hidden"></div>
       </div>
-      <div class="range" id="range"><button>7 dias</button><button class="on">15 dias</button><button>30 dias</button></div>
+      <div class="range" id="range" style="display:none"><button>7 dias</button><button class="on">15 dias</button><button>30 dias</button></div>
     </header>
 
     <div class="content">
@@ -563,7 +564,56 @@
         .mcard .lbar{height:6px; border-radius:4px; background:var(--inset); overflow:hidden} .mcard .lbar i{display:block; height:100%; background:var(--ember); border-radius:4px}
         .btn-primary{background:linear-gradient(135deg,var(--ember-hi),var(--ember)); color:#160c06; border:0; border-radius:10px; padding:11px 18px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap; font-family:inherit; box-shadow:0 8px 22px -10px rgba(255,106,26,.6)} .btn-primary:hover{filter:brightness(1.06)}
       </style>
-      <div class="screen on" id="s-covil">
+      <div class="screen on" id="s-meudia">
+        <style>
+          #s-meudia .ritual{display:flex; align-items:center; gap:13px; background:linear-gradient(100deg,color-mix(in oklab,var(--ember) 15%,var(--surface)),var(--surface)); border:1px solid color-mix(in oklab,var(--ember) 30%,var(--border)); border-radius:14px; padding:13px 16px; margin-bottom:16px}
+          #s-meudia .ritual .ic{width:36px; height:36px; border-radius:10px; background:var(--ember); color:#160c06; display:grid; place-items:center; flex:0 0 auto}
+          #s-meudia .ritual .ic svg{width:20px; height:20px}
+          #s-meudia .ritual .rt{font-size:13.5px; font-weight:700; color:var(--text)}
+          #s-meudia .ritual .rs{font-size:12px; color:var(--muted); margin-top:1px}
+          #s-meudia .rit-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--border); font-size:13px; color:var(--text)}
+          #s-meudia .rit-row:first-child{border-top:0}
+          #s-meudia .rit-row .rd{font-size:11.5px; color:var(--muted)}
+          #s-meudia .rit-row .st{margin-left:auto; font-size:10.5px; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap}
+          #s-meudia .st.done{background:color-mix(in oklab,var(--good) 16%,transparent); color:var(--good)}
+          #s-meudia .st.now{background:color-mix(in oklab,var(--ember) 20%,transparent); color:var(--ember-hi)}
+          #s-meudia .st.next{background:var(--inset); color:var(--faint)}
+          #s-meudia .repita{font-size:10px; font-weight:600; color:var(--plasma); border:1px solid color-mix(in oklab,var(--plasma) 35%,var(--border)); border-radius:20px; padding:2px 7px; white-space:nowrap}
+          #s-meudia .pend-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--border)}
+          #s-meudia .pend-row:first-child{border-top:0}
+          #s-meudia .pend-row .cav{width:28px; height:28px; border-radius:8px; background:var(--surface-2); color:var(--muted); font-size:10.5px; font-weight:700; display:grid; place-items:center; flex:0 0 auto}
+          #s-meudia .pend-row .pact{margin-left:auto; font-size:11.5px; font-weight:600; color:var(--ember); cursor:pointer; white-space:nowrap}
+          #s-meudia .rep-out{margin-top:12px; padding:14px; border:1px dashed var(--border-2); border-radius:12px; background:var(--inset); font-size:12.5px; color:var(--muted); line-height:1.55; white-space:pre-wrap; display:none}
+        </style>
+        <div class="ritual" id="mdRitual"></div>
+        <div class="head" style="margin-bottom:16px"><div class="eye">Operação · seu dia</div><h2 id="mdHi">Meu Dia</h2><p id="mdSub">O que pega fogo primeiro hoje — Lenhas, rituais e pendências suas.</p></div>
+        <div class="kpis" id="mdKpis"></div>
+        <div class="grid g-2" style="margin-top:14px">
+          <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="c-h"><span class="t">Minhas Lenhas de hoje</span><span class="s" id="mdLenhasCount"></span></div>
+              <div class="list" id="mdLenhas" style="margin-top:8px"></div>
+            </div>
+            <div class="card">
+              <div class="c-h"><span class="t" id="mdPendTitle">Pendências suas</span><span class="s" id="mdPendCount"></span></div>
+              <div id="mdPend" style="margin-top:6px"></div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="c-h"><span class="t">Rituais da semana</span><span class="s">recorrentes</span></div>
+              <div id="mdRituais" style="margin-top:4px"></div>
+            </div>
+            <div class="card">
+              <div class="c-h"><span class="t">Fechar o dia</span><span class="s">fim de expediente</span></div>
+              <p class="s" style="margin:8px 0 12px">A Faísca monta o rascunho do seu relatório a partir das Lenhas concluídas hoje.</p>
+              <button class="btn-primary" id="mdReport" style="padding:8px 16px">Gerar relatório do dia</button>
+              <div class="rep-out" id="mdReportOut"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen" id="s-covil">
       <style>
         .hero{position:relative; overflow:hidden; border:1px solid var(--border); border-radius:16px; min-height:366px; margin-bottom:16px; background:var(--surface); display:flex}
         .hero .bg{position:absolute; inset:0; z-index:0; background:
@@ -1802,13 +1852,13 @@
   });
 
   // troca de tela pela navbar
-  var SMAP={'Covil':'covil','Crias':'crias','Linha de Fogo':'linha','Tarefas':'tarefas','Calendário':'calendario','Biblioteca':'biblioteca','Brigada':'brigada','Forjaria':'forjaria'};
+  var SMAP={'Meu Dia':'meudia','Covil':'covil','Crias':'crias','Linha de Fogo':'linha','Tarefas':'tarefas','Calendário':'calendario','Biblioteca':'biblioteca','Brigada':'brigada','Forjaria':'forjaria'};
   document.querySelectorAll('.nav a').forEach(function(a){ a.addEventListener('click',function(){
     var lbl=a.querySelector('.lbl2'); if(!lbl) return; var t=lbl.textContent.trim(); var id=SMAP[t]; if(!id) return;
     document.querySelectorAll('.nav a').forEach(function(x){x.classList.remove('on');}); a.classList.add('on');
     document.querySelectorAll('.screen').forEach(function(sc){ sc.classList.toggle('on', sc.id==='s-'+id); });
     var h=document.querySelector('.topbar h1'), s=document.querySelector('.topbar .sub');
-    if(h) h.textContent=t; if(s) s.textContent = id==='covil' ? '· visão de gestão' : '';
+    if(h) h.textContent=t; if(s) s.textContent = id==='covil' ? '· visão de gestão' : (id==='meudia' ? '· seu foco de hoje' : '');
     var rg=document.getElementById('range'); if(rg) rg.style.display = id==='covil'?'':'none';
     document.querySelector('.content').scrollTop=0; window.scrollTo(0,0);
   }); });
@@ -1901,6 +1951,28 @@
     document.querySelectorAll('#s-detalhe .tabpanel').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-tab')==='geral'); });
   }
   function openDetalhe(key){ if(!CRIAS[key]) return; renderDetalhe(key); openScreen('s-detalhe', CRIAS[key].nome, '· detalhe da Cria'); }
+
+  /* ===== Meu Dia — cockpit diário por membro (facilita a rotina) ===== */
+  var MEUDIA = {"felipe": {"sub": "Felipe — o que pega fogo primeiro hoje.", "ritual": {"t": "Quinta-feira · dia do briefing semanal", "s": "colete os briefings das suas Crias e publique no ClickUp"}, "kpis": [{"l": "Lenhas de hoje", "v": 6, "d": "2 de rotina"}, {"l": "SLA quente", "v": 2, "d": "estourando", "flag": "flag-crit"}, {"l": "Briefings", "v": 3, "d": "faltam esta semana", "flag": "flag-warn"}, {"l": "Check-ins", "v": 4, "d": "a fazer"}], "lenhas": [{"t": "Coletar briefing · Letícia", "s": "Contas · SLA vermelho", "crit": true}, {"t": "Follow-up de NPS · Mozini", "s": "Contas · Fase 3"}, {"t": "Relatório diário das tarefas", "s": "fim de expediente", "rep": "repete diariamente"}, {"t": "Check-in semanal · Edi Carlos", "s": "Contas · Fase 2", "rep": "repete semanal"}, {"t": "Enviar conteúdo pra aprovação · Raphael", "s": "Contas", "done": true}], "pendTitle": "Briefings & check-ins da semana", "pend": [{"ini": "LS", "nome": "Letícia Stein", "nm": "Letícia Stein Carlos de Souza", "s": "briefing pendente · SLA vermelho", "act": "Coletar →"}, {"ini": "MO", "nome": "Mozini Advocacia", "nm": "Mozini Advocacia", "s": "check-in não feito", "act": "Check-in →"}, {"ini": "EC", "nome": "Edi Carlos", "nm": "Edi Carlos", "s": "briefing pendente", "act": "Coletar →"}], "rituais": [{"t": "Daily (alinhamento)", "d": "todo dia · 09:00", "st": "done", "stl": "feito"}, {"t": "Briefing semanal", "d": "quinta · hoje", "st": "now", "stl": "hoje"}, {"t": "Weekly + BSC", "d": "sexta", "st": "next", "stl": "amanhã"}, {"t": "Medir NPS", "d": "mensal", "st": "next", "stl": "dia 30"}], "report": "Relatório do dia — Felipe (Contas)\n\nConcluído hoje:\n• Conteúdo enviado pra aprovação · Raphael\n\nEm andamento:\n• Coletar briefing · Letícia (SLA vermelho)\n• Follow-up de NPS · Mozini\n• Check-in semanal · Edi Carlos\n\nAtenção: Letícia com Estopim estourado (−2d) — sugerida Roda de Fogo."}, "luiz": {"sub": "Luiz — o que pega fogo primeiro hoje.", "ritual": {"t": "Quinta-feira · relatório de saúde no ClickUp", "s": "atualize o relatório semanal das Forjas do Squad 08"}, "kpis": [{"l": "Lenhas de hoje", "v": 9, "d": "3 de rotina"}, {"l": "SLA quente", "v": 2, "d": "estourando", "flag": "flag-crit"}, {"l": "Grupos p/ dar oi", "v": 5, "d": "comunicação ativa"}, {"l": "Forjas na sua mão", "v": 18, "d": "via Lenha"}], "lenhas": [{"t": "Comunicação ativa nos grupos", "s": "rotina · WhatsApp", "rep": "repete diariamente"}, {"t": "Liberar acesso ao Meta Ads · Letícia", "s": "Forja · Fase 3 · bloqueado", "crit": true}, {"t": "Concluir treinamento no CRM · Letícia", "s": "Forja · Fase 3"}, {"t": "Relatório de saúde no ClickUp", "s": "Projetos + Tráfego", "rep": "repete quinta"}, {"t": "Acompanhamento + pontuação de pendências", "s": "rotina", "rep": "repete diariamente", "done": true}], "pendTitle": "Briefings da semana", "pend": [{"ini": "LS", "nome": "Letícia Stein", "nm": "Letícia Stein Carlos de Souza", "s": "briefing pendente · Fase 3", "act": "Gerar →"}, {"ini": "MO", "nome": "Mozini Advocacia", "nm": "Mozini Advocacia", "s": "briefing pendente · Fase 3", "act": "Gerar →"}], "rituais": [{"t": "Daily (alinhamento)", "d": "todo dia · 09:00", "st": "done", "stl": "feito"}, {"t": "Relatório de saúde", "d": "quinta · hoje", "st": "now", "stl": "hoje"}, {"t": "Weekly + BSC", "d": "sexta", "st": "next", "stl": "amanhã"}, {"t": "Ciclo de sprint", "d": "S2 de 4", "st": "next", "stl": "S2"}], "report": "Relatório do dia — Luiz (Projetos)\n\nConcluído hoje:\n• Acompanhamento + pontuação de pendências\n• Comunicação nos grupos (5/5)\n\nEm andamento:\n• Liberar acesso ao Meta Ads · Letícia (bloqueado)\n• Concluir treinamento no CRM · Letícia\n\nFases: nenhuma avançou hoje · 2 SLAs quentes (Letícia, Mozini)."}};
+  var MD_CHK='<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\"><path d=\"M20 6L9 17l-5-5\"/></svg>', MD_CAL='<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M3 9.5h18M8 3v4M16 3v4\"/></svg>';
+  function renderMeuDia(user){
+    var m=MEUDIA[user]; if(!m || !document.getElementById('mdKpis')) return;
+    document.getElementById('mdRitual').innerHTML='<span class="ic">'+MD_CAL+'</span><div><div class="rt">'+m.ritual.t+'</div><div class="rs">'+m.ritual.s+'</div></div>';
+    document.getElementById('mdSub').textContent=m.sub;
+    document.getElementById('mdKpis').innerHTML=m.kpis.map(function(k){ return '<div class="kpi '+(k.flag||'')+'"><div class="k-top"><span class="k-label">'+k.l+'</span></div><div class="k-val">'+k.v+'</div><span class="k-delta neu">'+k.d+'</span></div>'; }).join('');
+    document.getElementById('mdLenhasCount').textContent=m.lenhas.length+' hoje';
+    document.getElementById('mdLenhas').innerHTML=m.lenhas.map(function(l){ return '<div class="row"><span class="chk'+(l.done?' done':'')+'">'+MD_CHK+'</span><div class="rmain"><div class="t">'+l.t+'</div><div class="s"'+(l.crit?' style="color:var(--crit)"':'')+'>'+l.s+'</div></div>'+(l.rep?'<span class="repita">'+l.rep+'</span>':'')+'</div>'; }).join('');
+    document.querySelectorAll('#mdLenhas .row').forEach(function(row){ var chk=row.querySelector('.chk'); if(!chk) return; row.style.cursor='pointer'; row.addEventListener('click',function(){ var d=chk.classList.toggle('done'); row.classList.toggle('done',d); }); });
+    document.getElementById('mdPendTitle').textContent=m.pendTitle;
+    document.getElementById('mdPendCount').textContent=m.pend.length+' pendente'+(m.pend.length===1?'':'s');
+    document.getElementById('mdPend').innerHTML=m.pend.map(function(p){ return '<div class="pend-row"><span class="cav">'+p.ini+'</span><div><div style="font-size:12.5px;color:var(--text);font-weight:600">'+p.nome+'</div><div style="font-size:11.5px;color:var(--muted)">'+p.s+'</div></div><span class="pact" data-nm="'+p.nm+'">'+p.act+'</span></div>'; }).join('');
+    document.querySelectorAll('#mdPend .pact').forEach(function(a){ a.addEventListener('click',function(){ var k=CRIA_BY_NAME[a.getAttribute('data-nm')]; if(k) openDetalhe(k); }); });
+    document.getElementById('mdRituais').innerHTML=m.rituais.map(function(r){ return '<div class="rit-row"><div><div>'+r.t+'</div><div class="rd">'+r.d+'</div></div><span class="st '+r.st+'">'+r.stl+'</span></div>'; }).join('');
+    var rep=document.getElementById('mdReportOut'), btn=document.getElementById('mdReport');
+    rep.style.display='none'; rep.textContent=m.report; btn.textContent='Gerar relatório do dia';
+    btn.onclick=function(){ if(rep.style.display==='none'){ rep.style.display='block'; btn.textContent='Ocultar rascunho'; } else { rep.style.display='none'; btn.textContent='Gerar relatório do dia'; } };
+  }
+
 
   /* ===== Faísca — chips de comando (demonstram cada capacidade ao vivo) ===== */
   (function(){
@@ -2124,7 +2196,9 @@
     var he=document.getElementById('heroEye'); if(he) he.textContent=u.eye;
     var hg=document.getElementById('heroGreet'); if(hg) hg.textContent=u.greet;
     var fh=document.getElementById('faiscaHi'); if(fh) fh.textContent=u.hi;
+    renderMeuDia(k);
   }
+  renderMeuDia(curUser);
   var usw=document.getElementById('userSwitch');
   if(usw) usw.addEventListener('click',function(){ applyUser(curUser==='felipe'?'luiz':'felipe'); });
   var db=document.getElementById('detBack');
