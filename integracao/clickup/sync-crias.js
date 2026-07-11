@@ -44,22 +44,28 @@ export function getSemana(task) {
   return typeof opt.orderindex === 'number' ? opt.orderindex + 1 : null;
 }
 
-// Status do ClickUp → status_cria + se está no backlog (pré-forja).
+// Status do ClickUp → status_cria (enum do banco: ativa | pausada | encerrada).
+// A distinção fina (churn × finalizada) NÃO cabe no enum — vai em `motivo`,
+// preservada nos metadados pra relatórios; a coluna `status` recebe só o enum.
 function mapStatus(task) {
   const raw = (task.status?.status || '').toLowerCase();
-  if (raw.includes('churn') || raw.includes('cancel')) return { status: 'churn', backlog: false };
-  if (raw.includes('final') || raw.includes('conclu')) return { status: 'finalizada', backlog: false };
+  if (raw.includes('churn') || raw.includes('cancel'))
+    return { status: 'encerrada', motivo: 'churn', backlog: false };
+  if (raw.includes('final') || raw.includes('conclu'))
+    return { status: 'encerrada', motivo: 'finalizada', backlog: false };
+  if (raw.includes('paus') || raw.includes('hold') || raw.includes('espera'))
+    return { status: 'pausada', motivo: null, backlog: false };
   if (raw.includes('backlog') || raw.includes('lead') || raw.includes('prospec'))
-    return { status: 'ativa', backlog: true };
+    return { status: 'ativa', motivo: null, backlog: true };
   // onboarding / execução / em andamento…
-  return { status: 'ativa', backlog: false };
+  return { status: 'ativa', motivo: null, backlog: false };
 }
 
 // ── mapeamento ClickUp → cria ────────────────────────────────
 export function mapTaskToCria(task) {
   const squad = getSquad(task);
   const semana = getSemana(task);
-  const { status, backlog } = mapStatus(task);
+  const { status, motivo, backlog } = mapStatus(task);
   return {
     clickup_task_id: task.id,
     nome_cliente: task.name,
@@ -67,12 +73,13 @@ export function mapTaskToCria(task) {
     clickup_semana: backlog ? null : semana,
     // fase da Forja: sem Semana OU status backlog → pré-forja (sem prazos)
     fase: backlog ? null : semana,
-    status,
+    status, // enum status_cria: ativa | pausada | encerrada
     backlog,
     // metadados úteis pro consumidor (não necessariamente colunas)
     _source: {
       list_id: CLICKUP.listaMestre.listId,
       clickup_status: task.status?.status ?? null,
+      motivo, // churn | finalizada | null — distinção fora do enum
       url: task.url ?? null,
     },
   };

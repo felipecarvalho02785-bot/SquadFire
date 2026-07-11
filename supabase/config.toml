@@ -1,0 +1,26 @@
+# SquadFire · configuração do Supabase CLI
+# Docs: https://supabase.com/docs/guides/cli/config
+project_id = "squadfire"
+
+[db]
+# Supabase roda Postgres 15; as migrations foram validadas em 15/16.
+major_version = 15
+
+[db.migrations]
+schema_paths = ["./migrations/*.sql"]
+
+[auth]
+enable_signup = false            # allowlist: só quem está em `membro`
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+
+[auth.external.google]
+enabled = true
+# Preencher via variáveis de ambiente (nunca commitar segredos):
+#   SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID / _SECRET
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+
+[storage]
+enabled = true
+# buckets criados na aplicação/painel: contratos, briefings, entregaveis
