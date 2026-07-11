@@ -93,6 +93,14 @@ begin
   exception when check_violation then null; -- ok
   end;
 
+  -- RPC pública avancar_fase (wrapper) opera igual à função de app
+  update lenha set status='concluida'
+    where fase_da_forja_id=(select id from fase_da_forja where ordem=2 limit 1);
+  perform public.avancar_fase((select id from forja limit 1));
+  if (select fdf.ordem from forja f join fase_da_forja fdf on fdf.id=f.fase_atual_id) <> 3 then
+    raise exception 'RPC pública avancar_fase não moveu para fase 3';
+  end if;
+
   raise notice '✓ triggers/regras OK';
 end $$;
 SQL

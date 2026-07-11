@@ -1,4 +1,5 @@
 import { Topbar } from '@/components/Topbar';
+import { LenhaCheck } from '@/components/LenhaCheck';
 import { getCurrentMembro } from '@/lib/auth';
 import { getMeuDia } from '@/lib/data/meudia';
 import { isSupabaseConfigured } from '@/lib/env';
@@ -53,15 +54,15 @@ export default async function MeuDiaPage() {
               <div className="s">Nada pendente atribuído a você. 🎯</div>
             ) : (
               dia.lenhas.map((l) => (
-                <div className="row" key={l.id}>
-                  <span className={`badge ${l.prioridade === 'alta' ? 'risk' : 'dim'}`}>
-                    {l.tipo === 'forja' ? 'Forja' : 'Rotina'}
-                  </span>
-                  <div className="grow">
-                    <div className="t">{l.titulo}</div>
-                    {l.prazo && <div className="s">prazo {l.prazo}</div>}
-                  </div>
-                </div>
+                <LenhaCheck
+                  key={l.id}
+                  id={l.id}
+                  titulo={l.titulo}
+                  done={false}
+                  sub={[l.tipo === 'forja' ? 'Forja' : 'Rotina', l.prazo ? `prazo ${l.prazo}` : null]
+                    .filter(Boolean)
+                    .join(' · ')}
+                />
               ))
             )}
           </div>

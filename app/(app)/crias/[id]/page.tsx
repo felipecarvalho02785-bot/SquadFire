@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Topbar } from '@/components/Topbar';
+import { LenhaCheck } from '@/components/LenhaCheck';
+import { AvancarFaseBtn } from '@/components/AvancarFaseBtn';
 import { getCriaDetalhe } from '@/lib/data/crias';
 import { brl, statusLabel, iniciais } from '@/lib/format';
 
@@ -50,13 +52,21 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
               return <div key={i} className={`st ${cls}`} />;
             })}
           </div>
-          <div className="t">
-            {faseAtual ? `Fase ${faseAtual.ordem} · ${faseAtual.fase?.nome}` : 'Backlog — sem fase corrente'}
-          </div>
-          <div className="s">
-            {forja?.data_inicio
-              ? `Início: ${forja.data_inicio}`
-              : 'Sem contrato confirmado — prazos ainda não calculados.'}
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, flexWrap: 'wrap' }}>
+            <div className="grow">
+              <div className="t">
+                {faseAtual ? `Fase ${faseAtual.ordem} · ${faseAtual.fase?.nome}` : 'Backlog — sem fase corrente'}
+              </div>
+              <div className="s">
+                {forja?.data_inicio
+                  ? `Início: ${forja.data_inicio}`
+                  : 'Sem contrato confirmado — prazos ainda não calculados.'}
+              </div>
+            </div>
+            {forja && !forja.concluida && faseAtual && (
+              <AvancarFaseBtn forjaId={forja.id} />
+            )}
+            {forja?.concluida && <span className="badge ok">Forja concluída 🎉</span>}
           </div>
         </div>
 
@@ -90,14 +100,12 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
                     Fase {f.ordem} · {f.fase?.nome}
                   </div>
                   {ls.map((l) => (
-                    <div className="row" key={l.id}>
-                      <span className={`badge ${l.status === 'concluida' ? 'ok' : 'dim'}`}>
-                        {l.status === 'concluida' ? '✓' : '○'}
-                      </span>
-                      <div className="grow">
-                        <div className="t">{l.titulo}</div>
-                      </div>
-                    </div>
+                    <LenhaCheck
+                      key={l.id}
+                      id={l.id}
+                      titulo={l.titulo}
+                      done={l.status === 'concluida'}
+                    />
                   ))}
                 </div>
               );
