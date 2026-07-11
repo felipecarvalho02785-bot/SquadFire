@@ -506,6 +506,18 @@
     <header class="topbar">
       <h1>Covil</h1><span class="sub">· visão de gestão</span>
       <div class="spacer"></div>
+      <div style="position:relative;margin-right:8px">
+        <input id="globalSearch" placeholder="Buscar Cria…" autocomplete="off" style="width:190px;background:var(--inset);border:1px solid var(--border);border-radius:20px;padding:7px 12px 7px 32px;color:var(--text);font-family:inherit;font-size:12.5px">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--faint)" stroke-width="2" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <div id="searchResults" style="display:none;position:absolute;top:40px;left:0;width:280px;max-height:320px;overflow:auto;background:var(--surface);border:1px solid var(--border-2);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:120;padding:6px"></div>
+      </div>
+      <div style="position:relative;margin-right:12px">
+        <button id="notifBtn" aria-label="Notificações" style="position:relative;width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+          <span id="notifBadge" style="position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--crit);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center">3</span>
+        </button>
+        <div id="notifPanel" style="display:none;position:absolute;top:46px;right:0;width:300px;background:var(--surface);border:1px solid var(--border-2);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:120;overflow:hidden"></div>
+      </div>
       <div class="range" id="range"><button>7 dias</button><button class="on">15 dias</button><button>30 dias</button></div>
     </header>
 
@@ -1118,7 +1130,7 @@
           #s-nova .hint{font-size:11px; color:var(--faint); margin-top:6px} #s-nova .hint.warn{color:var(--ember)}
         </style>
         <span class="back" id="novaBack" style="display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; margin-bottom:16px">&lsaquo; Voltar pra Crias</span>
-        <div class="head" style="margin-bottom:18px"><div class="eye">Cadastro</div><h2>Nova Cria</h2><p>Suba o contrato — a IA extrai os dados. O início da Forja você define depois do onboarding.</p></div>
+        <div class="head" style="margin-bottom:18px"><div class="eye">Onboarding · ClickUp</div><h2>Iniciar a Forja</h2><p>As Crias vêm do <b>ClickUp</b> (Squad 08) — aqui não se cadastra cliente à mão. Escolha um cliente já mapeado, suba o contrato pra IA extrair os dados e defina o início da Forja.</p></div>
         <div class="grid g-2">
           <div class="card">
             <div class="c-h"><span class="t">Contrato</span><span class="chip good">IA leu · 8 campos</span></div>
@@ -1127,12 +1139,12 @@
               <div><div class="fn">Contrato_Leticia_Stein.pdf</div><div class="fs">2 páginas · lido pela IA</div></div>
               <span class="rechip">trocar</span>
             </div>
-            <p class="s" style="margin:14px 0 12px">A IA leu o contrato e preencheu o cadastro ao lado. Confira e ajuste se precisar.</p>
+            <p class="s" style="margin:14px 0 12px">A IA leu o contrato e preencheu os dados ao lado. A identidade do cliente vem do ClickUp; do contrato saem valor, vigência e afins. Confira e ajuste se precisar.</p>
             <div class="exnote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span><b style="color:var(--text)">Início da Forja não vem do contrato.</b> A vigência não começa na assinatura — só depois da reunião de onboarding. Por isso é preenchido manualmente ali ao lado.</span></div>
           </div>
           <div class="card">
             <div class="c-h"><span class="t">Dados da Cria</span></div>
-            <div class="field" style="margin-top:8px"><label>Escritório <span class="iatag">IA</span></label><input value="Letícia Stein Carlos de Souza"></div>
+            <div class="field" style="margin-top:8px"><label>Cliente — do ClickUp · Squad 08 <span class="iatag" style="background:color-mix(in oklab,var(--plasma) 20%,transparent);color:var(--plasma)">ClickUp</span></label><select id="novaCliente"><option>Agenor de Lima</option><option>André Luiz</option><option>Cardoso &amp; Martins Advocacia</option><option>Cyntia Boregas</option><option>Lima &amp; Moraes Advogados Associados</option><option>Lourenço de Oliveira</option><option>Marcelo Camilo</option><option>Valeriano, Oliveira e Advogados Associados</option></select><div class="hint">Só clientes do Squad 08 ainda no backlog (aguardando início da Forja).</div></div>
             <div class="grid2">
               <div class="field"><label>Área do direito <span class="iatag">IA</span></label><input value="Previdenciário"></div>
               <div class="field"><label>Produto <span class="iatag">IA</span></label><input value="Estruturação"></div>
@@ -1145,7 +1157,7 @@
             <div class="field manual"><label>Investimento em mídia <span class="mtag">manual</span></label><input placeholder="R$ — a alinhar com o cliente"><div class="hint warn">Verba que o cliente vai investir em campanha. Não vem do contrato — é alinhada com ele depois e pode ser editada a qualquer momento.</div></div>
             <div class="field manual"><label>Início da Forja <span class="mtag">manual</span></label><input placeholder="dd/mm/aaaa — definir após o onboarding"><div class="hint warn">Dá a largada nos Estopins das 7 fases. Só preencha quando o trabalho de fato começar.</div></div>
             <div class="exnote" style="margin-top:2px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 3.5a3.2 3.2 0 010 6M21 20c0-2.6-1.6-4.6-4-5.3"/></svg><span>Sem gestor único: ao virar Cria, <b style="color:var(--text)">a Squad inteira</b> assume o cliente, cada um na sua função.</span></div>
-            <button class="btn-primary" style="width:100%; margin-top:6px">Criar Cria e abrir a Forja</button>
+            <button class="btn-primary" style="width:100%; margin-top:6px">Iniciar a Forja</button>
           </div>
         </div>
       </div>
@@ -1889,6 +1901,47 @@
   }
   function openDetalhe(key){ if(!CRIAS[key]) return; renderDetalhe(key); openScreen('s-detalhe', CRIAS[key].nome, '· detalhe da Cria'); }
 
+  /* ===== Item 7 — busca global de Cria + centro de notificações ===== */
+  (function(){
+    var q=document.getElementById('globalSearch'), res=document.getElementById('searchResults');
+    if(q&&res){
+      var keys=Object.keys(CRIAS);
+      function render(term){
+        term=(term||'').toLowerCase().trim();
+        if(!term){ res.style.display='none'; res.innerHTML=''; return; }
+        var hits=keys.filter(function(k){ return CRIAS[k].nome.toLowerCase().indexOf(term)>=0; }).slice(0,8);
+        if(!hits.length){ res.innerHTML='<div style="padding:10px;color:var(--faint);font-size:12px">Nenhuma Cria encontrada.</div>'; res.style.display='block'; return; }
+        res.innerHTML=hits.map(function(k){ var c=CRIAS[k]; var st=c.fase?('Fase '+c.fase+' · '+c.area):('Backlog · '+c.area);
+          return '<div class="sr-item" data-key="'+k+'" style="display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:9px;cursor:pointer"><span style="width:26px;height:26px;border-radius:7px;background:var(--ember);color:#160c06;font-size:10px;font-weight:700;display:grid;place-items:center;flex:0 0 auto">'+c.ini+'</span><div style="min-width:0"><div style="font-size:12.5px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c.nome+'</div><div style="font-size:11px;color:var(--muted)">'+st+'</div></div></div>'; }).join('');
+        res.style.display='block';
+        res.querySelectorAll('.sr-item').forEach(function(it){
+          it.addEventListener('mouseenter',function(){ it.style.background='var(--surface-2)'; });
+          it.addEventListener('mouseleave',function(){ it.style.background=''; });
+          it.addEventListener('click',function(){ openDetalhe(it.getAttribute('data-key')); res.style.display='none'; q.value=''; });
+        });
+      }
+      q.addEventListener('input',function(){ render(q.value); });
+      q.addEventListener('focus',function(){ if(q.value) render(q.value); });
+      document.addEventListener('click',function(e){ if(!e.target.closest('#globalSearch')&&!e.target.closest('#searchResults')) res.style.display='none'; });
+    }
+    var nb=document.getElementById('notifBtn'), np=document.getElementById('notifPanel');
+    if(nb&&np){
+      var NOTIF=[
+        {ic:'crit', t:'SLA estourado', s:'Letícia Stein · Treinamento · -2 dias', nm:'Letícia Stein Carlos de Souza'},
+        {ic:'warn', t:'SLA vence amanhã', s:'Mozini Advocacia · Treinamento', nm:'Mozini Advocacia'},
+        {ic:'crit', t:'Briefing pendente', s:'Letícia Stein · esta semana', nm:'Letícia Stein Carlos de Souza'}
+      ];
+      np.innerHTML='<div style="padding:11px 14px;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:700">Notificações</div>'
+        + NOTIF.map(function(n){ return '<div class="nf-item" data-nm="'+n.nm+'" style="display:flex;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer"><span style="width:8px;height:8px;border-radius:50%;background:var(--'+n.ic+');margin-top:5px;flex:0 0 auto"></span><div><div style="font-size:12.5px;color:var(--text);font-weight:600">'+n.t+'</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">'+n.s+'</div></div></div>'; }).join('')
+        + '<div style="padding:10px 14px;text-align:center"><span id="notifClear" style="font-size:12px;color:var(--ember);cursor:pointer">Marcar tudo como lido</span></div>';
+      nb.addEventListener('click',function(e){ e.stopPropagation(); np.style.display=(np.style.display==='block')?'none':'block'; });
+      document.addEventListener('click',function(e){ if(!e.target.closest('#notifPanel')&&!e.target.closest('#notifBtn')) np.style.display='none'; });
+      np.querySelectorAll('.nf-item').forEach(function(it){ it.addEventListener('click',function(){ var k=CRIA_BY_NAME[it.getAttribute('data-nm')]; if(k){ openDetalhe(k); } np.style.display='none'; }); });
+      var clr=np.querySelector('#notifClear'); if(clr) clr.addEventListener('click',function(){ var bdg=document.getElementById('notifBadge'); if(bdg) bdg.style.display='none'; np.querySelectorAll('.nf-item > span').forEach(function(s){ s.style.background='var(--faint)'; }); });
+    }
+  })();
+
+
   /* ===== Item 4 — controles antes mortos agora respondem (em sessão) ===== */
   // Faísca: enviar texto -> mensagem + resposta demonstrativa
   (function(){
@@ -1966,9 +2019,13 @@
     kc.style.cursor='pointer';
     kc.addEventListener('click',function(){ var nm=(kc.querySelector('.kt')||{}).textContent; openDetalhe(CRIA_BY_SHORT[(nm||'').trim()]); });
   });
-  // "Criar Cria e abrir a Forja" (Nova Cria) → conclui o fluxo abrindo a Forja.
+  // "Iniciar a Forja" (Nova Cria/onboarding) → move o cliente selecionado do backlog pra Fase 1 e abre a Forja.
   var criarCria=document.querySelector('#s-nova .btn-primary');
-  if(criarCria) criarCria.addEventListener('click',function(){ openScreen('s-detalhe','Letícia Stein Carlos de Souza','· detalhe da Cria'); });
+  if(criarCria) criarCria.addEventListener('click',function(){
+    var sel=document.getElementById('novaCliente'); var nm=sel?sel.value:''; var key=CRIA_BY_NAME[nm];
+    if(key && CRIAS[key]){ var c=CRIAS[key]; if(!c.fase){ c.fase=1; c.dia=1; c.inicio='hoje'; c.saude='good'; c.saudeLabel='Em Chamas'; c.saudeVar='good'; } openDetalhe(key); }
+    else { openScreen('s-detalhe','Letícia Stein Carlos de Souza','· detalhe da Cria'); }
+  });
   // Compositor de comentários (na sessão — sem backend ainda).
   var cmtSend=document.getElementById('cmtSend'), cmtInput=document.getElementById('cmtInput'), cmtList=document.getElementById('cmtList');
   if(cmtSend && cmtInput && cmtList){
