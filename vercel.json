@@ -8,6 +8,10 @@
     {
       "path": "/api/rotinas/gerar",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/crias/risco",
+      "schedule": "5 6 * * *"
     }
   ]
 }

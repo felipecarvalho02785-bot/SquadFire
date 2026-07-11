@@ -115,6 +115,20 @@ begin
       and l.responsavel_id = (select id from membro where is_admin limit 1)
   ) then raise exception 'Daily não gerada pro admin'; end if;
 
+  -- em_risco por SLA: fase vencida marca; concluir limpa
+  update fase_da_forja set data_prevista_fim = current_date - 1, status='pendente'
+    where id = (select id from fase_da_forja where ordem=3 and forja_id=(select id from forja limit 1));
+  perform app.recalcular_em_risco();
+  if not (select em_risco from cria where clickup_task_id='CU-T1') then
+    raise exception 'em_risco não marcou cria com fase vencida';
+  end if;
+  update fase_da_forja set status='concluida'
+    where ordem=3 and forja_id=(select id from forja limit 1);
+  perform app.recalcular_em_risco();
+  if (select em_risco from cria where clickup_task_id='CU-T1') then
+    raise exception 'em_risco não limpou após concluir a fase vencida';
+  end if;
+
   raise notice '✓ triggers/regras OK';
 end $$;
 SQL
@@ -176,6 +190,27 @@ set local role authenticated;
 select set_config('request.jwt.claims','{"email":"fora@t.dev"}',true);
 do $$ begin
   if (select count(*) from cria) <> 0 then raise exception 'não-membro leu crias'; end if;
+end $$;
+rollback;
+SQL
+
+# trafego PODE editar mídia; NÃO pode editar outras colunas (guard de coluna)
+$PSQL <<'SQL'
+begin;
+set local role authenticated;
+select set_config('request.jwt.claims','{"email":"trafego@t.dev"}',true);
+do $$ declare r int; begin
+  -- positivo: investimento_midia passa
+  update cria set investimento_midia=9000 where clickup_task_id='CU-RLS';
+  get diagnostics r = row_count;
+  if r <> 1 then raise exception 'trafego não editou mídia (% linhas)', r; end if;
+  -- negativo: outra coluna é barrada pelo guard
+  begin
+    update cria set nome_cliente='hack' where clickup_task_id='CU-RLS';
+    raise exception 'trafego mudou nome_cliente (deveria ser barrado)';
+  exception when others then
+    if sqlerrm not like '%investimento_midia%' then raise; end if;  -- ok, guard barrou
+  end;
 end $$;
 rollback;
 SQL
