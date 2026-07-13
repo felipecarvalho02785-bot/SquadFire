@@ -83,6 +83,38 @@ export async function delegarTarefa(id: string, responsavelId: string): Promise<
   return { ok: true };
 }
 
+// Editar o investimento em mídia da Cria (verba de campanha). RLS: Contas,
+// Tráfego ou Admin. Valor null = "a definir".
+export async function atualizarInvestimento(criaId: string, valor: number | null): Promise<ActionResult> {
+  const v = valor != null && (!isFinite(valor) || valor < 0) ? null : valor;
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.from('cria').update({ investimento_midia: v }).eq('id', criaId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/crias/[id]', 'page');
+  revalidatePath('/crias');
+  return { ok: true };
+}
+
+// Abrir um gargalo na Cria. RLS: Contas/Projetos/Admin.
+export async function criarGargalo(criaId: string, descricao: string): Promise<ActionResult> {
+  const d = descricao.trim();
+  if (!d) return { ok: false, error: 'descreva o gargalo' };
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.from('gargalo').insert({ cria_id: criaId, descricao: d });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/crias/[id]', 'page');
+  return { ok: true };
+}
+
+// Mudar o status de um gargalo (aberto → em_resolucao → resolvido).
+export async function atualizarStatusGargalo(id: string, status: 'aberto' | 'em_resolucao' | 'resolvido'): Promise<ActionResult> {
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.from('gargalo').update({ status }).eq('id', id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/crias/[id]', 'page');
+  return { ok: true };
+}
+
 // Avançar a fase da Forja (checklist + gate de papel validados no banco).
 export async function avancarFase(forjaId: string): Promise<ActionResult> {
   const supabase = await getSupabaseServer();

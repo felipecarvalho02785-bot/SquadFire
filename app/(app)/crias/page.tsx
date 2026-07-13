@@ -1,22 +1,28 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
+import { CriaSearch } from '@/components/CriaSearch';
 import { listCrias } from '@/lib/data/crias';
 import { brl, faseLabel, saudeDaCria } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
-export default async function CriasPage() {
-  const crias = await listCrias();
+export default async function CriasPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q } = await searchParams;
+  const termo = (q ?? '').trim().toLowerCase();
+  const todas = await listCrias();
+  const crias = termo
+    ? todas.filter((c) => c.nome_cliente.toLowerCase().includes(termo) || (c.area_atuacao ?? '').toLowerCase().includes(termo))
+    : todas;
   const emForja = crias.filter((c) => c.clickup_semana != null).length;
   const backlog = crias.length - emForja;
 
   return (
     <div className="main">
-      <Topbar title="Crias" sub="espelho do ClickUp · Squad 08" />
+      <Topbar title="Crias" sub="espelho do ClickUp · Squad 08" right={<CriaSearch inicial={q ?? ''} />} />
       <div className="content">
         <div className="pagehead">
           <div>
-            <div className="eye">Carteira · {crias.length} Crias</div>
+            <div className="eye">Carteira · {todas.length} Crias{termo ? ` · ${crias.length} para "${q}"` : ''}</div>
             <h2>Crias</h2>
             <p>Squad 08 · espelho do ClickUp (Estruturação): {emForja} em execução + {backlog} no backlog. Clique numa Cria pra abrir a Forja.</p>
           </div>
@@ -24,8 +30,8 @@ export default async function CriasPage() {
 
         {crias.length === 0 ? (
           <div className="empty">
-            <b>Nenhuma Cria ainda</b>
-            <p>As Crias entram pelo sync do ClickUp (lista-mestre, Squad 08) ou pelo cadastro do Gestor de Contas. Rode a sincronização para materializar os clientes.</p>
+            <b>{termo ? `Nenhuma Cria para "${q}"` : 'Nenhuma Cria ainda'}</b>
+            <p>{termo ? 'Tente outro termo ou limpe a busca.' : 'As Crias entram pelo sync do ClickUp (lista-mestre, Squad 08) ou pelo cadastro do Gestor de Contas. Rode a sincronização para materializar os clientes.'}</p>
           </div>
         ) : (
           <div className="card" style={{ padding: 6, overflowX: 'auto' }}>

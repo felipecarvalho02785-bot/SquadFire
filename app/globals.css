@@ -488,6 +488,45 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 .cmt .cn { font-size: 12.5px; font-weight: 650; }
 .cmt .cn small { color: var(--faint); font-weight: 400; margin-left: 6px; }
 .cmt .ct { font-size: 12.5px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+
+/* busca de Crias (topbar) */
+.cria-search { display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--inset); min-width: 200px; }
+.cria-search:focus-within { border-color: color-mix(in srgb, var(--ember) 50%, var(--border)); }
+.cria-search > svg { width: 15px; height: 15px; color: var(--muted); flex: 0 0 auto; }
+.cria-search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); font-family: var(--body); font-size: 13px; outline: none; }
+.cs-clear { border: 0; background: transparent; color: var(--muted); cursor: pointer; display: grid; place-items: center; padding: 2px; border-radius: 6px; }
+.cs-clear svg { width: 13px; height: 13px; }
+.cs-clear:hover { color: var(--text); }
+
+/* investimento em mídia editável (Cria) */
+.inv-view { display: inline-flex; align-items: center; gap: 7px; }
+.inv-edit { border: 0; background: transparent; color: var(--ember); cursor: pointer; padding: 0; display: inline-grid; place-items: center; }
+.inv-edit:hover { color: var(--ember-hi); }
+.inv-editing { display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+.inv-prefix { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.inv-editing input { width: 92px; height: 28px; border-radius: 7px; border: 1px solid color-mix(in srgb, var(--ember) 45%, var(--border)); background: var(--inset); color: var(--text); font-family: var(--mono); font-size: 13px; padding: 0 8px; text-align: right; }
+.inv-editing input:focus { outline: none; border-color: var(--ember); }
+.inv-ok, .inv-cancel { width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: grid; place-items: center; }
+.inv-ok { color: var(--ember); border-color: color-mix(in srgb, var(--ember) 40%, var(--border)); }
+.inv-cancel { color: var(--muted); }
+.inv-ok:hover, .inv-cancel:hover { filter: brightness(1.12); }
+.inv-erro { color: var(--risk); font-size: 11.5px; width: 100%; text-align: right; }
+
+/* gargalos gerenciáveis (Cria) */
+.garg-new { display: flex; gap: 8px; margin-bottom: 12px; }
+.garg-new input { flex: 1; min-width: 0; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: var(--inset); color: var(--text); font-family: var(--body); font-size: 13.5px; padding: 0 12px; }
+.garg-new input:focus { outline: none; border-color: color-mix(in srgb, var(--ember) 50%, var(--border)); }
+.garg-new .btn.primary { height: 38px; white-space: nowrap; }
+.garg-erro { color: var(--risk); font-size: 12.5px; margin: -6px 0 10px; }
+.garg-list { display: grid; gap: 10px; }
+.garg-row { display: flex; align-items: center; gap: 12px; border-left: 2px solid var(--border-2); padding: 8px 0 8px 13px; }
+.garg-row.done .rmain .t { text-decoration: line-through; color: var(--muted); }
+.garg-row .rmain { flex: 1; min-width: 0; }
+.garg-row .rmain .t { font-weight: 600; font-size: 13px; color: var(--text); }
+.garg-row .rmain .s { margin-top: 5px; }
+.garg-acts { display: flex; gap: 6px; flex: 0 0 auto; }
+.garg-acts .btn { font-size: 11.5px; padding: 5px 9px; }
+@media (max-width: 620px) { .garg-row { flex-wrap: wrap; } .garg-acts { width: 100%; } }
 @media (max-width: 1080px) { .g-2, .g-3 { grid-template-columns: 1fr; } }
 
 /* svg dos gráficos */
