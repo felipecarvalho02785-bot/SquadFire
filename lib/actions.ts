@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getSupabaseServer } from '@/lib/supabase/server';
+import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
 import type { Papel, PrioridadeLenha } from '@/lib/types/database';
 
@@ -16,11 +16,30 @@ export async function adicionarComentario(criaId: string, corpo: string): Promis
   if (!membro) return { ok: false, error: 'membro não identificado' };
 
   const supabase = await getSupabaseServer();
-  const { error } = await supabase
+  const { data: inserido, error } = await supabase
     .from('comentario')
-    .insert({ cria_id: criaId, autor_id: membro.id, corpo: texto });
+    .insert({ cria_id: criaId, autor_id: membro.id, corpo: texto })
+    .select('id')
+    .maybeSingle();
   if (error) return { ok: false, error: error.message };
   revalidatePath('/crias/[id]', 'page');
+
+  // Espelha no ClickUp (CRM → ClickUp): comentário do sistema vira comentário
+  // na task-mestre do cliente. Best-effort — falha aqui não perde o comentário.
+  const comentarioId = (inserido as { id: string } | null)?.id;
+  if (comentarioId && process.env.CLICKUP_API_TOKEN) {
+    try {
+      const { data: cria } = await supabase.from('cria').select('clickup_task_id').eq('id', criaId).maybeSingle();
+      const taskId = (cria as { clickup_task_id: string | null } | null)?.clickup_task_id;
+      if (taskId) {
+        const { createTaskComment } = await import('@/integracao/clickup/client.js');
+        const res = await createTaskComment(taskId, `💬 ${membro.nome}: ${texto}`);
+        await getSupabaseAdmin().from('comentario').update({ clickup_comment_id: res?.id ?? null }).eq('id', comentarioId);
+      }
+    } catch (e) {
+      console.error('[comentario] push ClickUp', e);
+    }
+  }
   return { ok: true };
 }
 
