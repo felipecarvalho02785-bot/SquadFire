@@ -62,11 +62,29 @@ const Svg = ({ children }: { children: React.ReactNode }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
 );
 
-export function ForjariaClient({ membro, integracoes, team, google, prefs }: { membro: Membro | null; integracoes: Integr[]; team: Membro[]; google?: GoogleStatus; prefs?: PrefsDados | null }) {
+export function ForjariaClient({ membro, integracoes, team, google, prefs, clickupRealtime }: { membro: Membro | null; integracoes: Integr[]; team: Membro[]; google?: GoogleStatus; prefs?: PrefsDados | null; clickupRealtime?: boolean }) {
   const router = useRouter();
   async function desconectarGoogle() {
     await fetch('/api/google/disconnect', { method: 'POST' });
     router.refresh();
+  }
+
+  // ClickUp — ativar o tempo real (registra o webhook + guarda o secret no banco)
+  const [cuLoading, setCuLoading] = useState(false);
+  const [cuMsg, setCuMsg] = useState<string | null>(null);
+  const [cuOk, setCuOk] = useState(false);
+  async function ativarClickup() {
+    setCuLoading(true); setCuMsg(null);
+    try {
+      const res = await fetch('/api/clickup/webhook/register', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.ok) { setCuOk(true); setCuMsg('Tempo real ativado ✓'); router.refresh(); }
+      else { setCuOk(false); setCuMsg(data.error ?? 'não deu para ativar'); }
+    } catch {
+      setCuOk(false); setCuMsg('falha de conexão');
+    } finally {
+      setCuLoading(false);
+    }
   }
   // Aparência — aplica ao vivo no documento (fica no localStorage: precisa
   // valer antes da 1ª pintura, sem ida ao banco).
@@ -250,6 +268,14 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs }: { m
                   <button className="btn" onClick={desconectarGoogle}>Desconectar</button>
                 ) : (
                   <a className="btn" href="/api/google/connect">Conectar</a>
+                )
+              ) : i.sigla === 'CU' ? (
+                cuMsg ? (
+                  <span className="s" style={{ color: cuOk ? 'var(--ember-hi)' : 'var(--risk)', maxWidth: 180, textAlign: 'right' }}>{cuMsg}</span>
+                ) : (
+                  <button className="btn" onClick={ativarClickup} disabled={cuLoading || !i.ok} title={!i.ok ? 'Falta o CLICKUP_API_TOKEN' : 'Registra o webhook pra sincronizar em tempo real'}>
+                    {cuLoading ? 'Ativando…' : clickupRealtime ? 'Reativar tempo real' : 'Ativar tempo real'}
+                  </button>
                 )
               ) : (
                 <button className="btn">{i.ok ? 'Gerenciar' : 'Conectar'}</button>
