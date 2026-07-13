@@ -4,6 +4,7 @@ import { getSupabaseServer } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { googleConfigurado } from '@/lib/google/oauth';
 import { statusGoogle } from '@/lib/google/calendar';
+import { whatsappConfigurado } from '@/lib/whatsapp/evolution';
 import { ForjariaClient } from './ForjariaClient';
 
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,7 @@ export default async function ForjariaPage() {
     { sigla: 'SB', nome: 'Supabase', nota: 'Banco de dados e Storage de contratos/documentos.', ok: isSupabaseConfigured },
     { sigla: 'GM', nome: 'Faísca · Gemini', nota: 'Toda a IA da Faísca: chat, transcrição de áudio e escrita dos briefings.', ok: !!(process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) },
     { sigla: 'GA', nome: 'Google Agenda', nota: google.conectado ? `Conectado${google.email ? ` · ${google.email}` : ''} — Rodas de Fogo e prazos no seu calendário.` : 'Sincronize Rodas de Fogo e prazos das fases com o seu Google Agenda.', ok: google.conectado },
-    { sigla: 'WA', nome: 'WhatsApp · Evolution API', nota: 'SLA dos grupos e disparos.', ok: false },
+    { sigla: 'WA', nome: 'WhatsApp · Evolution API', nota: 'Disparos pro grupo do cliente (Evolution API).', ok: whatsappConfigurado() },
   ];
 
   return (
