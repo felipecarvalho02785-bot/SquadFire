@@ -73,7 +73,7 @@ function mensagemAmigavel(e: unknown): string {
     return 'Minha chave de IA parece inválida — confere a GOOGLE_GENERATIVE_AI_API_KEY nas variáveis da Vercel.';
   }
   if (raw.includes('quota') || raw.includes('rate') || raw.includes('429') || raw.includes('resource_exhausted') || raw.includes('overloaded')) {
-    return 'Bati o limite de uso do Gemini neste instante. Tenta de novo em alguns segundos.';
+    return 'Bati o limite gratuito do Gemini agora há pouco (mesmo tentando de novo). É por minuto/dia e reseta sozinho — espera ~1 minuto e manda de novo. Pra tirar o teto, dá pra ativar o pay-as-you-go do Gemini (bem barato, por uso).';
   }
   return 'Tive um problema ao pensar aqui agora. Tenta de novo daqui a pouco?';
 }
