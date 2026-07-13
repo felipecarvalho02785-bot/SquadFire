@@ -1,6 +1,7 @@
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { faseLabel, iniciais } from '@/lib/format';
+import { statusGoogle, listarEventos } from '@/lib/google/calendar';
 import type { Cria, Lenha, Papel } from '@/lib/types/database';
 
 export interface RotinaResumo {
@@ -55,9 +56,9 @@ export async function getMeuDia(membroId: string, papel: Papel): Promise<MeuDia>
 }
 
 // ── Cockpit completo do dia (Meu Dia imersivo) ───────────────────
-export interface LenhaRow { titulo: string; sub: string; repete: string | null; pill: { label: string; kind: 'crit' | 'warn' | 'good' } | null; done: boolean }
+export interface LenhaRow { id: string; titulo: string; sub: string; repete: string | null; pill: { label: string; kind: 'crit' | 'warn' | 'good' } | null; done: boolean }
 export interface AgendaItem { hora: string; titulo: string; tag: string; kind: 'cliente' | 'interna' | 'roda' }
-export interface BriefRow { iniciais: string; nome: string; sub: string; acao: string }
+export interface BriefRow { iniciais: string; nome: string; sub: string; acao: string; href: string }
 export interface RitualRow { titulo: string; sub: string; status: { label: string; kind: 'good' | 'warn' | 'crit' } | null }
 
 export interface MeuDiaDash {
@@ -80,11 +81,11 @@ function demoMeuDia(): MeuDiaDash {
     banner: { titulo: 'Quinta-feira · dia do briefing semanal', sub: 'colete os briefings das suas Crias e publique no ClickUp' },
     kpis: { lenhasHoje: 6, deRotina: 2, slaQuente: 2, briefings: 3, checkins: 4 },
     lenhas: [
-      { titulo: 'Coletar briefing · Letícia', sub: 'Contas · SLA vermelho', repete: null, pill: { label: 'SLA vermelho', kind: 'crit' }, done: false },
-      { titulo: 'Follow-up de NPS · Mozini', sub: 'Contas · Fase 3', repete: null, pill: null, done: false },
-      { titulo: 'Relatório diário das tarefas', sub: 'fim de expediente', repete: 'repete diariamente', pill: null, done: false },
-      { titulo: 'Check-in semanal · Edi Carlos', sub: 'Contas · Fase 2', repete: 'repete semanal', pill: null, done: false },
-      { titulo: 'Enviar conteúdo pra aprovação · Raphael', sub: 'Contas', repete: null, pill: null, done: true },
+      { id: 'x1', titulo: 'Coletar briefing · Letícia', sub: 'Contas · SLA vermelho', repete: null, pill: { label: 'SLA vermelho', kind: 'crit' }, done: false },
+      { id: 'x2', titulo: 'Follow-up de NPS · Mozini', sub: 'Contas · Fase 3', repete: null, pill: null, done: false },
+      { id: 'x3', titulo: 'Relatório diário das tarefas', sub: 'fim de expediente', repete: 'repete diariamente', pill: null, done: false },
+      { id: 'x4', titulo: 'Check-in semanal · Edi Carlos', sub: 'Contas · Fase 2', repete: 'repete semanal', pill: null, done: false },
+      { id: 'x5', titulo: 'Enviar conteúdo pra aprovação · Raphael', sub: 'Contas', repete: null, pill: null, done: true },
     ],
     agenda: [
       { hora: '09:00', titulo: 'Daily · Squad', tag: 'Interna', kind: 'interna' },
@@ -93,8 +94,8 @@ function demoMeuDia(): MeuDiaDash {
       { hora: '17:30', titulo: 'Alinhamento de contas', tag: 'Interna', kind: 'interna' },
     ],
     briefings: [
-      { iniciais: 'LS', nome: 'Letícia Stein', sub: 'briefing pendente · SLA vermelho', acao: 'Coletar →' },
-      { iniciais: 'MO', nome: 'Mozini Advocacia', sub: 'check-in semanal', acao: 'Check-in →' },
+      { iniciais: 'LS', nome: 'Letícia Stein', sub: 'briefing pendente · SLA vermelho', acao: 'Coletar →', href: '/crias' },
+      { iniciais: 'MO', nome: 'Mozini Advocacia', sub: 'check-in semanal', acao: 'Check-in →', href: '/crias' },
     ],
     rituais: [
       { titulo: 'Daily (alinhamento)', sub: 'todo dia · 09:00', status: { label: 'feito', kind: 'good' } },
@@ -116,10 +117,11 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
   const inicioSemana = new Date(hoje);
   inicioSemana.setDate(hoje.getDate() - 7);
 
-  // Minhas Crias (como Gestor de Contas)
-  const { data: minhasData } = await supabase.from('cria').select('*').eq('gestor_contas_id', membro.id);
+  // Todos os membros conectados fazem parte do projeto de cada Cria — então o
+  // dia de todo mundo enxerga TODAS as Crias ativas (não só as que gerencia).
+  const { data: minhasData } = await supabase.from('cria').select('*').eq('status', 'ativa').order('nome_cliente');
   const minhas = (minhasData as Cria[]) ?? [];
-  const minhasAtivas = minhas.filter((c) => c.status === 'ativa');
+  const minhasAtivas = minhas;
   const slaQuente = minhasAtivas.filter((c) => c.em_risco).length;
 
   // Briefings desta semana → quantas Crias ainda faltam
@@ -136,9 +138,11 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
 
   const lenhas: LenhaRow[] = base.lenhas.map((l) => {
     const atrasada = l.prazo ? new Date(l.prazo) < hoje && l.status !== 'concluida' : false;
+    const tipoLabel = l.tipo === 'forja' ? 'Forja' : l.tipo === 'rotina' ? 'Rotina' : 'Do dia';
     return {
+      id: l.id,
       titulo: l.titulo,
-      sub: [l.tipo === 'forja' ? 'Forja' : 'Rotina', l.prazo ? `prazo ${l.prazo}` : null].filter(Boolean).join(' · '),
+      sub: [tipoLabel, l.prazo ? `prazo ${l.prazo}` : null].filter(Boolean).join(' · '),
       repete: null,
       pill: atrasada ? { label: 'SLA vermelho', kind: 'crit' } : null,
       done: l.status === 'concluida',
@@ -151,12 +155,29 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
     status: null,
   }));
 
-  const briefingsList: BriefRow[] = minhasAtivas.slice(0, 5).map((c) => ({
+  const briefingsList: BriefRow[] = minhasAtivas.slice(0, 6).map((c) => ({
     iniciais: iniciais(c.nome_cliente),
     nome: c.nome_cliente,
     sub: briefadas.has(c.id) ? 'briefing coletado' : faseLabel(c.clickup_semana),
     acao: briefadas.has(c.id) ? 'Ver →' : 'Coletar →',
+    href: `/crias/${c.id}/roda`,
   }));
+
+  // Agenda de hoje: reuniões do Google Agenda do membro (inclui as Rodas de
+  // Fogo agendadas). Só aparece se ele conectou o Google.
+  const agenda: AgendaItem[] = [];
+  const g = await statusGoogle(membro.id);
+  if (g.conectado) {
+    const ini = new Date(hoje); ini.setHours(0, 0, 0, 0);
+    const fim = new Date(hoje); fim.setHours(23, 59, 59, 999);
+    for (const ev of await listarEventos(membro.id, ini.toISOString(), fim.toISOString())) {
+      const t = ev.titulo.toLowerCase();
+      const kind: AgendaItem['kind'] = /roda de fogo/.test(t) ? 'roda' : /daily|weekly|alinhamento|squad|interna/.test(t) ? 'interna' : 'cliente';
+      const hora = ev.allDay || !ev.inicio ? 'dia' : new Date(ev.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      agenda.push({ hora, titulo: ev.titulo, tag: kind === 'roda' ? 'Roda' : kind === 'interna' ? 'Interna' : 'Cliente', kind });
+    }
+    agenda.sort((a, b) => a.hora.localeCompare(b.hora));
+  }
 
   return {
     demo: false,
@@ -170,7 +191,7 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
       checkins: minhasAtivas.length,
     },
     lenhas,
-    agenda: [],
+    agenda,
     briefings: briefingsList,
     rituais,
   };
