@@ -527,6 +527,57 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 .garg-acts { display: flex; gap: 6px; flex: 0 0 auto; }
 .garg-acts .btn { font-size: 11.5px; padding: 5px 9px; }
 @media (max-width: 620px) { .garg-row { flex-wrap: wrap; } .garg-acts { width: 100%; } }
+
+/* ── Roda de Fogo (reunião por Cria) ────────────────────────── */
+.roda-av { background: linear-gradient(135deg, var(--ember-hi), var(--ember)); }
+.roda-av svg { width: 24px; height: 24px; color: #160c06; }
+.roda-live { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; padding: 5px 11px; border-radius: 20px; font-size: 12px; font-weight: 700; color: var(--ember); background: var(--ember-soft); border: 1px solid color-mix(in srgb, var(--ember) 35%, var(--border)); }
+.roda-live .d { width: 7px; height: 7px; border-radius: 50%; background: var(--ember); animation: fogpulse 1.3s infinite; }
+@keyframes fogpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.roda-parts { display: flex; gap: 8px; flex-wrap: wrap; }
+.rp { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 30px; border: 1px solid var(--border); background: var(--surface); font-size: 12.5px; font-weight: 600; }
+.rp small { color: var(--faint); font-weight: 500; }
+.rp-av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 9.5px; font-weight: 700; color: #160c06; background: linear-gradient(135deg, var(--ember-hi), var(--ember)); }
+.rp-av.cli { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border-2); }
+.roda-pt { display: flex; align-items: center; gap: 11px; padding: 9px 2px; border-top: 1px solid var(--border); cursor: pointer; }
+.roda-pt:first-child { border-top: 0; }
+.roda-pt.done .rmain .t { text-decoration: line-through; color: var(--muted); }
+.roda-pt .rside { min-width: 46px; text-align: right; }
+.roda-rec { display: flex; align-items: center; gap: 14px; padding: 13px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.rec-btn { width: 46px; height: 46px; flex: 0 0 auto; border-radius: 50%; border: 0; background: var(--ember); cursor: pointer; display: grid; place-items: center; transition: filter 0.14s, transform 0.12s; }
+.rec-btn:hover { filter: brightness(1.06); }
+.rec-btn:active { transform: scale(0.94); }
+.rec-btn.on { animation: fogpulse 1.4s infinite; }
+.rec-btn:disabled { opacity: 0.6; cursor: default; }
+.rec-dot { width: 16px; height: 16px; border-radius: 50%; background: #160c06; }
+.rec-stop { width: 14px; height: 14px; border-radius: 3px; background: #160c06; }
+.rec-main { flex: 1; min-width: 0; }
+.rec-main .t { font-weight: 600; font-size: 13.5px; }
+.rec-main .s { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.rec-wave { display: inline-flex; align-items: flex-end; gap: 3px; height: 22px; flex: 0 0 auto; }
+.rec-wave i { width: 3px; border-radius: 2px; background: var(--ember); transform-origin: bottom; animation: rec-wave 0.9s ease-in-out infinite; }
+.rec-wave i:nth-child(1) { height: 8px; animation-delay: 0s; }
+.rec-wave i:nth-child(2) { height: 16px; animation-delay: 0.1s; }
+.rec-wave i:nth-child(3) { height: 11px; animation-delay: 0.2s; }
+.rec-wave i:nth-child(4) { height: 19px; animation-delay: 0.3s; }
+.rec-wave i:nth-child(5) { height: 9px; animation-delay: 0.4s; }
+@keyframes rec-wave { 0%, 100% { transform: scaleY(0.5); } 50% { transform: scaleY(1); } }
+.rec-time { font-size: 13px; color: var(--muted); flex: 0 0 auto; }
+:root.no-anim .rec-wave i, :root.no-anim .roda-live .d, :root.no-anim .rec-btn.on { animation: none; }
+.transc { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 0; }
+.report { border: 1px solid var(--border); border-radius: 11px; overflow: hidden; }
+.rsec { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+.rsec:last-child { border-bottom: 0; }
+.rl { font-size: 9.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ember); font-weight: 700; margin-bottom: 3px; }
+.rt { font-size: 12.5px; color: var(--text); line-height: 1.45; }
+.roda-nota { width: 100%; resize: vertical; background: var(--inset); border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px; color: var(--text); font-family: var(--body); font-size: 13px; }
+.roda-nota:focus { outline: none; border-color: color-mix(in srgb, var(--ember) 50%, var(--border)); }
+.roda-brief { display: flex; gap: 12px; align-items: flex-start; border-color: color-mix(in srgb, var(--ember) 30%, var(--border)); }
+.roda-brief .rb-ic { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 9px; display: grid; place-items: center; color: var(--ember); background: var(--ember-soft); }
+.roda-brief .rb-ic svg { width: 18px; height: 18px; }
+.roda-brief p { margin: 0; line-height: 1.5; }
+.roda-foot { display: flex; justify-content: flex-end; gap: 10px; }
+.roda-foot .btn.primary { padding: 10px 18px; }
 @media (max-width: 1080px) { .g-2, .g-3 { grid-template-columns: 1fr; } }
 
 /* svg dos gráficos */
