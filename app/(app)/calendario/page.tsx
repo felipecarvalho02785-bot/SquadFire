@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
+import { CalendarioMes } from '@/components/CalendarioMes';
 import { getForjasTimeline, getRituaisDoMes, type SlaStatus } from '@/lib/data/agenda';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
@@ -7,7 +8,6 @@ import { listarEventos, statusGoogle } from '@/lib/google/calendar';
 
 export const dynamic = 'force-dynamic';
 
-const DOW = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const SLA_LABEL: Record<SlaStatus, string> = { atrasada: 'Atrasada', no_prazo: 'No prazo', sem_inicio: 'Sem início', concluida: 'Concluída' };
 const SLA_KIND: Record<SlaStatus, string> = { atrasada: 'crit', no_prazo: 'good', sem_inicio: 'dim', concluida: 'dim' };
 
@@ -19,15 +19,13 @@ export default async function CalendarioPage() {
   const year = now.getFullYear();
   const month = now.getMonth();
   const today = now.getDate();
-  const firstWeekday = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const mesLabel = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
   const atrasadas = timeline.filter((t) => t.sla === 'atrasada').length;
   const ativas = timeline.filter((t) => t.sla !== 'concluida').length;
 
   // Eventos do mês = prazos das fases (data prevista de fim) + agenda do Google.
-  const eventos: Record<number, { label: string; kind: string }[]> = {};
+  const eventos: Record<number, { label: string; kind: string; hora?: string }[]> = {};
   for (const t of timeline) {
     if (!t.prazoFaseAtual) continue;
     const d = new Date(t.prazoFaseAtual + 'T00:00:00');
@@ -55,17 +53,13 @@ export default async function CalendarioPage() {
           if (!ev.inicio) continue;
           const d = new Date(ev.inicio);
           if (d.getFullYear() === year && d.getMonth() === month) {
-            (eventos[d.getDate()] ??= []).push({ label: nomeCurto(ev.titulo), kind: 'gcal' });
+            const hora = ev.allDay ? undefined : d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            (eventos[d.getDate()] ??= []).push({ label: nomeCurto(ev.titulo), kind: 'gcal', hora });
           }
         }
       }
     }
   }
-
-  const cells: (number | null)[] = [];
-  for (let i = 0; i < firstWeekday; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-  while (cells.length % 7 !== 0) cells.push(null);
 
   return (
     <div className="main">
@@ -111,21 +105,8 @@ export default async function CalendarioPage() {
 
         {/* Mês — prazos das fases */}
         <div className="card">
-          <div className="cal-nav"><span className="mo">{mesLabel}</span></div>
-          <div className="cal-grid" style={{ marginBottom: 6 }}>
-            {DOW.map((d) => <div className="cal-dow" key={d}>{d}</div>)}
-          </div>
-          <div className="cal-grid">
-            {cells.map((day, i) => (
-              <div key={i} className={`cal-cell${day ? '' : ' out'}${day === today ? ' today' : ''}`}>
-                {day && <span className="dn">{day}</span>}
-                {day && (eventos[day] ?? []).slice(0, 3).map((ev, j) => (
-                  <span className={`cal-ev ${ev.kind}`} key={j}>{ev.label}</span>
-                ))}
-                {day && (eventos[day]?.length ?? 0) > 3 && <span className="cal-more">+{eventos[day].length - 3}</span>}
-              </div>
-            ))}
-          </div>
+          <div className="cal-nav"><span className="mo">{mesLabel}</span><span className="s" style={{ color: 'var(--faint)' }}>clique num dia pra ver os compromissos</span></div>
+          <CalendarioMes year={year} month={month} today={today} eventos={eventos} />
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
             <span className="badge ember">Prazo de fase (no prazo)</span>
             <span className="badge risk">Prazo de fase (atrasada)</span>
