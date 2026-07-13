@@ -29,6 +29,11 @@ export async function getMeuDia(membroId: string, papel: Papel): Promise<MeuDia>
     .neq('status', 'concluida')
     .order('prazo', { ascending: true, nullsFirst: false });
 
+  // Rotinas só entram no "hoje" se forem do dia (data_referencia = hoje) — assim
+  // rituais antigos não concluídos não acumulam. Forja/avulsa aparecem sempre.
+  const hojeStr = new Date().toISOString().slice(0, 10);
+  const doDia = ((lenhas as Lenha[]) ?? []).filter((l) => l.tipo !== 'rotina' || l.data_referencia === hojeStr);
+
   const { data: rp } = await supabase
     .from('rotina_papel')
     .select('rotina_id')
@@ -46,7 +51,7 @@ export async function getMeuDia(membroId: string, papel: Papel): Promise<MeuDia>
     rotinas = (rot as RotinaResumo[]) ?? [];
   }
 
-  return { lenhas: (lenhas as Lenha[]) ?? [], rotinas };
+  return { lenhas: doDia, rotinas };
 }
 
 // ── Cockpit completo do dia (Meu Dia imersivo) ───────────────────
