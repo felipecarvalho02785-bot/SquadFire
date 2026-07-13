@@ -54,9 +54,9 @@ export function Sidebar({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/img/squad-icon.png" alt="SquadFire" width={36} height={36} />
         </div>
-        <div>
-          <b>Squad<span style={{ color: 'var(--ember)', display: 'inline' }}>Fire</span></b>
-          <span>Squad 08 · a Forja</span>
+        <div className="brandtext">
+          <b>Squad<i>Fire</i></b>
+          <span className="brandsub">Squad 08 · a Forja</span>
         </div>
       </div>
 
