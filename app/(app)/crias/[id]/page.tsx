@@ -162,7 +162,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
             <span className={`pill ${statusPill.cls}`}><span className="d" />{statusPill.txt}</span>
             {forja?.flag_contrato && <span className={`chip ${cria.em_risco ? 'crit' : ''}`}>{forja.flag_contrato === 'brasa_viva' ? 'Brasa Viva' : 'Forja Quente'}</span>}
           </div>
-          <Link className="fog-open" href="/fogueira">
+          <Link className="fog-open" href={`/crias/${cria.id}/roda`}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}><path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z" /></svg>
             Abrir Roda de Fogo
           </Link>
