@@ -5,7 +5,8 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 // Eventos da lista-mestre que refletimos no CRM (mesma lista do webhook handler).
-const EVENTOS = ['taskCreated', 'taskUpdated', 'taskMoved', 'taskStatusUpdated', 'taskDeleted'];
+// taskCommentPosted traz os comentários do ClickUp pro CRM (ClickUp → CRM).
+const EVENTOS = ['taskCreated', 'taskUpdated', 'taskMoved', 'taskStatusUpdated', 'taskDeleted', 'taskCommentPosted'];
 
 function autorizado(request: Request): boolean {
   const secret = process.env.CRON_SECRET;

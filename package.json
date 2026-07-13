@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --test integracao/clickup/sync-crias.test.mjs",
+    "test": "node --test integracao/clickup/sync-crias.test.mjs integracao/clickup/webhook.test.mjs",
     "test:db": "bash supabase/tests/run.sh",
     "sync:clickup": "node integracao/clickup/run-sync.js"
   },
