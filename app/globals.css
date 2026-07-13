@@ -398,3 +398,51 @@ svg .axis { fill: var(--faint); }
 .chk { width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid var(--faint); flex: 0 0 auto; display: grid; place-items: center; }
 .chk.done { background: var(--ember); border-color: var(--ember); }
 .chk svg { width: 11px; height: 11px; color: #160c06; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Meu Dia (cockpit do membro) — portado do design/app.html
+   ═══════════════════════════════════════════════════════════════ */
+
+/* topbar: busca + sino */
+.tsearch { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 7px 12px; color: var(--muted); min-width: 210px; }
+.tsearch svg { width: 15px; height: 15px; flex: 0 0 auto; }
+.tsearch input { border: 0; background: transparent; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; width: 100%; }
+.tsearch input::placeholder { color: var(--faint); }
+.bell { position: relative; width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); border-radius: 10px; color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+.bell:hover { border-color: var(--ember); color: var(--ember); }
+.bell svg { width: 17px; height: 17px; }
+.bell .dot-n { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--ember); color: #160c06; font-size: 10px; font-weight: 700; display: grid; place-items: center; }
+
+/* saudação do dia */
+.daygreet { margin-bottom: 16px; }
+.daygreet .eye { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ember); font-weight: 700; }
+.daygreet h2 { font-family: var(--display); font-size: 26px; margin: 5px 0 3px; }
+.daygreet p { margin: 0; color: var(--muted); font-size: 13px; }
+
+/* banner do dia (briefing etc.) */
+.daybanner { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding: 14px 16px; }
+.daybanner .ic { width: 40px; height: 40px; flex: 0 0 auto; border-radius: 10px; background: var(--ember-soft); color: var(--ember); display: grid; place-items: center; }
+.daybanner .ic svg { width: 20px; height: 20px; }
+.daybanner .bt { font-weight: 680; font-size: 13.5px; }
+.daybanner .bs { color: var(--muted); font-size: 12.5px; }
+
+/* KPIs ricos (label + chip, valor, sub) */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+.kpi .k-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.kpi .k-label { font-family: var(--sans); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.kpi .k-val { font-family: var(--display); font-size: 30px; font-weight: 700; letter-spacing: 0.01em; margin: 8px 0 2px; }
+.kpi .k-sub { font-size: 11.5px; color: var(--muted); }
+.kpi.flag-crit { border-color: color-mix(in srgb, var(--risk) 34%, var(--border)); }
+.kpi.flag-warn { border-color: color-mix(in srgb, var(--warn) 30%, var(--border)); }
+.chip { font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; padding: 2px 7px; border-radius: 20px; font-family: var(--sans); }
+.chip.crit { color: var(--risk); background: color-mix(in srgb, var(--risk) 15%, transparent); }
+.chip.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); }
+.chip.good { color: var(--ember-hi); background: color-mix(in srgb, var(--ember) 15%, transparent); }
+@media (max-width: 1080px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .kpis { grid-template-columns: 1fr; } }
+
+/* agenda do dia (horário + título + tag) */
+.agn .time { font-family: var(--mono); font-size: 12.5px; color: var(--ember-hi); flex: 0 0 auto; width: 46px; }
+.linkact { color: var(--ember); font-weight: 600; font-size: 12.5px; white-space: nowrap; }
+.linkact:hover { color: var(--ember-hi); }
+.avatar.sm { width: 30px; height: 30px; font-size: 11px; }

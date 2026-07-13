@@ -1,96 +1,164 @@
 import { Topbar } from '@/components/Topbar';
-import { LenhaCheck } from '@/components/LenhaCheck';
 import { getCurrentMembro } from '@/lib/auth';
-import { getMeuDia } from '@/lib/data/meudia';
+import { getMeuDiaDashboard } from '@/lib/data/meudia';
 import { isSupabaseConfigured } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
-const RECOR: Record<string, string> = {
-  diaria: 'todo dia',
-  semanal: 'toda semana',
-  dias_da_semana: 'dias fixos',
-  mensal: 'todo mês',
-  sprint: 'por sprint',
-};
+function saudacao(): string {
+  const h = new Date().getHours();
+  return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+}
+
+const tagKind: Record<string, string> = { cliente: 'ember', roda: 'ok', interna: 'dim' };
 
 export default async function MeuDiaPage() {
   const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
-  const dia = membro ? await getMeuDia(membro.id, membro.papel_primario) : { lenhas: [], rotinas: [] };
-  const primeiroNome = membro?.nome?.split(' ')[0] ?? 'squad';
+  const d = await getMeuDiaDashboard(membro);
+
+  const busca = (
+    <>
+      <form action="/crias" className="tsearch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" strokeLinecap="round" />
+        </svg>
+        <input name="q" placeholder="Buscar Cria…" aria-label="Buscar Cria" />
+      </form>
+      <button type="button" className="bell" aria-label="Notificações">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0" />
+        </svg>
+        {d.kpis.slaQuente > 0 && <span className="dot-n">{d.kpis.slaQuente}</span>}
+      </button>
+    </>
+  );
 
   return (
     <div className="main">
-      <Topbar
-        title={`Salve, ${primeiroNome} 🔥`}
-        sub="Seu cockpit do dia — o que pega fogo agora."
-      />
-      <div className="content grid" style={{ gap: 18 }}>
-        <div className="grid cols-4">
-          <div className="card kpi">
-            <div className="n ember">{dia.lenhas.length}</div>
-            <div className="l">Lenhas em aberto</div>
-          </div>
-          <div className="card kpi">
-            <div className="n">{dia.rotinas.length}</div>
-            <div className="l">Rituais do seu papel</div>
-          </div>
-          <div className="card kpi">
-            <div className="n">
-              {dia.lenhas.filter((l) => l.prioridade === 'alta').length}
+      <Topbar title="Meu Dia" sub="seu foco de hoje" right={busca} />
+      <div className="content">
+        <div className="daygreet">
+          <div className="eye">Operação · Seu dia</div>
+          <h2>{saudacao()}, {d.nome} 🔥</h2>
+          <p>Seu cockpit do dia — o que pega fogo primeiro hoje.</p>
+        </div>
+
+        {d.banner && (
+          <div className="card daybanner">
+            <span className="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 9h18M8 3v4M16 3v4" />
+              </svg>
+            </span>
+            <div>
+              <div className="bt">{d.banner.titulo}</div>
+              <div className="bs">{d.banner.sub}</div>
             </div>
-            <div className="l">Prioridade alta</div>
+          </div>
+        )}
+
+        {/* KPIs */}
+        <div className="kpis">
+          <div className="card kpi">
+            <div className="k-top"><span className="k-label">Lenhas de hoje</span></div>
+            <div className="k-val">{d.kpis.lenhasHoje}</div>
+            <div className="k-sub">{d.kpis.deRotina} de rotina</div>
+          </div>
+          <div className={`card kpi${d.kpis.slaQuente > 0 ? ' flag-crit' : ''}`}>
+            <div className="k-top"><span className="k-label">SLA quente</span>{d.kpis.slaQuente > 0 && <span className="chip crit">risco</span>}</div>
+            <div className="k-val">{d.kpis.slaQuente}</div>
+            <div className="k-sub">estourando</div>
+          </div>
+          <div className={`card kpi${d.kpis.briefings > 0 ? ' flag-warn' : ''}`}>
+            <div className="k-top"><span className="k-label">Briefings</span>{d.kpis.briefings > 0 && <span className="chip warn">colher</span>}</div>
+            <div className="k-val">{d.kpis.briefings}</div>
+            <div className="k-sub">faltam esta semana</div>
           </div>
           <div className="card kpi">
-            <div className="n">0</div>
-            <div className="l">Reuniões hoje (Google Agenda)</div>
+            <div className="k-top"><span className="k-label">Check-ins</span></div>
+            <div className="k-val">{d.kpis.checkins}</div>
+            <div className="k-sub">a fazer</div>
           </div>
         </div>
 
-        <div className="grid cols-2">
+        {/* Lenhas + Agenda */}
+        <div className="grid g-2">
           <div className="card">
-            <div className="eyebrow">🪵 Minhas Lenhas de hoje</div>
-            {dia.lenhas.length === 0 ? (
-              <div className="s">Nada pendente atribuído a você. 🎯</div>
+            <div className="c-h"><span className="t">🪵 Minhas Lenhas de hoje</span><span className="s">{d.lenhas.length} hoje</span></div>
+            {d.lenhas.length === 0 ? (
+              <div className="s" style={{ color: 'var(--muted)' }}>Nada pendente atribuído a você. 🎯</div>
             ) : (
-              dia.lenhas.map((l) => (
-                <LenhaCheck
-                  key={l.id}
-                  id={l.id}
-                  titulo={l.titulo}
-                  done={false}
-                  sub={[l.tipo === 'forja' ? 'Forja' : 'Rotina', l.prazo ? `prazo ${l.prazo}` : null]
-                    .filter(Boolean)
-                    .join(' · ')}
-                />
-              ))
-            )}
-          </div>
-
-          <div className="card">
-            <div className="eyebrow">🔁 Rituais da semana</div>
-            {dia.rotinas.length === 0 ? (
-              <div className="s">Sem rituais ativos para o seu papel.</div>
-            ) : (
-              dia.rotinas.map((r) => (
-                <div className="row" key={r.id}>
-                  <div className="grow">
-                    <div className="t">{r.titulo}</div>
-                    <div className="s">{RECOR[r.recorrencia_tipo] ?? r.recorrencia_tipo}</div>
+              <div className="list">
+                {d.lenhas.map((l, i) => (
+                  <div className="lrow" key={i}>
+                    <span className={`chk${l.done ? ' done' : ''}`}>
+                      {l.done ? (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                      ) : null}
+                    </span>
+                    <div className="rmain">
+                      <div className="t" style={{ textDecoration: l.done ? 'line-through' : 'none', color: l.done ? 'var(--muted)' : undefined }}>{l.titulo}</div>
+                      <div className="s">{l.sub}</div>
+                    </div>
+                    {l.pill && <span className={`pill ${l.pill.kind}`}><span className="d" style={{ background: 'var(--risk)' }} />{l.pill.label}</span>}
+                    {l.repete && <span className="badge dim">{l.repete}</span>}
                   </div>
-                  <span className="badge">repete</span>
-                </div>
-              ))
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="card">
+            <div className="c-h"><span className="t">📅 Agenda de hoje</span><span className="s">Google Agenda</span></div>
+            {d.agenda.length === 0 ? (
+              <div className="s" style={{ color: 'var(--muted)' }}>Conecte o Google Calendar (P1) para ver aqui as reuniões do dia. As Rodas de Fogo agendadas também aparecem.</div>
+            ) : (
+              <div className="list agn">
+                {d.agenda.map((a, i) => (
+                  <div className="lrow" key={i}>
+                    <span className="time">{a.hora}</span>
+                    <div className="rmain"><div className="t">{a.titulo}</div></div>
+                    <span className={`badge ${tagKind[a.kind] ?? 'dim'}`}>{a.tag}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
 
+        {/* Briefings & check-ins da semana */}
         <div className="card">
-          <div className="eyebrow">📅 Agenda de hoje · Google Agenda</div>
-          <div className="s">
-            Conecte o Google Calendar (P1) para ver aqui as reuniões do dia. As Rodas de Fogo
-            agendadas também vão aparecer.
-          </div>
+          <div className="c-h"><span className="t">🎙️ Briefings & check-ins da semana</span><span className="s">{d.briefings.length} pendentes</span></div>
+          {d.briefings.length === 0 ? (
+            <div className="s" style={{ color: 'var(--muted)' }}>Sem Crias sob sua gestão ainda.</div>
+          ) : (
+            <div className="list">
+              {d.briefings.map((b, i) => (
+                <div className="lrow" key={i}>
+                  <span className="avatar sm">{b.iniciais}</span>
+                  <div className="rmain"><div className="t">{b.nome}</div><div className="s">{b.sub}</div></div>
+                  <span className="linkact">{b.acao}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Rituais da semana */}
+        <div className="card">
+          <div className="c-h"><span className="t">🔁 Rituais da semana</span><span className="s">recorrentes</span></div>
+          {d.rituais.length === 0 ? (
+            <div className="s" style={{ color: 'var(--muted)' }}>Sem rituais ativos para o seu papel.</div>
+          ) : (
+            <div className="list">
+              {d.rituais.map((r, i) => (
+                <div className="lrow" key={i}>
+                  <div className="rmain"><div className="t">{r.titulo}</div><div className="s">{r.sub}</div></div>
+                  {r.status ? <span className={`chip ${r.status.kind}`}>{r.status.label}</span> : <span className="badge">repete</span>}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
