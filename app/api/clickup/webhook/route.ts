@@ -22,6 +22,12 @@ export async function POST(request: Request) {
 
   const result = await handleWebhook({ rawBody, signature, payload });
 
+  // Comentário do ClickUp → comentário no CRM (com anti-eco pelo id).
+  if (result.action === 'comment' && result.comment && result.clickup_task_id) {
+    const r = await importarComentario(result.clickup_task_id, result.comment);
+    return NextResponse.json({ ok: r.ok, action: 'comment', reason: r.reason ?? null }, { status: r.status });
+  }
+
   if (result.action === 'upsert' && result.cria) {
     const supabase = getSupabaseAdmin();
     const c = result.cria;
@@ -45,4 +51,46 @@ export async function POST(request: Request) {
     { ok: result.ok, action: result.action ?? null, reason: result.reason ?? null },
     { status: result.status ?? 200 },
   );
+}
+
+// Importa um comentário do ClickUp como comentário do CRM na Cria dona da task.
+// Anti-eco: se já existe um comentário com esse clickup_comment_id (inclusive os
+// que o próprio CRM enviou), ignora. Autor = membro pelo e-mail; se o autor não
+// estiver na allowlist, cai num admin e o nome dele vai no corpo pra não perder.
+type ComentarioCU = { id: string; texto: string; autor_email: string | null; autor_nome: string };
+
+async function importarComentario(taskId: string, c: ComentarioCU): Promise<{ ok: boolean; status: number; reason?: string }> {
+  const supabase = getSupabaseAdmin();
+  if (!c.texto) return { ok: true, status: 200, reason: 'comentário vazio' };
+
+  if (c.id) {
+    const { data: existente } = await supabase.from('comentario').select('id').eq('clickup_comment_id', c.id).maybeSingle();
+    if (existente) return { ok: true, status: 200, reason: 'já importado (anti-eco)' };
+  }
+
+  const { data: cria } = await supabase.from('cria').select('id').eq('clickup_task_id', taskId).maybeSingle();
+  if (!cria) return { ok: true, status: 202, reason: 'task não é Cria' };
+
+  let autorId: string | null = null;
+  if (c.autor_email) {
+    const { data: m } = await supabase.from('membro').select('id').eq('email', c.autor_email).maybeSingle();
+    autorId = (m as { id: string } | null)?.id ?? null;
+  }
+  let corpo = c.texto;
+  if (!autorId) {
+    const { data: adm } = await supabase.from('membro').select('id').eq('ativo', true).order('is_admin', { ascending: false }).limit(1).maybeSingle();
+    autorId = (adm as { id: string } | null)?.id ?? null;
+    corpo = `${c.autor_nome}: ${c.texto}`; // preserva quem escreveu no ClickUp
+  }
+  if (!autorId) return { ok: false, status: 200, reason: 'sem membro pra atribuir' };
+
+  const { error } = await supabase.from('comentario').insert({
+    cria_id: (cria as { id: string }).id,
+    autor_id: autorId,
+    corpo,
+    origem: 'clickup',
+    clickup_comment_id: c.id || null,
+  });
+  if (error) return { ok: false, status: 500, reason: error.message };
+  return { ok: true, status: 200 };
 }
