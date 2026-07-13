@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
+import { MinhasLenhas } from '@/components/MinhasLenhas';
 import { getCurrentMembro } from '@/lib/auth';
 import { getMeuDiaDashboard } from '@/lib/data/meudia';
 import { garantirRituaisHoje } from '@/lib/data/agenda';
@@ -87,33 +89,13 @@ export default async function MeuDiaPage() {
         <div className="grid g-2">
           <div className="card">
             <div className="c-h"><span className="t">Minhas Lenhas de hoje</span><span className="s">{d.lenhas.length} hoje</span></div>
-            {d.lenhas.length === 0 ? (
-              <div className="s" style={{ color: 'var(--muted)' }}>Nada pendente atribuído a você.</div>
-            ) : (
-              <div className="list">
-                {d.lenhas.map((l, i) => (
-                  <div className="lrow" key={i}>
-                    <span className={`chk${l.done ? ' done' : ''}`}>
-                      {l.done ? (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
-                      ) : null}
-                    </span>
-                    <div className="rmain">
-                      <div className="t" style={{ textDecoration: l.done ? 'line-through' : 'none', color: l.done ? 'var(--muted)' : undefined }}>{l.titulo}</div>
-                      <div className="s">{l.sub}</div>
-                    </div>
-                    {l.pill && <span className={`pill ${l.pill.kind}`}><span className="d" style={{ background: 'var(--risk)' }} />{l.pill.label}</span>}
-                    {l.repete && <span className="badge dim">{l.repete}</span>}
-                  </div>
-                ))}
-              </div>
-            )}
+            <MinhasLenhas lenhas={d.lenhas} />
           </div>
 
           <div className="card">
             <div className="c-h"><span className="t">Agenda de hoje</span><span className="s">Google Agenda</span></div>
             {d.agenda.length === 0 ? (
-              <div className="s" style={{ color: 'var(--muted)' }}>Conecte o Google Calendar (P1) para ver aqui as reuniões do dia. As Rodas de Fogo agendadas também aparecem.</div>
+              <div className="s" style={{ color: 'var(--muted)' }}>Sem reuniões no Google Agenda hoje. Conecte em Configurações se ainda não conectou — as Rodas de Fogo agendadas aparecem aqui.</div>
             ) : (
               <div className="list agn">
                 {d.agenda.map((a, i) => (
@@ -130,16 +112,16 @@ export default async function MeuDiaPage() {
 
         {/* Briefings & check-ins da semana */}
         <div className="card">
-          <div className="c-h"><span className="t">Briefings &amp; check-ins da semana</span><span className="s">{d.briefings.length} pendentes</span></div>
+          <div className="c-h"><span className="t">Briefings &amp; check-ins da semana</span><span className="s">{d.briefings.length} Crias</span></div>
           {d.briefings.length === 0 ? (
-            <div className="s" style={{ color: 'var(--muted)' }}>Sem Crias sob sua gestão ainda.</div>
+            <div className="s" style={{ color: 'var(--muted)' }}>Nenhuma Cria ativa ainda — toda a Brigada acompanha as mesmas Crias.</div>
           ) : (
             <div className="list">
               {d.briefings.map((b, i) => (
                 <div className="lrow" key={i}>
                   <span className="avatar sm">{b.iniciais}</span>
                   <div className="rmain"><div className="t">{b.nome}</div><div className="s">{b.sub}</div></div>
-                  <span className="linkact">{b.acao}</span>
+                  <Link className="linkact" href={b.href}>{b.acao}</Link>
                 </div>
               ))}
             </div>
