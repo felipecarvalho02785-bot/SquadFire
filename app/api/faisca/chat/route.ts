@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getCurrentMembro } from '@/lib/auth';
-import { conversarFaisca, iaConfigurada } from '@/lib/ia/anthropic';
 import { conversarFaiscaGemini, iaGeminiConfigurada } from '@/lib/ia/gemini';
 import { getContextoFaisca } from '@/lib/data/faisca';
 import { isSupabaseConfigured } from '@/lib/env';
@@ -11,7 +10,7 @@ export const maxDuration = 30;
 
 type Turno = { role: 'user' | 'assistant'; content: string };
 
-// Chat da Faísca (drawer). Recebe o histórico e responde com o Claude, usando um
+// Chat da Faísca (drawer). Recebe o histórico e responde com o Gemini, usando um
 // retrato real do Squad como contexto. Sem chave de IA, devolve 200 com uma
 // resposta de orientação (não quebra a UI).
 export async function POST(request: Request) {
@@ -44,7 +43,7 @@ export async function POST(request: Request) {
   while (messages.length && messages[0].role !== 'user') messages = messages.slice(1);
   if (!messages.length) return NextResponse.json({ error: 'mensagem vazia' }, { status: 400 });
 
-  if (!iaGeminiConfigurada() && !iaConfigurada()) {
+  if (!iaGeminiConfigurada()) {
     return NextResponse.json({
       reply:
         'Ainda não tenho uma IA conectada aqui — falta a chave GOOGLE_GENERATIVE_AI_API_KEY (Gemini) nas variáveis de ambiente. ' +
@@ -56,10 +55,8 @@ export async function POST(request: Request) {
   try {
     const contexto = await getContextoFaisca();
     const ctx = `${contexto}\n\nQuem fala com você agora: ${membro.nome} (${membro.papel_primario}${membro.is_admin ? ', admin' : ''}).`;
-    // Gemini é o provedor primário (tier gratuito); Claude é fallback.
-    const reply = iaGeminiConfigurada()
-      ? await conversarFaiscaGemini(messages, ctx)
-      : await conversarFaisca(messages, ctx);
+    // Gemini é o único provedor (tier gratuito, sem depender de crédito pago).
+    const reply = await conversarFaiscaGemini(messages, ctx);
     return NextResponse.json({ reply: reply || 'Não consegui formular uma resposta agora — tenta de novo?' });
   } catch (e) {
     // Loga o erro cru pro servidor, mas devolve uma mensagem limpa pro chat
@@ -69,17 +66,14 @@ export async function POST(request: Request) {
   }
 }
 
-// Traduz erros da API de IA em algo que a pessoa entende (e resolve).
+// Traduz erros da API do Gemini em algo que a pessoa entende (e resolve).
 function mensagemAmigavel(e: unknown): string {
   const raw = (e instanceof Error ? e.message : String(e)).toLowerCase();
-  if (raw.includes('credit balance') || raw.includes('plans & billing') || raw.includes('billing')) {
-    return 'Estou sem créditos na conta de IA (Anthropic). Peça pro admin adicionar saldo em console.anthropic.com → Plans & Billing, que eu volto a responder na hora.';
+  if (raw.includes('api key') || raw.includes('api_key') || raw.includes('permission') || raw.includes('401') || raw.includes('403')) {
+    return 'Minha chave de IA parece inválida — confere a GOOGLE_GENERATIVE_AI_API_KEY nas variáveis da Vercel.';
   }
-  if (raw.includes('invalid x-api-key') || raw.includes('authentication') || raw.includes('401')) {
-    return 'Minha chave de IA parece inválida — confere a ANTHROPIC_API_KEY nas variáveis da Vercel.';
-  }
-  if (raw.includes('rate limit') || raw.includes('429') || raw.includes('overloaded') || raw.includes('529')) {
-    return 'A IA está sobrecarregada neste instante. Tenta de novo em alguns segundos.';
+  if (raw.includes('quota') || raw.includes('rate') || raw.includes('429') || raw.includes('resource_exhausted') || raw.includes('overloaded')) {
+    return 'Bati o limite de uso do Gemini neste instante. Tenta de novo em alguns segundos.';
   }
   return 'Tive um problema ao pensar aqui agora. Tenta de novo daqui a pouco?';
 }

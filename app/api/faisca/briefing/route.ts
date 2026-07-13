@@ -1,22 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
-import { estruturarBriefing, iaConfigurada } from '@/lib/ia/anthropic';
 import { estruturarBriefingGemini, iaGeminiConfigurada, transcreverAudio, transcricaoConfigurada } from '@/lib/ia/gemini';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-// Pipeline do briefing por áudio: (Gemini transcreve) → (Claude estrutura os 6
+// Pipeline do briefing por áudio: (Gemini transcreve) → (Gemini estrutura os 6
 // campos) → grava a `briefing`. Aceita { criaId, audioPath } (áudio no Storage)
-// ou { criaId, transcript } (texto já pronto, pula o Gemini).
+// ou { criaId, transcript } (texto já pronto, pula a transcrição).
 export async function POST(request: Request) {
   const membro = await getCurrentMembro();
   if (!membro) {
     return NextResponse.json({ error: 'não autenticado' }, { status: 401 });
   }
-  if (!iaGeminiConfigurada() && !iaConfigurada()) {
+  if (!iaGeminiConfigurada()) {
     return NextResponse.json(
       { error: 'IA não configurada (defina GOOGLE_GENERATIVE_AI_API_KEY)' },
       { status: 501 },
@@ -68,7 +67,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // 2) estruturar os 6 campos com a Faísca (Gemini primário; Claude fallback)
+  // 2) estruturar os 6 campos com a Faísca (Gemini)
   let campos;
   try {
     const ctx = {
@@ -77,9 +76,7 @@ export async function POST(request: Request) {
         ? `Semana ${(cria as { clickup_semana: number }).clickup_semana}`
         : null,
     };
-    campos = iaGeminiConfigurada()
-      ? await estruturarBriefingGemini(transcricao, ctx)
-      : await estruturarBriefing(transcricao, ctx);
+    campos = await estruturarBriefingGemini(transcricao, ctx);
   } catch (e) {
     return NextResponse.json({ error: `falha na estruturação: ${String(e)}` }, { status: 502 });
   }

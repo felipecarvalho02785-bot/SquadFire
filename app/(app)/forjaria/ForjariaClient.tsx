@@ -178,12 +178,12 @@ export function ForjariaClient({ membro, integracoes, team }: { membro: Membro |
 
           {/* Faísca & IA */}
           <div className="card setcard">
-            <div className="sc-h"><span className="ic"><Svg>{ic.ia}</Svg></span><span className="t">Faísca &amp; IA</span><span className="s">Gemini + Claude</span></div>
-            <div className="setrow"><div className="rmain"><div className="t">Modelo de ingestão</div><div className="s">Áudio, PDF e imagem (transcrição/extração).</div></div><select className="selin" defaultValue="flash"><option value="flash">Gemini Flash</option><option value="pro">Gemini Pro</option></select></div>
-            <div className="setrow"><div className="rmain"><div className="t">Modelo de raciocínio</div><div className="s">Briefing, plano de gargalos, Faísca (Gemini primário; Claude fallback).</div></div><select className="selin" defaultValue="flash"><option value="flash">Gemini 2.0 Flash</option><option value="pro">Gemini 1.5 Pro</option><option value="sonnet">Claude Sonnet (fallback)</option></select></div>
+            <div className="sc-h"><span className="ic"><Svg>{ic.ia}</Svg></span><span className="t">Faísca &amp; IA</span><span className="s">Google Gemini</span></div>
+            <div className="setrow"><div className="rmain"><div className="t">Modelo de ingestão</div><div className="s">Áudio, PDF e imagem (transcrição/extração).</div></div><select className="selin" defaultValue="flash"><option value="flash">Gemini 2.0 Flash</option><option value="pro">Gemini 1.5 Pro</option></select></div>
+            <div className="setrow"><div className="rmain"><div className="t">Modelo de raciocínio</div><div className="s">Chat, briefing e plano de gargalos — tudo no Gemini (tier gratuito).</div></div><select className="selin" defaultValue="flash"><option value="flash">Gemini 2.0 Flash</option><option value="pro">Gemini 1.5 Pro</option></select></div>
             <div className="setrow"><div className="rmain"><div className="t">Voz da Faísca</div><div className="s">Responder por voz além do texto (TTS).</div></div><Toggle on={ia.voz} onChange={(v) => setIa({ ...ia, voz: v })} /></div>
-            <div className="setrow"><div className="rmain"><div className="t">Cross-check em itens críticos</div><div className="s">Uma IA valida a saída da outra (ex.: extração do contrato). Dobra o custo.</div></div><Toggle on={ia.cross} onChange={(v) => setIa({ ...ia, cross: v })} /></div>
-            <div className="setrow"><div className="rmain"><div className="t">Prompt caching (Claude)</div><div className="s">Reaproveita regras da marca e templates — reduz custo/latência.</div></div><Toggle on={ia.cache} onChange={(v) => setIa({ ...ia, cache: v })} /></div>
+            <div className="setrow"><div className="rmain"><div className="t">Cross-check em itens críticos</div><div className="s">Revalida a saída em itens sensíveis (ex.: extração do contrato).</div></div><Toggle on={ia.cross} onChange={(v) => setIa({ ...ia, cross: v })} /></div>
+            <div className="setrow"><div className="rmain"><div className="t">Cache de contexto</div><div className="s">Reaproveita regras da marca e templates — reduz custo/latência.</div></div><Toggle on={ia.cache} onChange={(v) => setIa({ ...ia, cache: v })} /></div>
           </div>
         </div>
 
