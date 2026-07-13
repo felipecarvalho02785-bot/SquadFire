@@ -72,4 +72,21 @@ export async function createTaskComment(taskId, commentText, { notifyAll = false
   });
 }
 
+// Registra um webhook do ClickUp apontando pra nossa rota (ClickUp → CRM, em
+// tempo real). Escuta a lista-mestre. Devolve { id, webhook: { secret, ... } } —
+// o `secret` vai pra env CLICKUP_WEBHOOK_SECRET (assinatura HMAC dos eventos).
+export async function createWebhook(endpoint, events) {
+  const { teamId, listaMestre } = CLICKUP;
+  return cuFetch(`/team/${teamId}/webhook`, {
+    method: 'POST',
+    body: { endpoint, events, list_id: listaMestre.listId },
+  });
+}
+
+// Lista os webhooks já registrados no time (diagnóstico / evitar duplicar).
+export async function listWebhooks() {
+  const { teamId } = CLICKUP;
+  return cuFetch(`/team/${teamId}/webhook`);
+}
+
 export { cuFetch };
