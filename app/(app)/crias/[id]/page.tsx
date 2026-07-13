@@ -131,7 +131,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
   const panelBrief = (
     <div>
       <p className="s" style={{ marginBottom: 10, color: 'var(--muted)' }}>
-        Grave o áudio da Roda de Fogo — a Faísca transcreve (Gemini) e estrutura os 6 campos do briefing (Claude). Depois publica como comentário na task do ClickUp.
+        Grave o áudio da Roda de Fogo — a Faísca (Gemini) transcreve e estrutura os 6 campos do briefing. Depois publica como comentário na task do ClickUp.
         {briefingsSemana > 0 && <> · <b style={{ color: 'var(--good)' }}>{briefingsSemana} briefing(s) nesta semana.</b></>}
       </p>
       <AudioRecorder criaId={cria.id} />

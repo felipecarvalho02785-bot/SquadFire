@@ -20,7 +20,7 @@ export default function FaiscaPage() {
           <div>
             <div className="eye">Gestão · Inteligência</div>
             <h2>Faísca</h2>
-            <p>A IA da squad — consulta, redige, organiza e provoca. Gemini para ingestão, Claude para raciocínio/escrita; roda server-side (chaves nunca no browser).</p>
+            <p>A IA da squad — consulta, redige, organiza e provoca. Roda no Google Gemini (chat, ingestão e escrita), server-side (chaves nunca no browser).</p>
           </div>
         </div>
 
@@ -29,7 +29,7 @@ export default function FaiscaPage() {
           <div className="fa-composer">
             <textarea placeholder="Ex.: monte o briefing da Letícia a partir do áudio e me diga o próximo passo…" />
             <div className="bar">
-              <span className="s" style={{ color: 'var(--faint)' }}>Pipeline de IA conecta na P1 (Anthropic + Gemini)</span>
+              <span className="s" style={{ color: 'var(--faint)' }}>Pipeline de IA no Google Gemini</span>
               <button className="btn primary" type="button">Acender a Faísca</button>
             </div>
           </div>
