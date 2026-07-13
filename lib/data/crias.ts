@@ -6,7 +6,7 @@ import type { Cria, Forja, Fase, FaseDaForja, Lenha } from '@/lib/types/database
 
 // Crias de demonstração (sem Supabase) — pra ver as telas populadas.
 function demoCrias(): Cria[] {
-  const base = { email: null, telefone_whatsapp: null, produto: 'estruturacao' as const, closer: null, gestor_contas_id: null, clickup_task_id: null, clickup_squad: '08', sincronizado_em: null, diagnostico_path: null, diagnostico_nome: null, created_at: '', updated_at: '' };
+  const base = { email: null, telefone_whatsapp: null, produto: 'estruturacao' as const, closer: null, gestor_contas_id: null, clickup_task_id: null, clickup_squad: '08', sincronizado_em: null, diagnostico_path: null, diagnostico_nome: null, diagnostico_resumo: null, created_at: '', updated_at: '' };
   const mk = (id: string, nome: string, area: string, semana: number | null, status: Cria['status'], risco: boolean, inv: number | null): Cria => ({
     ...base, id, nome_cliente: nome, area_atuacao: area, clickup_semana: semana, status, em_risco: risco, investimento_midia: inv,
   });
@@ -43,7 +43,7 @@ export interface GargaloView {
   status: 'aberto' | 'em_resolucao' | 'resolvido';
 }
 
-export interface DocRef { url: string | null; nome: string | null }
+export interface DocRef { url: string | null; nome: string | null; resumo?: string | null }
 export interface BriefingView {
   id: string;
   data: string;
@@ -61,7 +61,7 @@ export interface CriaDetalhe {
   gargalos: GargaloView[];
   briefingsSemana: number;
   diagnostico: DocRef;
-  contrato: (DocRef & { valor: number | null }) | null;
+  contrato: (DocRef & { valor: number | null; dataInicio: string | null }) | null;
   briefings: BriefingView[];
 }
 
@@ -156,7 +156,7 @@ export async function getCriaDetalhe(id: string): Promise<CriaDetalhe | null> {
   const [{ data: gargData }, { count: briefCount }, { data: contratoRow }, { data: briefingsData }] = await Promise.all([
     supabase.from('gargalo').select('id, descricao, status').eq('cria_id', id).order('created_at', { ascending: false }),
     supabase.from('briefing').select('*', { count: 'exact', head: true }).eq('cria_id', id).gte('created_at', seteDias.toISOString()),
-    supabase.from('contrato').select('arquivo_url, valor_contrato').eq('cria_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('contrato').select('arquivo_url, valor_contrato, data_inicio_extraida').eq('cria_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     supabase.from('briefing').select('id, semana_referencia, created_at, enviado_clickup, c1_o_que_aconteceu, c2_satisfacao, c3_campanhas, c4_nosso_desempenho, c5_pontos_atencao, c6_proximos_passos').eq('cria_id', id).order('created_at', { ascending: false }).limit(20),
   ]);
   const gargalos = (gargData as GargaloView[]) ?? [];
@@ -169,7 +169,7 @@ export async function getCriaDetalhe(id: string): Promise<CriaDetalhe | null> {
   }
 
   const c = cria as Cria;
-  const contratoR = contratoRow as { arquivo_url: string | null; valor_contrato: number | null } | null;
+  const contratoR = contratoRow as { arquivo_url: string | null; valor_contrato: number | null; data_inicio_extraida: string | null } | null;
   const [diagUrl, contratoUrl] = await Promise.all([
     assinar('entregaveis', c.diagnostico_path),
     assinar('contratos', contratoR?.arquivo_url),
@@ -191,8 +191,8 @@ export async function getCriaDetalhe(id: string): Promise<CriaDetalhe | null> {
     gestor,
     gargalos,
     briefingsSemana: briefCount ?? 0,
-    diagnostico: { url: diagUrl, nome: c.diagnostico_nome },
-    contrato: contratoR ? { url: contratoUrl, nome: null, valor: contratoR.valor_contrato } : null,
+    diagnostico: { url: diagUrl, nome: c.diagnostico_nome, resumo: c.diagnostico_resumo },
+    contrato: contratoR ? { url: contratoUrl, nome: null, valor: contratoR.valor_contrato, dataInicio: contratoR.data_inicio_extraida } : null,
     briefings,
   };
 }

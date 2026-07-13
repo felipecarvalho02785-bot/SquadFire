@@ -42,6 +42,7 @@ export interface Cria {
   sincronizado_em: string | null;
   diagnostico_path: string | null;
   diagnostico_nome: string | null;
+  diagnostico_resumo: string | null;
   created_at: string;
   updated_at: string;
 }
