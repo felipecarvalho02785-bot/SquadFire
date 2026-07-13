@@ -151,7 +151,7 @@ export default async function CovilPage({ searchParams }: { searchParams: Promis
           <div className="c-h"><span className="t">Alertas de SLA</span><span className="s">fases estourando o Estopim</span></div>
           <div className="list">
             {dash.alertas.length === 0 ? (
-              <div className="s" style={{ color: 'var(--muted)' }}>Nenhuma Cria em risco. A Forja está quente e no controle. 🔥</div>
+              <div className="s" style={{ color: 'var(--muted)' }}>Nenhuma Cria em risco. A Forja está quente e no controle.</div>
             ) : (
               dash.alertas.map((a, i) => (
                 <div className="lrow" key={i}>

@@ -48,8 +48,8 @@ async function getTarefas(): Promise<{ rows: TaskRow[]; kpis: { abertas: number;
 export default async function TarefasPage() {
   const { rows, kpis } = await getTarefas();
   const grupos = [
-    { tipo: 'forja' as const, titulo: '🔥 Lenha de Forja', itens: rows.filter((r) => r.tipo === 'forja') },
-    { tipo: 'rotina' as const, titulo: '🔁 Lenha de Rotina', itens: rows.filter((r) => r.tipo === 'rotina') },
+    { tipo: 'forja' as const, titulo: 'Lenha de Forja', itens: rows.filter((r) => r.tipo === 'forja') },
+    { tipo: 'rotina' as const, titulo: 'Lenha de Rotina', itens: rows.filter((r) => r.tipo === 'rotina') },
   ];
 
   return (

@@ -54,7 +54,7 @@ export default function LoginPage() {
         </button>
         {erro && <p style={{ color: 'var(--risk)', fontSize: 12.5, marginTop: 14 }}>{erro}</p>}
         <p style={{ color: 'var(--faint)', fontSize: 11.5, marginTop: 24 }}>
-          🔒 Acesso restrito à squad (allowlist). Fale com o admin para ser liberado.
+          Acesso restrito à squad (allowlist). Fale com o admin para ser liberado.
         </p>
       </div>
     </div>

@@ -61,9 +61,9 @@ export default function CalendarioPage() {
             ))}
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
-            <span className="badge ember">🔥 Prazo de fase</span>
-            <span className="badge">🤝 Reunião / ritual</span>
-            <span className="badge ok">📞 Roda de Fogo</span>
+            <span className="badge ember">Prazo de fase</span>
+            <span className="badge">Reunião / ritual</span>
+            <span className="badge ok">Roda de Fogo</span>
           </div>
         </div>
       </div>

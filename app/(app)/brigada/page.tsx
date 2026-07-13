@@ -29,7 +29,6 @@ export default async function BrigadaPage() {
 
         {membros.length === 0 ? (
           <div className="empty">
-            <div className="big">🛡️</div>
             <b>Brigada vazia</b>
             <p>Adicione membros na allowlist (tabela <code>membro</code>) para vê-los aqui.</p>
           </div>
@@ -50,7 +49,7 @@ export default async function BrigadaPage() {
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
                   {m.papeis.map((p) => (
                     <span key={p} className={`badge ${p === m.papel_primario ? 'ember' : 'dim'}`}>
-                      {PAPEL_LABEL[p]}{p === m.papel_primario ? ' ★' : ''}
+                      {PAPEL_LABEL[p]}
                     </span>
                   ))}
                 </div>

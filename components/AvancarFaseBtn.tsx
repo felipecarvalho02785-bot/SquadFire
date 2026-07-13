@@ -20,7 +20,7 @@ export function AvancarFaseBtn({ forjaId, disabled }: { forjaId: string; disable
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <button className="btn primary" onClick={onClick} disabled={pending || disabled}>
-        {pending ? 'Avançando…' : '🔥 Avançar fase'}
+        {pending ? 'Avançando…' : 'Avançar fase'}
       </button>
       {erro && <div className="s" style={{ color: 'var(--risk)' }}>{erro}</div>}
     </div>

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { iniciais } from '@/lib/format';
 
-type IconKey = 'meu-dia' | 'covil' | 'crias' | 'fogueira' | 'tarefas' | 'calendario' | 'brigada' | 'faisca';
+type IconKey = 'meu-dia' | 'covil' | 'crias' | 'fogueira' | 'tarefas' | 'calendario' | 'brigada' | 'faisca' | 'forjaria';
 
 const NAV: { grupo: string; itens: { href: string; ic: IconKey; label: string }[] }[] = [
   {
@@ -16,13 +16,14 @@ const NAV: { grupo: string; itens: { href: string; ic: IconKey; label: string }[
       { href: '/fogueira', ic: 'fogueira', label: 'Fogueira' },
       { href: '/tarefas', ic: 'tarefas', label: 'Tarefas' },
       { href: '/calendario', ic: 'calendario', label: 'Calendário' },
+      { href: '/faisca', ic: 'faisca', label: 'Faísca' },
     ],
   },
   {
     grupo: 'Gestão',
     itens: [
       { href: '/brigada', ic: 'brigada', label: 'Brigada' },
-      { href: '/faisca', ic: 'faisca', label: 'Faísca' },
+      { href: '/forjaria', ic: 'forjaria', label: 'Forjaria' },
     ],
   },
 ];
@@ -36,6 +37,7 @@ const ICON: Record<IconKey, React.ReactNode> = {
   calendario: <path d="M4 5h16v16H4zM4 9h16M8 3v4M16 3v4" />,
   brigada: <path d="M12 3l7 3v5c0 4.2-2.9 7.7-7 9-4.1-1.3-7-4.8-7-9V6z" />,
   faisca: <path d="M12 2l2.2 6.2L20 10l-5.8 1.8L12 18l-2.2-6.2L4 10l5.8-1.8z" />,
+  forjaria: <><circle cx="12" cy="12" r="3.2" /><path d="M12 3v2.4M12 18.6V21M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M3 12h2.4M18.6 12H21M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7" /></>,
 };
 
 export function Sidebar({

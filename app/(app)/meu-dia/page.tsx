@@ -39,7 +39,7 @@ export default async function MeuDiaPage() {
       <div className="content">
         <div className="daygreet">
           <div className="eye">Operação · Seu dia</div>
-          <h2>{saudacao()}, {d.nome} 🔥</h2>
+          <h2>{saudacao()}, {d.nome}</h2>
           <p>Seu cockpit do dia — o que pega fogo primeiro hoje.</p>
         </div>
 
@@ -84,9 +84,9 @@ export default async function MeuDiaPage() {
         {/* Lenhas + Agenda */}
         <div className="grid g-2">
           <div className="card">
-            <div className="c-h"><span className="t">🪵 Minhas Lenhas de hoje</span><span className="s">{d.lenhas.length} hoje</span></div>
+            <div className="c-h"><span className="t">Minhas Lenhas de hoje</span><span className="s">{d.lenhas.length} hoje</span></div>
             {d.lenhas.length === 0 ? (
-              <div className="s" style={{ color: 'var(--muted)' }}>Nada pendente atribuído a você. 🎯</div>
+              <div className="s" style={{ color: 'var(--muted)' }}>Nada pendente atribuído a você.</div>
             ) : (
               <div className="list">
                 {d.lenhas.map((l, i) => (
@@ -109,7 +109,7 @@ export default async function MeuDiaPage() {
           </div>
 
           <div className="card">
-            <div className="c-h"><span className="t">📅 Agenda de hoje</span><span className="s">Google Agenda</span></div>
+            <div className="c-h"><span className="t">Agenda de hoje</span><span className="s">Google Agenda</span></div>
             {d.agenda.length === 0 ? (
               <div className="s" style={{ color: 'var(--muted)' }}>Conecte o Google Calendar (P1) para ver aqui as reuniões do dia. As Rodas de Fogo agendadas também aparecem.</div>
             ) : (
@@ -128,7 +128,7 @@ export default async function MeuDiaPage() {
 
         {/* Briefings & check-ins da semana */}
         <div className="card">
-          <div className="c-h"><span className="t">🎙️ Briefings & check-ins da semana</span><span className="s">{d.briefings.length} pendentes</span></div>
+          <div className="c-h"><span className="t">Briefings &amp; check-ins da semana</span><span className="s">{d.briefings.length} pendentes</span></div>
           {d.briefings.length === 0 ? (
             <div className="s" style={{ color: 'var(--muted)' }}>Sem Crias sob sua gestão ainda.</div>
           ) : (
@@ -146,7 +146,7 @@ export default async function MeuDiaPage() {
 
         {/* Rituais da semana */}
         <div className="card">
-          <div className="c-h"><span className="t">🔁 Rituais da semana</span><span className="s">recorrentes</span></div>
+          <div className="c-h"><span className="t">Rituais da semana</span><span className="s">recorrentes</span></div>
           {d.rituais.length === 0 ? (
             <div className="s" style={{ color: 'var(--muted)' }}>Sem rituais ativos para o seu papel.</div>
           ) : (

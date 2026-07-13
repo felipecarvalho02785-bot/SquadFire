@@ -25,7 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               fontSize: 12.5,
             }}
           >
-            ⚙️ Modo demonstração — Supabase não configurado. Defina as variáveis de ambiente para
+            Modo demonstração — Supabase não configurado. Defina as variáveis de ambiente para
             conectar o banco (ver <code>.env.example</code>).
           </div>
         )}

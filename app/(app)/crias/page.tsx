@@ -24,7 +24,6 @@ export default async function CriasPage() {
 
         {crias.length === 0 ? (
           <div className="empty">
-            <div className="big">⚒️</div>
             <b>Nenhuma Cria ainda</b>
             <p>As Crias entram pelo sync do ClickUp (lista-mestre, Squad 08) ou pelo cadastro do Gestor de Contas. Rode a sincronização para materializar os clientes.</p>
           </div>
