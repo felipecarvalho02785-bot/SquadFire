@@ -5,8 +5,10 @@ import { AvancarFaseBtn } from '@/components/AvancarFaseBtn';
 import { ComentarioForm } from '@/components/ComentarioForm';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { CriaTabs, type TabDef } from '@/components/CriaTabs';
+import { EditInvestimento } from '@/components/EditInvestimento';
+import { GargalosPanel } from '@/components/GargalosPanel';
 import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
-import { brl, iniciais } from '@/lib/format';
+import { iniciais } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +56,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
           <div className="drow"><span>E-mail</span><b className="mono">{cria.email ?? '—'}</b></div>
           <div className="drow"><span>Área</span><b>{cria.area_atuacao ?? '—'}</b></div>
           <div className="drow"><span>Produto</span><b>Estruturação</b></div>
-          <div className="drow"><span>Investimento em mídia</span><b className="mono">{cria.investimento_midia ? `${brl(cria.investimento_midia)}/mês` : 'a definir'}</b></div>
+          <div className="drow"><span>Investimento em mídia</span><EditInvestimento criaId={cria.id} valor={cria.investimento_midia} /></div>
           <div className="drow"><span>Closer</span><b>{cria.closer ?? '—'}</b></div>
           <div className="drow"><span>Gestor de Contas</span><b>{gestor?.nome ?? '—'}</b></div>
           {cria.clickup_semana != null && <div className="drow"><span>Semana (Squad)</span><b className="mono">S{cria.clickup_semana}</b></div>}
@@ -124,22 +126,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
     </>
   );
 
-  const panelGarg = (
-    gargalos.length === 0 ? (
-      <div className="s" style={{ color: 'var(--muted)' }}>Nenhum gargalo aberto — Forja fluindo.</div>
-    ) : (
-      <div style={{ display: 'grid', gap: 14 }}>
-        {gargalos.map((g) => (
-          <div key={g.id} style={{ borderLeft: `2px solid var(--${g.status === 'resolvido' ? 'ember-hi' : g.status === 'em_resolucao' ? 'warn' : 'risk'})`, padding: '2px 0 2px 13px' }}>
-            <div style={{ fontWeight: 650, fontSize: 13, color: 'var(--text)' }}>{g.descricao}</div>
-            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 3 }}>
-              {g.status === 'resolvido' ? 'Resolvido' : g.status === 'em_resolucao' ? 'Em resolução' : 'Aberto'}
-            </div>
-          </div>
-        ))}
-      </div>
-    )
-  );
+  const panelGarg = <GargalosPanel criaId={cria.id} gargalos={gargalos} />;
 
   const panelBrief = (
     <div>
