@@ -2,22 +2,26 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-interface Msg { role: 'ai' | 'me'; text?: string; html?: string; voice?: string; speaking?: boolean }
+interface Msg { role: 'ai' | 'me'; text: string }
 
-const DEMO: Msg[] = [
-  { role: 'ai', text: 'E aí, Felipe! Posso te ajudar em qualquer aba — por texto ou por voz. Pergunta ou pede que eu resolvo.' },
-  { role: 'me', text: 'Quais Forjas estão atrasadas?', voice: '0:04' },
-  { role: 'ai', html: '2 Forjas com Estopim estourado: <b>Letícia</b> (Treinamento, −2 dias) e <b>Mozini</b> (Treinamento, vence amanhã). Quer que eu abra a da Letícia ou avise o gestor?', speaking: true },
-  { role: 'me', text: 'Agenda uma Roda de Fogo com a Letícia quinta 15h' },
-];
+const SAUDACAO: Msg = {
+  role: 'ai',
+  text: 'E aí! Sou a Faísca, sua copiloto do Squad 8. Posso te dar o pulso das Forjas, achar Crias em risco, resumir seu dia ou ajudar a escrever — manda ver, por texto ou voz.',
+};
 
-const CHIPS = ['Forjas atrasadas', 'Prever SLA', 'Risco de churn', 'Agendar Roda'];
+const CHIPS = ['Quais Forjas estão atrasadas?', 'Resumo do meu dia', 'Alguma Cria em risco?', 'O que é uma Roda de Fogo?'];
+
+// Tipos do Web Speech API (não vêm no lib.dom padrão).
+type SpeechRec = { lang: string; interimResults: boolean; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; start: () => void; stop: () => void };
 
 export function FaiscaDrawer() {
   const [open, setOpen] = useState(false);
-  const [msgs, setMsgs] = useState<Msg[]>(DEMO);
+  const [msgs, setMsgs] = useState<Msg[]>([SAUDACAO]);
   const [draft, setDraft] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [ouvindo, setOuvindo] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const recRef = useRef<SpeechRec | null>(null);
 
   useEffect(() => {
     const abrir = () => setOpen(true);
@@ -27,16 +31,45 @@ export function FaiscaDrawer() {
     return () => { window.removeEventListener('faisca:open', abrir); window.removeEventListener('keydown', onKey); };
   }, []);
 
-  useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, open]);
+  useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, open, loading]);
 
-  function enviar(texto: string) {
+  async function enviar(texto: string) {
     const t = texto.trim();
-    if (!t) return;
-    setMsgs((m) => [...m, { role: 'me', text: t }]);
+    if (!t || loading) return;
+    const proximas = [...msgs, { role: 'me', text: t } as Msg];
+    setMsgs(proximas);
     setDraft('');
-    setTimeout(() => {
-      setMsgs((m) => [...m, { role: 'ai', text: 'Pra eu responder de verdade preciso das chaves de IA (Anthropic + Gemini) ligadas na Forjaria. A navegação e o contexto já estão prontos — assim que conectar, eu resolvo isso na hora.' }]);
-    }, 550);
+    setLoading(true);
+    try {
+      const payload = proximas.map((m) => ({ role: m.role === 'me' ? 'user' : 'assistant', content: m.text }));
+      const res = await fetch('/api/faisca/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: payload }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const reply = (data.reply as string) || (data.error as string) || 'Não consegui responder agora — tenta de novo?';
+      setMsgs((m) => [...m, { role: 'ai', text: reply }]);
+    } catch {
+      setMsgs((m) => [...m, { role: 'ai', text: 'Falha de conexão com o servidor. Tenta de novo daqui a pouco.' }]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function ouvir() {
+    if (ouvindo) { recRef.current?.stop(); return; }
+    const w = window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec };
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SR) { setMsgs((m) => [...m, { role: 'ai', text: 'Ditado por voz não é suportado neste navegador — pode digitar que eu entendo igual.' }]); return; }
+    const rec = new SR();
+    rec.lang = 'pt-BR';
+    rec.interimResults = false;
+    rec.onresult = (e) => { const txt = e.results[0][0].transcript; setDraft((d) => (d ? d + ' ' : '') + txt); };
+    rec.onend = () => setOuvindo(false);
+    recRef.current = rec;
+    setOuvindo(true);
+    rec.start();
   }
 
   return (
@@ -52,44 +85,37 @@ export function FaiscaDrawer() {
             <div className="t">Faísca</div>
             <div className="s">assistente do Squad 8 · Gemini + Claude</div>
           </div>
-          <button className="x" aria-label="Fechar" onClick={() => setOpen(false)}>✕</button>
+          <button className="x" aria-label="Fechar" onClick={() => setOpen(false)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
         </div>
 
         <div className="fd-msgs">
           {msgs.map((m, i) => (
             <div className={`fd-msg ${m.role === 'me' ? 'me' : 'ai'}`} key={i}>
               {m.role === 'ai' && <div className="who">Faísca</div>}
-              <div className="fd-bubble">
-                {m.html ? <span dangerouslySetInnerHTML={{ __html: m.html }} /> : m.text}
-              </div>
-              {m.voice && (
-                <div className="fd-sig right">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M12 2a3 3 0 013 3v6a3 3 0 01-6 0V5a3 3 0 013-3zM5 11a7 7 0 0014 0M12 18v3" /></svg>
-                  mensagem de voz · {m.voice}
-                </div>
-              )}
-              {m.speaking && (
-                <div className="fd-sig">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><path d="M11 5L6 9H2v6h4l5 4zM16 9a3 3 0 010 6M19 6a7 7 0 010 12" /></svg>
-                  respondendo por voz
-                  <span className="fd-eq"><i /><i /><i /></span>
-                </div>
-              )}
+              <div className="fd-bubble">{m.text}</div>
             </div>
           ))}
+          {loading && (
+            <div className="fd-msg ai">
+              <div className="who">Faísca</div>
+              <div className="fd-bubble"><span className="fd-typing"><i /><i /><i /></span></div>
+            </div>
+          )}
           <div ref={endRef} />
         </div>
 
         <div className="fd-chips">
-          {CHIPS.map((c) => <button className="fd-chip" key={c} onClick={() => enviar(c)}>{c}</button>)}
+          {CHIPS.map((c) => <button className="fd-chip" key={c} onClick={() => enviar(c)} disabled={loading}>{c}</button>)}
         </div>
 
         <form className="fd-input" onSubmit={(e) => { e.preventDefault(); enviar(draft); }}>
-          <button type="button" className="fd-mic" aria-label="Falar">
+          <button type="button" className={`fd-mic${ouvindo ? ' on' : ''}`} aria-label="Falar" onClick={ouvir}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 013 3v6a3 3 0 01-6 0V5a3 3 0 013-3zM5 11a7 7 0 0014 0M12 18v3" /></svg>
           </button>
-          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Pergunte ou peça algo…" aria-label="Mensagem para a Faísca" />
-          <button type="submit" className="fd-send" aria-label="Enviar">
+          <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder={ouvindo ? 'Ouvindo…' : 'Pergunte ou peça algo…'} aria-label="Mensagem para a Faísca" disabled={loading} />
+          <button type="submit" className="fd-send" aria-label="Enviar" disabled={loading || !draft.trim()}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </button>
         </form>

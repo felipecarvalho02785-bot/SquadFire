@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { criarTarefa, toggleLenha } from '@/lib/actions';
+import { criarTarefa, delegarTarefa, toggleLenha } from '@/lib/actions';
+import { iniciais } from '@/lib/format';
 import type { PrioridadeLenha } from '@/lib/types/database';
 
 export interface TaskRow {
@@ -45,6 +46,7 @@ export function TarefasClient({ rows: initial, membros, meuId }: { rows: TaskRow
   const [rows, setRows] = useState<TaskRow[]>(initial);
   const [filtro, setFiltro] = useState<Filtro>('todas');
   const [erro, setErro] = useState<string | null>(null);
+  const [reassign, setReassign] = useState<string | null>(null);
   const [, startToggle] = useTransition();
   const [criando, startCriar] = useTransition();
 
@@ -79,6 +81,20 @@ export function TarefasClient({ rows: initial, membros, meuId }: { rows: TaskRow
       if (!res.ok) {
         setRows((rs) => rs.map((r) => (r.id === id ? { ...r, done: !novo } : r)));
         setErro(res.error ?? 'não deu para atualizar');
+      }
+    });
+  }
+
+  function delegar(id: string, membroId: string) {
+    const m = membros.find((x) => x.id === membroId);
+    setReassign(null);
+    setErro(null);
+    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, who: m ? iniciais(m.nome) : '', whoNome: m?.nome ?? '' } : r)));
+    startToggle(async () => {
+      const res = await delegarTarefa(id, membroId);
+      if (!res.ok) {
+        setErro(res.error ?? 'não deu para delegar');
+        router.refresh();
       }
     });
   }
@@ -179,7 +195,27 @@ export function TarefasClient({ rows: initial, membros, meuId }: { rows: TaskRow
                   <div className="t">{t.titulo}</div>
                   <div className="s">{t.sub}</div>
                 </div>
-                {t.who && <span className="who" title={t.whoNome}>{t.who}</span>}
+                {reassign === t.id ? (
+                  <select
+                    className="tk-reassign"
+                    autoFocus
+                    defaultValue=""
+                    onChange={(e) => e.target.value && delegar(t.id, e.target.value)}
+                    onBlur={() => setReassign(null)}
+                  >
+                    <option value="" disabled>Delegar a…</option>
+                    {membros.map((m) => <option key={m.id} value={m.id}>{m.nome}</option>)}
+                  </select>
+                ) : (
+                  <button
+                    type="button"
+                    className="who as-btn"
+                    title={t.whoNome ? `${t.whoNome} — clique para delegar` : 'Delegar a alguém'}
+                    onClick={() => setReassign(t.id)}
+                  >
+                    {t.who || '+'}
+                  </button>
+                )}
                 <span className={`due ${t.dueKind}`}>{t.due}</span>
               </div>
             ))}
