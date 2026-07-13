@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/clickup/sync",
+      "schedule": "*/20 * * * *"
+    },
+    {
+      "path": "/api/rotinas/gerar",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/crias/risco",
+      "schedule": "5 6 * * *"
+    }
+  ]
+}

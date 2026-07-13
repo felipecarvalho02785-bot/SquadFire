@@ -1,0 +1,128 @@
+<title>SquadFire — Entrar</title>
+<style>
+  /* Login "covil do dragão" — preto profundo, faíscas reais + fumaça, fornalha por baixo. */
+  :root{
+    --ink:#060504; --surface:rgba(15,11,9,.74); --border:rgba(255,120,60,.14);
+    --text:#F3E9E2; --muted:#A99889; --faint:#6E5F55;
+    --accent:#FF6A2B; --accent-bright:#FFB454;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; height:100%}
+  body{font-family:var(--sans); color:var(--text); min-height:100vh; background:#060504; -webkit-font-smoothing:antialiased; overflow:hidden}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:8px}
+
+  #smoke{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; filter:blur(20px); opacity:.92}
+  /* fornalha / leito de brasas por baixo da tela */
+  .forge{position:fixed; left:50%; bottom:-20%; width:150%; height:56%; transform:translateX(-50%); z-index:0; pointer-events:none;
+    background:
+      radial-gradient(38% 100% at 50% 100%, rgba(255,140,50,.55), transparent 66%),
+      radial-gradient(62% 100% at 50% 100%, rgba(230,70,28,.32), transparent 72%),
+      radial-gradient(90% 100% at 50% 100%, rgba(150,30,12,.22), transparent 78%);
+    filter:blur(8px)}
+  .vignette{position:fixed; inset:0; z-index:2; pointer-events:none;
+    background:
+      radial-gradient(118% 88% at 50% 40%, transparent 38%, rgba(0,0,0,.6) 82%, rgba(0,0,0,.9) 100%),
+      linear-gradient(180deg, rgba(0,0,0,.65), transparent 24%)}
+  @media (prefers-reduced-motion:no-preference){ .forge{animation:flick 7s ease-in-out infinite} }
+  @keyframes flick{0%,100%{opacity:.9} 45%{opacity:.74} 70%{opacity:1}}
+
+  .stage{position:relative; z-index:3; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px}
+
+  .card{
+    width:100%; max-width:384px; text-align:center; padding:42px 38px 32px;
+    background:var(--surface); backdrop-filter:blur(3px);
+    border:1px solid var(--border); border-radius:20px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.5), 0 30px 80px -26px rgba(0,0,0,.95), 0 0 60px -14px rgba(255,90,30,.2);
+  }
+  .logo{display:block; width:auto; height:152px; margin:0 auto 14px; filter:drop-shadow(0 0 26px rgba(255,110,40,.5))}
+  @media (prefers-reduced-motion:no-preference){ .logo{animation:logoglow 3.6s ease-in-out infinite} }
+  @keyframes logoglow{0%,100%{filter:drop-shadow(0 0 20px rgba(255,110,40,.42))} 50%{filter:drop-shadow(0 0 34px rgba(255,150,70,.72))}}
+  .eyebrow{font-size:10px; font-weight:800; letter-spacing:.34em; text-transform:uppercase; color:var(--accent); margin-bottom:24px; text-shadow:0 0 16px rgba(224,58,18,.5)}
+
+  h1{font-size:22px; font-weight:800; letter-spacing:-.01em; margin:0 0 7px}
+  .sub{font-size:13.5px; color:var(--muted); margin:0 0 26px; line-height:1.5}
+
+  .gbtn{display:flex; align-items:center; justify-content:center; gap:11px; width:100%; padding:13px 16px; border-radius:12px; cursor:pointer;
+    background:#fff; color:#1f1f1f; border:0; font-size:14.5px; font-weight:650; font-family:inherit; transition:.15s; box-shadow:0 10px 30px -12px rgba(255,120,50,.5)}
+  .gbtn:hover{transform:translateY(-1px); box-shadow:0 14px 36px -12px rgba(255,140,60,.7)}
+  .gbtn:active{transform:translateY(0)}
+  .gbtn svg{width:19px; height:19px; flex:0 0 auto}
+
+  .allow{display:inline-flex; align-items:center; gap:7px; margin-top:20px; font-size:12px; color:var(--faint); line-height:1.4}
+  .allow svg{width:14px; height:14px; color:var(--accent); flex:0 0 auto; opacity:.85}
+
+  .foot{margin-top:22px; font-size:11.5px; color:var(--faint); text-align:center; line-height:1.6}
+  .foot a{color:var(--muted); text-decoration:none; border-bottom:1px solid rgba(255,120,60,.2)}
+  .foot a:hover{color:var(--accent)}
+
+  @media (max-width:480px){ .card{padding:36px 26px 28px} body{overflow:auto} }
+  @media (prefers-reduced-motion:reduce){ #smoke{display:none} .gbtn:hover{transform:none} }
+</style>
+
+<div class="forge"></div>
+<canvas id="smoke"></canvas>
+<div class="vignette"></div>
+
+<div class="stage">
+  <div class="card">
+    <img class="logo" src="assets/squad-shield.png" alt="Squad 8 — CRM da Brigada" />
+    <div class="eyebrow">Forjado nas chamas</div>
+
+    <h1>Entrar no Covil</h1>
+    <p class="sub">Acesse com a sua conta Google da squad.</p>
+
+    <button class="gbtn" id="gbtn">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 6.1C12.3 13.2 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.1 5.3-4.6 6.9l7.1 5.5c4.1-3.8 6.2-9.5 6.2-16z"/><path fill="#FBBC05" d="M10.4 19.4c-.5 1.5-.8 3-.8 4.6s.3 3.1.8 4.6l-7.9 6.1C.9 31.5 0 27.9 0 24s.9-7.5 2.5-10.7l7.9 6.1z"/><path fill="#34A853" d="M24 48c6.4 0 11.8-2.1 15.7-5.8l-7.1-5.5c-2 1.3-4.6 2.1-8.6 2.1-6.3 0-11.7-3.7-13.6-9l-7.9 6.1C6.4 42.6 14.6 48 24 48z"/></svg>
+      Entrar com Google
+    </button>
+
+    <div class="allow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l7 4v6c0 4.4-3 7.6-7 10-4-2.4-7-5.6-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+      Acesso restrito aos membros da squad · allowlist
+    </div>
+  </div>
+
+  <div class="foot">© 2026 E3 Digital · Squad 8 · sem acesso? <a href="#">fale com o Admin</a></div>
+</div>
+
+<script>
+(function(){
+  var gbtn=document.getElementById('gbtn');
+  gbtn.addEventListener('click',function(){ this.style.opacity=.7; this.innerHTML='Entrando…'; });
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var c=document.getElementById('smoke'), ctx=c.getContext('2d'), W, H, puffs=[], raf;
+  function size(){ W=c.width=window.innerWidth; H=c.height=window.innerHeight; }
+
+  // fumaça volumétrica: baforadas grandes e suaves que sobem da fornalha, crescem e esfriam.
+  // o blur no canvas (CSS) faz o restante — nada de partícula "dura".
+  function mk(spread){ return {
+    x:W*(0.12+Math.random()*0.76),
+    y:spread ? H*(0.25+Math.random()*0.95) : H+70,
+    r:90+Math.random()*150, grow:0.09+Math.random()*0.22, vy:0.12+Math.random()*0.34,
+    ph:Math.random()*6.28, phs:0.0025+Math.random()*0.006, amp:0.22+Math.random()*0.55,
+    life:0, max:560+Math.random()*420, base:0.028+Math.random()*0.034 }; }
+  function seed(){ puffs=[]; var n=Math.round(Math.min(22, W/64)); for(var i=0;i<n;i++) puffs.push(mk(true)); }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<puffs.length;i++){ var p=puffs[i]; p.life++; p.y-=p.vy; p.r+=p.grow; p.ph+=p.phs;
+      p.x+=Math.sin(p.ph)*p.amp + Math.sin(p.ph*1.7+1.3)*p.amp*0.5;   // deriva orgânica
+      var t=p.life/p.max, fade=Math.sin(Math.min(1,t)*Math.PI), hr=Math.max(0,Math.min(1,p.y/H));
+      var a=p.base*fade*(0.32+0.68*hr);                               // mais densa embaixo, some no topo
+      var r=Math.round(46+34*hr), g=Math.round(39+20*hr), b=Math.round(36+9*hr); // quente embaixo -> cinza frio em cima
+      var gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+      gr.addColorStop(0,'rgba('+r+','+g+','+b+','+a+')');
+      gr.addColorStop(0.55,'rgba('+r+','+g+','+b+','+(a*0.5)+')');
+      gr.addColorStop(1,'rgba('+r+','+g+','+b+',0)');
+      ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283); ctx.fill();
+      if(p.y<-p.r||p.life>p.max) puffs[i]=mk(false);
+    }
+    raf=requestAnimationFrame(draw);
+  }
+
+  size(); seed(); draw();
+  var to; window.addEventListener('resize',function(){ clearTimeout(to); to=setTimeout(function(){ cancelAnimationFrame(raf); size(); seed(); draw(); },150); });
+})();
+</script>

@@ -1,0 +1,31 @@
+{
+  "name": "squadfire",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SquadFire · CRM interno do Squad 08 (E3 Digital) — a Forja das Crias.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test integracao/clickup/sync-crias.test.mjs",
+    "test:db": "bash supabase/tests/run.sh",
+    "sync:clickup": "node integracao/clickup/run-sync.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.45.4",
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "typescript": "^5.7.3"
+  }
+}
