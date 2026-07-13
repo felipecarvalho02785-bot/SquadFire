@@ -19,5 +19,13 @@ export async function GET(request: Request) {
   if (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
-  return NextResponse.json({ ok: true, lenhas_criadas: data ?? 0 });
+
+  // Recalcula em_risco no mesmo cron (o plano Hobby da Vercel limita crons a 2/dia,
+  // então dobramos aqui em vez de manter uma rota separada). Falha aqui não derruba
+  // a geração de Lenhas.
+  let criasEmRisco: number | null = null;
+  const { data: risco, error: erroRisco } = await supabase.rpc('recalcular_em_risco');
+  if (!erroRisco) criasEmRisco = risco ?? 0;
+
+  return NextResponse.json({ ok: true, lenhas_criadas: data ?? 0, crias_reavaliadas: criasEmRisco });
 }
