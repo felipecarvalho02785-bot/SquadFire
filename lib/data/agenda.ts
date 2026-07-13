@@ -31,21 +31,39 @@ function montar(f: ForjaRow): ForjaTimeline | null {
   const cria = f.cria;
   if (!cria || cria.status !== 'ativa') return null;
   const fases = (f.fases ?? []).slice().sort((a, b) => a.ordem - b.ordem);
-  const atual = fases.find((x) => x.id === f.fase_atual_id) ?? fases.find((x) => x.status === 'em_andamento') ?? fases[0];
-  const faseAtualOrdem = atual?.ordem ?? 1;
-  const faseAtualNome = atual?.fase?.nome ?? FASES_NOMES[faseAtualOrdem - 1] ?? '—';
 
-  if (f.concluida) {
+  // Progresso REAL = fases efetivamente concluídas (não o ponteiro manual, que
+  // pode vir adiantado do ClickUp). A fase "em curso" é a próxima da concluída.
+  const concluidas = fases.filter((x) => x.status === 'concluida').length;
+  const faseAtualOrdem = Math.min(7, concluidas + 1);
+  const faseAtualNome = fases[faseAtualOrdem - 1]?.fase?.nome ?? FASES_NOMES[faseAtualOrdem - 1] ?? '—';
+  const prazoFaseAtual = fases[faseAtualOrdem - 1]?.data_prevista_fim ?? null;
+
+  if (f.concluida || concluidas >= 7) {
     return { criaId: cria.id, nome: cria.nome_cliente, dataInicio: f.data_inicio, diaAtual: 49, faseAtualOrdem: 7, faseAtualNome: FASES_NOMES[6], faseEsperadaOrdem: 7, prazoFaseAtual: null, sla: 'concluida' };
   }
   if (!f.data_inicio) {
     return { criaId: cria.id, nome: cria.nome_cliente, dataInicio: null, diaAtual: null, faseAtualOrdem, faseAtualNome, faseEsperadaOrdem: null, prazoFaseAtual: null, sla: 'sem_inicio' };
   }
+
   const dias = diasDesde(f.data_inicio);
-  const diaAtual = Math.min(49, Math.max(1, dias + 1));
-  const faseEsperadaOrdem = Math.min(7, Math.max(1, Math.ceil(diaAtual / 7)));
+  const diaAtual = Math.max(1, dias + 1);
+
+  // Fase ESPERADA hoje = 1ª fase cujo prazo (data_prevista_fim) ainda não passou.
+  // Assim respeita a duração real de cada etapa. Sem prazos computados, cai pra
+  // aproximação de 7 dias/fase.
+  const hoje = new Date(new Date().toDateString()).getTime();
+  let faseEsperadaOrdem = 7;
+  if (fases.some((x) => x.data_prevista_fim)) {
+    const proxima = fases.find((x) => x.data_prevista_fim && new Date(x.data_prevista_fim + 'T23:59:59').getTime() >= hoje);
+    faseEsperadaOrdem = proxima?.ordem ?? 7;
+  } else {
+    faseEsperadaOrdem = Math.min(7, Math.max(1, Math.ceil(diaAtual / 7)));
+  }
+
+  // Atrasada quando o progresso real está atrás do que a data manda.
   const sla: SlaStatus = faseAtualOrdem < faseEsperadaOrdem ? 'atrasada' : 'no_prazo';
-  return { criaId: cria.id, nome: cria.nome_cliente, dataInicio: f.data_inicio, diaAtual, faseAtualOrdem, faseAtualNome, faseEsperadaOrdem, prazoFaseAtual: atual?.data_prevista_fim ?? null, sla };
+  return { criaId: cria.id, nome: cria.nome_cliente, dataInicio: f.data_inicio, diaAtual: Math.min(49, diaAtual), faseAtualOrdem, faseAtualNome, faseEsperadaOrdem, prazoFaseAtual, sla };
 }
 
 function demo(): ForjaTimeline[] {

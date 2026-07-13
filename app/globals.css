@@ -596,6 +596,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 .fl-legenda { font-size: 11px; color: var(--faint); margin: 12px 2px 0; line-height: 1.8; }
 .pill.dim { color: var(--faint); background: var(--inset); }
 .cal-ev.fase-crit { background: color-mix(in srgb, var(--risk) 16%, transparent); color: var(--risk); }
+.cal-ev.gcal { background: var(--plasma-soft); color: var(--plasma); }
 .cal-more { font-size: 9.5px; color: var(--faint); font-family: var(--mono); display: block; }
 @media (max-width: 720px) { .fl-bar { display: none; } }
 @media (max-width: 1080px) { .g-2, .g-3 { grid-template-columns: 1fr; } }

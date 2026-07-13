@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { iniciais } from '@/lib/format';
 
 type Papel = 'gestor_contas' | 'gestor_projetos' | 'gestor_trafego';
 const PAPEL_LABEL: Record<Papel, string> = { gestor_contas: 'Contas', gestor_projetos: 'Projetos', gestor_trafego: 'Tráfego' };
 
 interface Integr { sigla: string; nome: string; nota: string; ok: boolean }
+interface GoogleStatus { conectado: boolean; email: string | null; configurado: boolean }
 interface Membro { id: string; nome: string; email: string; is_admin: boolean; papel_primario: Papel; papeis: Papel[] }
 
 function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
@@ -42,7 +44,12 @@ const Svg = ({ children }: { children: React.ReactNode }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
 );
 
-export function ForjariaClient({ membro, integracoes, team }: { membro: Membro | null; integracoes: Integr[]; team: Membro[] }) {
+export function ForjariaClient({ membro, integracoes, team, google }: { membro: Membro | null; integracoes: Integr[]; team: Membro[]; google?: GoogleStatus }) {
+  const router = useRouter();
+  async function desconectarGoogle() {
+    await fetch('/api/google/disconnect', { method: 'POST' });
+    router.refresh();
+  }
   // Aparência — aplica ao vivo no documento
   const [tema, setTema] = useState('escuro');
   const [reduz, setReduz] = useState(false);
@@ -195,7 +202,17 @@ export function ForjariaClient({ membro, integracoes, team }: { membro: Membro |
               <span className="iic">{i.sigla}</span>
               <div className="rmain"><div className="t">{i.nome}</div><div className="s">{i.nota}</div></div>
               <span className={`stbadge ${i.ok ? 'on' : 'off'}`}>{i.ok ? 'Conectado' : 'Desconectado'}</span>
-              <button className="btn">{i.ok ? 'Gerenciar' : 'Conectar'}</button>
+              {i.sigla === 'GA' ? (
+                google && !google.configurado ? (
+                  <span className="s" style={{ color: 'var(--faint)', maxWidth: 150, textAlign: 'right' }}>Falta o OAuth do Google Cloud</span>
+                ) : google?.conectado ? (
+                  <button className="btn" onClick={desconectarGoogle}>Desconectar</button>
+                ) : (
+                  <a className="btn" href="/api/google/connect">Conectar</a>
+                )
+              ) : (
+                <button className="btn">{i.ok ? 'Gerenciar' : 'Conectar'}</button>
+              )}
             </div>
           ))}
         </div>
