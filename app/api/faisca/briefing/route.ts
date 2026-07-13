@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
 import { estruturarBriefingGemini, iaGeminiConfigurada, transcreverAudio, transcricaoConfigurada } from '@/lib/ia/gemini';
+import { pushBriefing } from '@/integracao/clickup/push-briefing.js';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
   const supabase = await getSupabaseServer();
   const { data: cria } = await supabase
     .from('cria')
-    .select('nome_cliente, clickup_semana')
+    .select('nome_cliente, clickup_semana, clickup_task_id')
     .eq('id', criaId)
     .maybeSingle();
   if (!cria) {
@@ -101,5 +102,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, campos, error: insErr.message }, { status: 200 });
   }
 
-  return NextResponse.json({ ok: true, campos, briefingId: (inserida as { id: string } | null)?.id });
+  const briefingId = (inserida as { id: string } | null)?.id ?? null;
+
+  // 4) publicar como COMENTÁRIO na task-mestre do cliente no ClickUp. É o único
+  //    fluxo de escrita CRM → ClickUp. Falha aqui não perde o briefing (já salvo).
+  const clickupTaskId = (cria as { clickup_task_id: string | null }).clickup_task_id;
+  let clickup: { enviado: boolean; erro?: string } = { enviado: false };
+  if (briefingId && process.env.CLICKUP_API_TOKEN && clickupTaskId) {
+    try {
+      const { clickup_comment_id } = await pushBriefing(
+        { clickup_task_id: clickupTaskId },
+        { ...campos, semana_referencia: semana },
+      );
+      await getSupabaseAdmin()
+        .from('briefing')
+        .update({ enviado_clickup: true, clickup_task_id: clickupTaskId, clickup_comment_id })
+        .eq('id', briefingId);
+      clickup = { enviado: true };
+    } catch (e) {
+      console.error('[faisca/briefing] push ClickUp', e);
+      clickup = { enviado: false, erro: 'não consegui publicar no ClickUp agora' };
+    }
+  }
+
+  return NextResponse.json({ ok: true, campos, briefingId, clickup });
 }

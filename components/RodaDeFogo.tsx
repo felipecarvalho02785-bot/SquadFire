@@ -177,7 +177,11 @@ export function RodaDeFogo({ criaId, nome, area, faseOrdem, faseNome, gestorCont
       if (!res.ok) throw new Error(data.error ?? 'falhou');
       setCampos(data.campos as Campos);
       setEstado('pronto');
-      setMsg(data.ok ? 'Briefing gerado e anexado à Cria.' : 'Briefing gerado (não salvo no banco).');
+      setMsg(
+        data.ok
+          ? `Briefing gerado e anexado à Cria${data.clickup?.enviado ? ' · publicado no ClickUp ✓' : ''}.`
+          : 'Briefing gerado (não salvo no banco).',
+      );
     } catch (e) {
       setEstado('erro');
       setMsg(String((e as Error).message ?? e));

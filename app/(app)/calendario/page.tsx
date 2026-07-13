@@ -53,7 +53,7 @@ export default async function CalendarioPage() {
           if (!ev.inicio) continue;
           const d = new Date(ev.inicio);
           if (d.getFullYear() === year && d.getMonth() === month) {
-            const hora = ev.allDay ? undefined : d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const hora = ev.allDay ? undefined : d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
             (eventos[d.getDate()] ??= []).push({ label: nomeCurto(ev.titulo), kind: 'gcal', hora });
           }
         }

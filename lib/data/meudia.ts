@@ -173,7 +173,9 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
     for (const ev of await listarEventos(membro.id, ini.toISOString(), fim.toISOString())) {
       const t = ev.titulo.toLowerCase();
       const kind: AgendaItem['kind'] = /roda de fogo/.test(t) ? 'roda' : /daily|weekly|alinhamento|squad|interna/.test(t) ? 'interna' : 'cliente';
-      const hora = ev.allDay || !ev.inicio ? 'dia' : new Date(ev.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      // Horário no fuso de Brasília (o servidor da Vercel roda em UTC — sem isso
+      // os horários saíam +3h). É o horário local da squad.
+      const hora = ev.allDay || !ev.inicio ? 'dia' : new Date(ev.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
       agenda.push({ hora, titulo: ev.titulo, tag: kind === 'roda' ? 'Roda' : kind === 'interna' ? 'Interna' : 'Cliente', kind });
     }
     agenda.sort((a, b) => a.hora.localeCompare(b.hora));
