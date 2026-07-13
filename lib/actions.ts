@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
+import { enviarWhatsapp } from '@/lib/whatsapp/evolution';
 import type { Papel, PrioridadeLenha } from '@/lib/types/database';
 
 export type ActionResult = { ok: boolean; error?: string };
@@ -120,6 +121,28 @@ export async function vincularContrato(criaId: string, path: string): Promise<Ac
   const supabase = await getSupabaseServer();
   const { error } = await supabase.from('contrato').insert({ cria_id: criaId, arquivo_url: path });
   if (error) return { ok: false, error: error.message };
+  revalidatePath('/crias/[id]', 'page');
+  return { ok: true };
+}
+
+// Disparar uma mensagem no WhatsApp da Cria (grupo/contato) via Evolution API.
+// Registra a mensagem como comentário na Cria pra ficar o rastro. RLS de
+// comentário: Contas/Projetos/Admin.
+export async function avisarCriaWhatsapp(criaId: string, texto: string): Promise<ActionResult> {
+  const t = texto.trim();
+  if (!t) return { ok: false, error: 'escreva a mensagem' };
+  const membro = await getCurrentMembro();
+  if (!membro) return { ok: false, error: 'membro não identificado' };
+
+  const supabase = await getSupabaseServer();
+  const { data: cria } = await supabase.from('cria').select('telefone_whatsapp').eq('id', criaId).maybeSingle();
+  const destino = (cria as { telefone_whatsapp: string | null } | null)?.telefone_whatsapp;
+  if (!destino) return { ok: false, error: 'esta Cria não tem WhatsApp cadastrado' };
+
+  const r = await enviarWhatsapp(destino, t);
+  if (!r.ok) return { ok: false, error: r.error ?? 'não deu para enviar' };
+
+  await supabase.from('comentario').insert({ cria_id: criaId, autor_id: membro.id, corpo: `📲 [WhatsApp] ${t}` });
   revalidatePath('/crias/[id]', 'page');
   return { ok: true };
 }

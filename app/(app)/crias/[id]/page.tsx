@@ -9,6 +9,7 @@ import { EditInvestimento } from '@/components/EditInvestimento';
 import { EditInicioForja } from '@/components/EditInicioForja';
 import { GargalosPanel } from '@/components/GargalosPanel';
 import { UploadPdf } from '@/components/UploadPdf';
+import { AvisarWhatsapp } from '@/components/AvisarWhatsapp';
 import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
 import { iniciais } from '@/lib/format';
 
@@ -75,6 +76,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
         <p style={{ fontSize: 11, color: 'var(--faint)', margin: '9px 2px 0', lineHeight: 1.45 }}>
           <b style={{ color: 'var(--muted)' }}>Investimento em mídia</b> = verba de campanha do cliente (editável). É diferente do <b style={{ color: 'var(--muted)' }}>valor do contrato</b> — esse fica na aba Contrato.
         </p>
+        {cria.telefone_whatsapp && <div style={{ marginTop: 12 }}><AvisarWhatsapp criaId={cria.id} /></div>}
       </div>
       <div>
         <div className="c-h" style={{ marginBottom: 6 }}>
