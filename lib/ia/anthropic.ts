@@ -26,8 +26,22 @@ export function iaConfigurada(): boolean {
   return !!process.env.ANTHROPIC_API_KEY;
 }
 
+// System prompt do briefing — compartilhado entre provedores (Claude/Gemini).
+export function sistemaBriefing(contexto: { cliente: string; fase?: string | null }): string {
+  return (
+    'Você é a Faísca, a IA do Squad 08 (E3 Digital). Monta o briefing semanal do ' +
+    'cliente em português do Brasil, seguindo estritamente o modelo de 6 campos. ' +
+    'Seja objetivo, factual e fiel à transcrição — não invente números nem fatos. ' +
+    `Cliente (Cria): ${contexto.cliente}.` +
+    (contexto.fase ? ` Fase atual da Forja: ${contexto.fase}.` : '') +
+    '\n\nResponda APENAS com um objeto JSON válido com exatamente estas chaves ' +
+    '(valores em string): c1_o_que_aconteceu, c2_satisfacao, c3_campanhas, ' +
+    'c4_nosso_desempenho, c5_pontos_atencao, c6_proximos_passos. Sem comentários fora do JSON.'
+  );
+}
+
 // Extrai o objeto JSON da resposta (tolera cercas ```json e texto ao redor).
-function parseCampos(texto: string): BriefingCampos {
+export function parseCampos(texto: string): BriefingCampos {
   let raw = texto.trim();
   const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fence) raw = fence[1].trim();
@@ -78,20 +92,10 @@ export async function estruturarBriefing(
 ): Promise<BriefingCampos> {
   const client = new Anthropic(); // lê ANTHROPIC_API_KEY do ambiente
 
-  const system =
-    'Você é a Faísca, a IA do Squad 08 (E3 Digital). Monta o briefing semanal do ' +
-    'cliente em português do Brasil, seguindo estritamente o modelo de 6 campos. ' +
-    'Seja objetivo, factual e fiel à transcrição — não invente números nem fatos. ' +
-    `Cliente (Cria): ${contexto.cliente}.` +
-    (contexto.fase ? ` Fase atual da Forja: ${contexto.fase}.` : '') +
-    '\n\nResponda APENAS com um objeto JSON válido com exatamente estas chaves ' +
-    '(valores em string): c1_o_que_aconteceu, c2_satisfacao, c3_campanhas, ' +
-    'c4_nosso_desempenho, c5_pontos_atencao, c6_proximos_passos. Sem comentários fora do JSON.';
-
   const response = await client.messages.create({
     model: MODEL,
     max_tokens: 4096,
-    system,
+    system: sistemaBriefing(contexto),
     messages: [
       {
         role: 'user',
