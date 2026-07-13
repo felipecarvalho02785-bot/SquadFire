@@ -6,7 +6,7 @@ import type { Cria, Forja, Fase, FaseDaForja, Lenha } from '@/lib/types/database
 
 // Crias de demonstração (sem Supabase) — pra ver as telas populadas.
 function demoCrias(): Cria[] {
-  const base = { email: null, telefone_whatsapp: null, produto: 'estruturacao' as const, closer: null, gestor_contas_id: null, clickup_task_id: null, clickup_squad: '08', sincronizado_em: null, created_at: '', updated_at: '' };
+  const base = { email: null, telefone_whatsapp: null, produto: 'estruturacao' as const, closer: null, gestor_contas_id: null, clickup_task_id: null, clickup_squad: '08', sincronizado_em: null, diagnostico_path: null, diagnostico_nome: null, created_at: '', updated_at: '' };
   const mk = (id: string, nome: string, area: string, semana: number | null, status: Cria['status'], risco: boolean, inv: number | null): Cria => ({
     ...base, id, nome_cliente: nome, area_atuacao: area, clickup_semana: semana, status, em_risco: risco, investimento_midia: inv,
   });
@@ -43,6 +43,15 @@ export interface GargaloView {
   status: 'aberto' | 'em_resolucao' | 'resolvido';
 }
 
+export interface DocRef { url: string | null; nome: string | null }
+export interface BriefingView {
+  id: string;
+  data: string;
+  semana: string | null;
+  enviadoClickup: boolean;
+  campos: { label: string; texto: string }[];
+}
+
 export interface CriaDetalhe {
   cria: Cria;
   forja: Forja | null;
@@ -51,7 +60,19 @@ export interface CriaDetalhe {
   gestor: { nome: string } | null;
   gargalos: GargaloView[];
   briefingsSemana: number;
+  diagnostico: DocRef;
+  contrato: (DocRef & { valor: number | null }) | null;
+  briefings: BriefingView[];
 }
+
+const BRIEFING_CAMPOS: [string, string][] = [
+  ['c1_o_que_aconteceu', 'O que aconteceu essa semana'],
+  ['c2_satisfacao', 'Satisfação'],
+  ['c3_campanhas', 'Campanhas'],
+  ['c4_nosso_desempenho', 'Nosso desempenho'],
+  ['c5_pontos_atencao', 'Pontos de atenção'],
+  ['c6_proximos_passos', 'Próximos passos'],
+];
 
 const FASES_NOMES = ['Alinhamento', 'Diagnóstico 360', 'Treinamento', 'Consultoria', 'Implementação CRM + IA', 'Auditoria de Mídia', 'Auditoria Criativa'];
 
@@ -83,7 +104,7 @@ function demoCriaDetalhe(id: string): CriaDetalhe {
     id: forjaId, cria_id: cria.id, data_inicio: '2026-07-07', flag_contrato: cria.em_risco ? 'brasa_viva' : 'forja_quente',
     fase_atual_id: faseAtualId, concluida: false, created_at: '', updated_at: '',
   };
-  return { cria, forja, fases, lenhas, gestor: { nome: 'Felipe Carvalho' }, gargalos: [], briefingsSemana: 0 };
+  return { cria, forja, fases, lenhas, gestor: { nome: 'Felipe Carvalho' }, gargalos: [], briefingsSemana: 0, diagnostico: { url: null, nome: null }, contrato: null, briefings: [] };
 }
 
 export async function getCriaDetalhe(id: string): Promise<CriaDetalhe | null> {
@@ -129,23 +150,50 @@ export async function getCriaDetalhe(id: string): Promise<CriaDetalhe | null> {
     gestor = (g as { nome: string }) ?? null;
   }
 
-  // gargalos abertos + briefings desta semana (KPIs e aba Gargalos)
+  // gargalos abertos + briefings desta semana (KPIs) + contrato + histórico de briefings
   const seteDias = new Date();
   seteDias.setDate(seteDias.getDate() - 7);
-  const [{ data: gargData }, { count: briefCount }] = await Promise.all([
+  const [{ data: gargData }, { count: briefCount }, { data: contratoRow }, { data: briefingsData }] = await Promise.all([
     supabase.from('gargalo').select('id, descricao, status').eq('cria_id', id).order('created_at', { ascending: false }),
     supabase.from('briefing').select('*', { count: 'exact', head: true }).eq('cria_id', id).gte('created_at', seteDias.toISOString()),
+    supabase.from('contrato').select('arquivo_url, valor_contrato').eq('cria_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('briefing').select('id, semana_referencia, created_at, enviado_clickup, c1_o_que_aconteceu, c2_satisfacao, c3_campanhas, c4_nosso_desempenho, c5_pontos_atencao, c6_proximos_passos').eq('cria_id', id).order('created_at', { ascending: false }).limit(20),
   ]);
   const gargalos = (gargData as GargaloView[]) ?? [];
 
+  // URL assinada (buckets privados) — válida por 1h, gerada ao exibir.
+  async function assinar(bucket: string, path: string | null | undefined): Promise<string | null> {
+    if (!path) return null;
+    const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
+    return data?.signedUrl ?? null;
+  }
+
+  const c = cria as Cria;
+  const contratoR = contratoRow as { arquivo_url: string | null; valor_contrato: number | null } | null;
+  const [diagUrl, contratoUrl] = await Promise.all([
+    assinar('entregaveis', c.diagnostico_path),
+    assinar('contratos', contratoR?.arquivo_url),
+  ]);
+
+  const briefings: BriefingView[] = ((briefingsData as Record<string, unknown>[]) ?? []).map((b) => ({
+    id: String(b.id),
+    data: String(b.created_at),
+    semana: (b.semana_referencia as string | null) ?? null,
+    enviadoClickup: !!b.enviado_clickup,
+    campos: BRIEFING_CAMPOS.map(([k, label]) => ({ label, texto: String(b[k] ?? '').trim() })).filter((x) => x.texto),
+  }));
+
   return {
-    cria: cria as Cria,
+    cria: c,
     forja: (forja as Forja) ?? null,
     fases,
     lenhas,
     gestor,
     gargalos,
     briefingsSemana: briefCount ?? 0,
+    diagnostico: { url: diagUrl, nome: c.diagnostico_nome },
+    contrato: contratoR ? { url: contratoUrl, nome: null, valor: contratoR.valor_contrato } : null,
+    briefings,
   };
 }
 
