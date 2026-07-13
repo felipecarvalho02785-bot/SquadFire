@@ -193,8 +193,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
   display: flex; align-items: center; gap: 14px;
   padding: 11px 22px; border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 5;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--bg) 96%, var(--surface));
 }
 .topbar h1 { font-size: 17px; }
 .topbar .sub { color: var(--muted); font-size: 12px; }
@@ -300,13 +299,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 .steps .st.cur { background: var(--flame); box-shadow: 0 0 12px rgba(255, 192, 26, 0.7); }
 
 /* ── movimento — entrada suave (degrada com reduce-motion) ───── */
-@media (prefers-reduced-motion: no-preference) {
-  .content > * { animation: sf-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
-  .content > *:nth-child(2) { animation-delay: 0.06s; }
-  .content > *:nth-child(3) { animation-delay: 0.12s; }
-  .content > *:nth-child(4) { animation-delay: 0.18s; }
-  @keyframes sf-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-}
+/* conteúdo aparece instantâneo (sem reveal escalonado — nada de atraso ao navegar) */
 :root.no-anim *, :root.no-anim *::before, :root.no-anim *::after { animation: none !important; transition: none !important; }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -362,7 +355,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 .hero .big { font-family: var(--display); font-size: 32px; font-weight: 700; letter-spacing: 0.005em; margin: 6px 0; line-height: 1.05; }
 .hero .hcontent p { color: var(--ink-2); font-size: 13.5px; max-width: 370px; margin: 0 0 22px; }
 .hero .glass { display: flex; gap: 13px; flex-wrap: wrap; }
-.hero .g-stat { background: color-mix(in srgb, var(--surface-2) 62%, transparent); backdrop-filter: blur(12px); border: 1px solid var(--border-2); border-radius: 13px; padding: 12px 15px; min-width: 98px; }
+.hero .g-stat { background: color-mix(in srgb, var(--surface-2) 90%, var(--surface)); border: 1px solid var(--border-2); border-radius: 13px; padding: 12px 15px; min-width: 98px; }
 .hero .g-stat .v { font-family: var(--display); font-size: 24px; font-weight: 700; letter-spacing: 0.01em; }
 .hero .g-stat .l { font-family: var(--sans); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px; white-space: nowrap; }
 .hero .g-stat.crit { border-color: color-mix(in srgb, var(--risk) 42%, var(--border)); }
@@ -540,46 +533,20 @@ svg .axis { fill: var(--faint); }
 /* ═══════════════════════════════════════════════════════════════
    SF · VIDA — vida em cada interação (bordas de brasa, reveal, gráficos)
    ═══════════════════════════════════════════════════════════════ */
-@property --sf-ang { syntax: '<angle>'; inherits: false; initial-value: 218deg; }
-
-/* borda de brasa que corre ao passar o mouse — em todo card/kpi */
+/* hover instantâneo — só transform + borda (GPU, sem repaint de gradiente/conic) */
 .card, .kpi { position: relative; }
-.card::after, .kpi::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 2;
-  pointer-events: none; opacity: 0;
-  background: conic-gradient(from var(--sf-ang),
-    transparent 0 55%, color-mix(in srgb, var(--ember) 55%, transparent) 70%, var(--ember-hi) 82%, transparent 92%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-  transition: opacity 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-.card > *, .kpi > * { position: relative; z-index: 1; }
-.card:hover { border-color: color-mix(in srgb, var(--ember) 30%, var(--border)); box-shadow: 0 16px 34px -22px rgba(0, 0, 0, 0.9), 0 0 0 1px color-mix(in srgb, var(--ember) 10%, transparent); }
-@media (prefers-reduced-motion: no-preference) {
-  .card:hover::after, .kpi:hover::after { opacity: 0.9; animation: sf-border-run 2.8s linear infinite; }
-  @keyframes sf-border-run { to { --sf-ang: 578deg; } }
-}
+.card { transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease; }
+.card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--ember) 34%, var(--border)); box-shadow: 0 14px 30px -22px rgba(0, 0, 0, 0.9); }
 
-/* reveal escalonado dos cards dentro dos grids */
+/* gráficos: crescer na entrada (transform = GPU, roda 1x por render) */
 @media (prefers-reduced-motion: no-preference) {
-  .grid > *, .kpis > * { animation: sf-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
-  .grid > *:nth-child(2), .kpis > *:nth-child(2) { animation-delay: 0.05s; }
-  .grid > *:nth-child(3), .kpis > *:nth-child(3) { animation-delay: 0.1s; }
-  .grid > *:nth-child(4), .kpis > *:nth-child(4) { animation-delay: 0.15s; }
-}
-
-/* animações dos gráficos (crescer/encher na entrada) */
-@media (prefers-reduced-motion: no-preference) {
-  .bar-grow { transform-box: fill-box; transform-origin: bottom; animation: sf-bar 0.75s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  .bar-grow { transform-box: fill-box; transform-origin: bottom; animation: sf-bar 0.45s ease-out both; }
   @keyframes sf-bar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-  .hbar-grow { transform-box: fill-box; transform-origin: left; animation: sf-hbar 0.85s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  .hbar-grow { transform-box: fill-box; transform-origin: left; animation: sf-hbar 0.5s ease-out both; }
   @keyframes sf-hbar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-  .meter .fill { transform-origin: left; animation: sf-hbar 1.05s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
-  .area-in { animation: sf-fade 0.9s ease both; }
-  @keyframes sf-fade { from { opacity: 0; } to { opacity: 1; } }
-  .livedot { animation: sf-pulse 2.4s ease-in-out infinite; }
-  @keyframes sf-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+  .meter .fill { transform-origin: left; animation: sf-hbar 0.65s ease-out both; }
+  .livedot { transform-box: fill-box; transform-origin: center; animation: sf-live 2.6s ease-in-out infinite; }
+  @keyframes sf-live { 0%, 100% { opacity: 0.14; transform: scale(1); } 50% { opacity: 0.34; transform: scale(2); } }
 }
 
 /* pressionar controles dá retorno */
@@ -662,7 +629,7 @@ svg .axis { fill: var(--faint); }
 /* ═══════════════════════════════════════════════════════════════
    Faísca — drawer (painel deslizante de chat, abre em qualquer tela)
    ═══════════════════════════════════════════════════════════════ */
-.fdrawer-ov { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.fdrawer-ov { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.55); opacity: 0; pointer-events: none; transition: opacity 0.25s; }
 .fdrawer-ov.open { opacity: 1; pointer-events: auto; }
 .fdrawer {
   position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(440px, 96vw);
@@ -713,30 +680,12 @@ svg .axis { fill: var(--faint); }
 /* ═══════════════════════════════════════════════════════════════
    SF · VIDA — camada 2 (brilho no cursor, contagem, pulso, hovers)
    ═══════════════════════════════════════════════════════════════ */
-/* brilho radial que segue o cursor dentro do card */
-.card::before {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 0; pointer-events: none; opacity: 0;
-  background: radial-gradient(220px circle at var(--sf-mx, 50%) var(--sf-my, 50%), color-mix(in srgb, var(--ember) 15%, transparent), transparent 60%);
-  transition: opacity 0.3s ease;
-}
-.card:hover::before { opacity: 1; }
+/* hover nas linhas — só background no item sob o mouse (barato, sem reflow) */
+.list .lrow, .intg-row, .mrow, .fd-chip { transition: background 0.14s ease, color 0.14s ease; }
+.list .lrow:hover, .intg-row:hover, .mrow:hover { background: color-mix(in srgb, var(--ember) 5%, transparent); border-radius: 8px; }
 
-/* hover nas linhas de lista — realce + leve deslize */
-.row, .list .lrow, .intg-row, .mrow, .setrow, .fd-chip { transition: background 0.16s ease, padding-left 0.16s ease, transform 0.14s ease; }
-.list .lrow:hover, .intg-row:hover, .mrow:hover { background: color-mix(in srgb, var(--ember) 5%, transparent); padding-left: 6px; border-radius: 8px; }
-.table tbody tr { transition: background 0.14s ease, box-shadow 0.14s ease; }
-
-/* entrada do retrato do hero */
+/* entrada do retrato do hero (transform/opacity = GPU, roda 1x) */
 @media (prefers-reduced-motion: no-preference) {
-  .hero .member { animation: sf-hero 0.85s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
-  @keyframes sf-hero { from { opacity: 0; transform: translateX(26px) scale(1.03); } to { opacity: 1; transform: none; } }
-  /* respiração nos cards/kpis de risco */
-  .kpi.flag-crit, .hero .g-stat.crit { animation: sf-breathe 3.6s ease-in-out infinite; }
-  @keyframes sf-breathe {
-    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--risk) 0%, transparent); }
-    50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--risk) 16%, transparent); }
-  }
-  /* ponto pulsante no fim do gráfico de área */
-  .livedot { transform-box: fill-box; transform-origin: center; animation: sf-live 2.2s ease-in-out infinite; }
-  @keyframes sf-live { 0%, 100% { opacity: 0.15; transform: scale(1); } 50% { opacity: 0.4; transform: scale(2.1); } }
+  .hero .member { animation: sf-hero 0.6s ease-out both; }
+  @keyframes sf-hero { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
 }
