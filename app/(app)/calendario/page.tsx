@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
 import { getForjasTimeline, type SlaStatus } from '@/lib/data/agenda';
+import { getCurrentMembro } from '@/lib/auth';
+import { isSupabaseConfigured } from '@/lib/env';
+import { listarEventos, statusGoogle } from '@/lib/google/calendar';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,14 +26,34 @@ export default async function CalendarioPage() {
   const atrasadas = timeline.filter((t) => t.sla === 'atrasada').length;
   const ativas = timeline.filter((t) => t.sla !== 'concluida').length;
 
-  // Eventos do mês = prazos das fases atuais (data prevista de fim) que caem no mês.
-  const eventos: Record<number, { label: string; crit: boolean }[]> = {};
+  // Eventos do mês = prazos das fases (data prevista de fim) + agenda do Google.
+  const eventos: Record<number, { label: string; kind: string }[]> = {};
   for (const t of timeline) {
     if (!t.prazoFaseAtual) continue;
     const d = new Date(t.prazoFaseAtual + 'T00:00:00');
     if (d.getFullYear() === year && d.getMonth() === month) {
-      const dia = d.getDate();
-      (eventos[dia] ??= []).push({ label: `Fase ${t.faseAtualOrdem} · ${nomeCurto(t.nome)}`, crit: t.sla === 'atrasada' });
+      (eventos[d.getDate()] ??= []).push({ label: `Fase ${t.faseAtualOrdem} · ${nomeCurto(t.nome)}`, kind: t.sla === 'atrasada' ? 'fase-crit' : 'fase' });
+    }
+  }
+
+  // Overlay do Google Agenda (se o membro conectou).
+  let googleConectado = false;
+  if (isSupabaseConfigured) {
+    const membro = await getCurrentMembro();
+    if (membro) {
+      const st = await statusGoogle(membro.id);
+      googleConectado = st.conectado;
+      if (st.conectado) {
+        const ini = new Date(year, month, 1).toISOString();
+        const fim = new Date(year, month + 1, 0, 23, 59).toISOString();
+        for (const ev of await listarEventos(membro.id, ini, fim)) {
+          if (!ev.inicio) continue;
+          const d = new Date(ev.inicio);
+          if (d.getFullYear() === year && d.getMonth() === month) {
+            (eventos[d.getDate()] ??= []).push({ label: nomeCurto(ev.titulo), kind: 'gcal' });
+          }
+        }
+      }
     }
   }
 
@@ -41,7 +64,7 @@ export default async function CalendarioPage() {
 
   return (
     <div className="main">
-      <Topbar title="Calendário" sub="fases da Forja + SLA" action={<span className="badge dim">Google Agenda · a conectar</span>} />
+      <Topbar title="Calendário" sub="fases da Forja + SLA" action={<span className={`badge ${googleConectado ? 'ok' : 'dim'}`}>Google Agenda · {googleConectado ? 'conectado' : 'a conectar'}</span>} />
       <div className="content">
         <div className="pagehead">
           <div>
@@ -92,7 +115,7 @@ export default async function CalendarioPage() {
               <div key={i} className={`cal-cell${day ? '' : ' out'}${day === today ? ' today' : ''}`}>
                 {day && <span className="dn">{day}</span>}
                 {day && (eventos[day] ?? []).slice(0, 3).map((ev, j) => (
-                  <span className={`cal-ev ${ev.crit ? 'fase-crit' : 'fase'}`} key={j}>{ev.label}</span>
+                  <span className={`cal-ev ${ev.kind}`} key={j}>{ev.label}</span>
                 ))}
                 {day && (eventos[day]?.length ?? 0) > 3 && <span className="cal-more">+{eventos[day].length - 3}</span>}
               </div>
@@ -101,6 +124,7 @@ export default async function CalendarioPage() {
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
             <span className="badge ember">Prazo de fase (no prazo)</span>
             <span className="badge risk">Prazo de fase (atrasada)</span>
+            {googleConectado && <span className="badge" style={{ color: 'var(--plasma)', background: 'var(--plasma-soft)' }}>Google Agenda</span>}
           </div>
         </div>
       </div>
