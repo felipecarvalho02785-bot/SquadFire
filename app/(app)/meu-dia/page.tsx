@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
 import { MinhasLenhas } from '@/components/MinhasLenhas';
+import { Sino } from '@/components/Sino';
 import { getCurrentMembro } from '@/lib/auth';
 import { getMeuDiaDashboard } from '@/lib/data/meudia';
+import { getAlertas } from '@/lib/data/alertas';
 import { garantirRituaisHoje } from '@/lib/data/agenda';
 import { isSupabaseConfigured } from '@/lib/env';
 
@@ -18,7 +20,7 @@ const tagKind: Record<string, string> = { cliente: 'ember', roda: 'ok', interna:
 export default async function MeuDiaPage() {
   await garantirRituaisHoje(); // materializa os rituais do dia (idempotente)
   const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
-  const d = await getMeuDiaDashboard(membro);
+  const [d, alertas] = await Promise.all([getMeuDiaDashboard(membro), getAlertas(membro)]);
 
   const busca = (
     <>
@@ -28,12 +30,7 @@ export default async function MeuDiaPage() {
         </svg>
         <input name="q" placeholder="Buscar Cria…" aria-label="Buscar Cria" />
       </form>
-      <button type="button" className="bell" aria-label="Notificações">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0" />
-        </svg>
-        {d.kpis.slaQuente > 0 && <span className="dot-n">{d.kpis.slaQuente}</span>}
-      </button>
+      <Sino />
     </>
   );
 
@@ -46,6 +43,18 @@ export default async function MeuDiaPage() {
           <h2>{saudacao()}, {d.nome}</h2>
           <p>Seu cockpit do dia — o que pega fogo primeiro hoje.</p>
         </div>
+
+        {alertas.resumo && (
+          <div className="card faisca-resumo">
+            <span className="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.2 6.2L20 10l-5.8 1.8L12 18l-2.2-6.2L4 10l5.8-1.8z" /></svg>
+            </span>
+            <div>
+              <div className="bt">A Faísca diz</div>
+              <div className="bs">{alertas.resumo}</div>
+            </div>
+          </div>
+        )}
 
         {d.banner && (
           <div className="card daybanner">
