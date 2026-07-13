@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
 import { AreaChart, Donut, DonutLegend, Bars, HBars } from '@/components/charts';
 import { getCovilDashboard } from '@/lib/data/covil';
@@ -49,20 +48,11 @@ export default async function CovilPage({ searchParams }: { searchParams: Promis
   const retrato = membro ? portraitDe(membro.nome) : role.portrait;
 
   const switcher = (
-    <>
-      <div className="seg">
-        {ROLES.map((r) => (
-          <Link key={r.key} href={`/covil?papel=${r.key}`} className={r.key === role.key ? 'on' : ''}>
-            {r.tab}
-          </Link>
-        ))}
-      </div>
-      <div className="range">
-        <button type="button">4s</button>
-        <button type="button" className="on">12s</button>
-        <button type="button">YTD</button>
-      </div>
-    </>
+    <div className="range">
+      <button type="button">7 dias</button>
+      <button type="button" className="on">15 dias</button>
+      <button type="button">30 dias</button>
+    </div>
   );
 
   return (
