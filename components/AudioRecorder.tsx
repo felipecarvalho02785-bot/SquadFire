@@ -92,11 +92,11 @@ export function AudioRecorder({ criaId }: { criaId: string }) {
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         {estado !== 'gravando' ? (
           <button className="btn primary" onClick={iniciar} disabled={estado === 'processando'}>
-            {estado === 'processando' ? 'Processando…' : '🎙️ Gravar briefing'}
+            {estado === 'processando' ? 'Processando…' : 'Gravar briefing'}
           </button>
         ) : (
           <button className="btn" onClick={parar}>
-            ⏹️ Parar e gerar
+            Parar e gerar
           </button>
         )}
         {estado === 'gravando' && <span className="badge risk">● gravando</span>}

@@ -1,99 +1,213 @@
-/* ── SquadFire · design tokens (fogo / forja / dragão) ───────── */
-:root {
-  --bg: #0e0b09;
-  --bg-2: #171210;
-  --panel: #1e1714;
-  --panel-2: #251d18;
-  --line: #2f241d;
-  --line-2: #3d2e24;
-  --ink: #f4ece6;
-  --ink-2: #c9b8ac;
-  --muted: #8a776a;
-  --ember: #ff6a1a;
-  --ember-2: #ff9538;
-  --flame: #ffb020;
-  --brasa: #e23b12;
-  --ok: #37b26b;
-  --warn: #f5a524;
-  --risk: #ef4444;
-  --azure: #4aa3df;
-  --radius: 14px;
-  --radius-sm: 9px;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  --font: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+/* ═══════════════════════════════════════════════════════════════
+   SquadFire · design system — "a forja à noite"
+   Dragão / fogo / forja. Portado do protótipo (design/app.html) para
+   o app real, mantendo o vocabulário de classes das páginas.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Fontes da marca (embutidas, alinhadas à letra da logo) ───── */
+@font-face {
+  font-family: 'Grenze Gotisch'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('/fonts/GrenzeGotisch-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Grenze Gotisch'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('/fonts/GrenzeGotisch-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Grenze'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('/fonts/Grenze-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Grenze'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('/fonts/Grenze-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
 }
 
+/* ── Tokens — coal profundo + ember + plasma (têmpera) ───────── */
+:root {
+  /* superfícies */
+  --bg: #0b0a09;
+  --bg-2: #131010;
+  --surface: #131010;
+  --surface-2: #1a1513;
+  --inset: #0f0d0c;
+  --panel: #131010;      /* alias legado */
+  --panel-2: #1a1513;    /* alias legado */
+  /* linhas */
+  --border: #241e1b;
+  --border-2: #2e2723;
+  --line: #241e1b;       /* alias legado */
+  --line-2: #2e2723;     /* alias legado */
+  --grid: #241d18;
+  /* tinta */
+  --text: #f3ece6;
+  --ink: #f3ece6;        /* alias legado */
+  --ink-2: #c9b8ac;      /* alias legado */
+  --muted: #9a8e85;
+  --faint: #6a605a;
+  /* fogo (ember) */
+  --ember: #ff6a1a;
+  --ember-hi: #ffa24a;
+  --ember-deep: #e8450f;
+  --ember-soft: rgba(255, 106, 26, 0.16);
+  --ember-2: #ffa24a;    /* alias legado */
+  --brasa: #e8450f;      /* alias legado */
+  --flame: #ffc01a;      /* alias legado */
+  /* têmpera (plasma / teal) */
+  --plasma: #2de1e6;
+  --plasma-hi: #8cf3f6;
+  --plasma-soft: rgba(45, 225, 230, 0.13);
+  /* semânticas */
+  --ok: #29c07a;
+  --warn: #ffc01a;
+  --risk: #ff3a44;
+  --azure: #4aa3df;
+  /* fontes */
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  /* Tipografia da marca (igual ao app.html): gótica no display, serifa no corpo. */
+  --body: 'Grenze', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
+  --display: 'Grenze Gotisch', 'Cinzel', 'Trajan Pro', Georgia, 'Times New Roman', serif;
+  --font: var(--body);   /* alias legado */
+  /* forma */
+  --radius: 12px;
+  --radius-sm: 9px;
+  --shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.85);
+}
+
+/* ── reset + scrollbars on-brand (fogo sobre carvão) ─────────── */
 * { box-sizing: border-box; }
-html, body { padding: 0; margin: 0; }
+html, body { margin: 0; padding: 0; }
+* { scrollbar-width: thin; scrollbar-color: #7a3313 transparent; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--ember-deep), var(--ember));
+  border-radius: 20px; border: 3px solid var(--bg); background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--ember), var(--ember-hi)); background-clip: padding-box; }
+::selection { background: var(--ember-soft); }
+
+/* ── base + brilho ambiente + contorno de leitura ───────────── */
 body {
-  background: radial-gradient(1200px 600px at 15% -10%, #2a1a10 0%, var(--bg) 55%) fixed;
-  color: var(--ink);
-  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
+/* camada de brilho fixa (não rola, não repinta por frame): faz os cards de vidro "lerem" */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(1100px 760px at 74% 3%, color-mix(in srgb, var(--ember) 8%, transparent), transparent 58%),
+    radial-gradient(920px 720px at 8% 97%, color-mix(in srgb, var(--plasma) 5%, transparent), transparent 55%);
+}
+/* dragão de fundo — watermark de brasa */
+.dragon-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: url('/img/dragon-outline.png') no-repeat 60% 46% / min(1000px, 60vw);
+  opacity: 0.15;
+}
+@media (max-width: 900px) { .dragon-bg { background-size: 90vw; opacity: 0.05; } }
+svg text { text-shadow: none; }
 a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--plasma); outline-offset: 2px; border-radius: 6px; }
+
+/* tipografia da marca — gótica p/ display, serifa p/ corpo */
 h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+.topbar h1 {
+  font-family: var(--display); font-weight: 700; letter-spacing: 0.01em;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.62), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
 
 /* ── layout shell ───────────────────────────────────────────── */
-.shell { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+.shell { position: relative; z-index: 1; display: grid; grid-template-columns: 238px 1fr; min-height: 100vh; }
 .sidebar {
-  background: linear-gradient(180deg, var(--bg-2), var(--bg));
-  border-right: 1px solid var(--line);
-  padding: 20px 14px;
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
   position: sticky; top: 0; height: 100vh;
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: 10px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 40%, transparent), transparent);
 }
-.brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px 18px; }
+.brand { display: flex; align-items: center; gap: 11px; padding: 4px 8px 14px; min-width: 0; }
 .brand .mark {
-  width: 34px; height: 34px; border-radius: 9px;
-  background: linear-gradient(135deg, var(--ember), var(--brasa));
+  width: 38px; height: 38px; flex: 0 0 auto;
   display: grid; place-items: center; font-size: 18px;
-  box-shadow: 0 6px 18px rgba(226, 59, 18, 0.4);
 }
-.brand b { font-size: 16px; }
-.brand span { color: var(--muted); font-size: 11px; display: block; }
+.brand .mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
+/* wordmark: gótica (igual ao app.html) */
+.brand b { font-family: var(--display); font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; display: block; line-height: 1.05; }
+.brand b i { color: var(--ember); font-style: normal; }
+.brand .brandsub { font-family: var(--sans); color: var(--muted); font-size: 10.5px; display: block; white-space: nowrap; letter-spacing: 0.04em; margin-top: 2px; }
+
+/* Faísca — card de destaque no topo da sidebar */
+.faisca-card { display: flex; align-items: center; gap: 11px; padding: 11px 12px; border-radius: 12px; margin-bottom: 4px;
+  background: linear-gradient(135deg, var(--ember), var(--ember-deep)); color: #160c06;
+  box-shadow: 0 8px 22px -8px rgba(226, 59, 18, 0.55); transition: filter 0.14s, transform 0.12s; }
+.faisca-card:hover { filter: brightness(1.05); }
+.faisca-card:active { transform: translateY(1px) scale(0.99); }
+.faisca-card.on { outline: 2px solid color-mix(in srgb, #fff 40%, transparent); outline-offset: 1px; }
+.faisca-card .fc-ic { width: 32px; height: 32px; flex: 0 0 auto; border-radius: 9px; background: rgba(0, 0, 0, 0.18); display: grid; place-items: center; color: #160c06; }
+.faisca-card .fc-ic svg { width: 18px; height: 18px; }
+.faisca-card .fc-txt { min-width: 0; }
+.faisca-card b { font-family: var(--display); font-weight: 700; font-size: 15px; display: block; line-height: 1.1; }
+.faisca-card small { font-family: var(--sans); font-size: 10.5px; opacity: 0.82; display: block; white-space: nowrap; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
 .nav a {
   display: flex; align-items: center; gap: 11px;
-  padding: 9px 11px; border-radius: var(--radius-sm);
-  color: var(--ink-2); font-weight: 500; font-size: 13.5px;
-  transition: background 0.15s, color 0.15s;
+  padding: 8px 10px; border-radius: 10px; border: 1px solid transparent;
+  color: var(--muted); font-weight: 560; font-size: 13.5px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.12s;
 }
-.nav a:hover { background: var(--panel); color: var(--ink); }
+.nav a:hover { background: var(--surface); color: var(--text); }
+.nav a:active { transform: scale(0.985); }
 .nav a.active {
-  background: linear-gradient(90deg, rgba(255, 106, 26, 0.16), transparent);
-  color: var(--ink);
-  box-shadow: inset 2px 0 0 var(--ember);
+  background: var(--ember-soft);
+  border-color: color-mix(in srgb, var(--ember) 30%, var(--border));
+  color: var(--text);
 }
-.nav a .ic { width: 18px; text-align: center; }
+.nav a.active .ic { filter: drop-shadow(0 0 6px rgba(255, 106, 26, 0.5)); }
+.nav a .ic { width: 20px; text-align: center; }
 .sidebar .spacer { flex: 1; }
 .sidebar .me {
-  border-top: 1px solid var(--line); padding-top: 12px;
+  border-top: 1px solid var(--border); padding-top: 12px;
   display: flex; align-items: center; gap: 10px;
 }
 .avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--ember-2), var(--brasa));
-  display: grid; place-items: center; font-weight: 700; color: #1a0f08; font-size: 13px;
+  width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto;
+  background: linear-gradient(135deg, var(--ember-hi), var(--ember));
+  display: grid; place-items: center; font-weight: 700; color: #160c06; font-size: 12px;
 }
 
-.main { min-width: 0; }
+.main { min-width: 0; display: flex; flex-direction: column; }
 .topbar {
   display: flex; align-items: center; gap: 16px;
-  padding: 16px 28px; border-bottom: 1px solid var(--line);
-  position: sticky; top: 0; background: rgba(14, 11, 9, 0.82);
-  backdrop-filter: blur(8px); z-index: 5;
+  padding: 14px 28px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 5;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(8px);
 }
-.topbar h1 { font-size: 18px; }
+.topbar h1 { font-size: 19px; }
 .topbar .sub { color: var(--muted); font-size: 12.5px; }
-.content { padding: 24px 28px 60px; max-width: 1180px; }
+.content { padding: 24px 28px 60px; max-width: 1220px; width: 100%; }
 
 /* ── primitives ─────────────────────────────────────────────── */
+/* cards de vidro translúcido — o brilho ambiente + dragão leem por trás */
 .card {
-  background: linear-gradient(180deg, var(--panel), var(--panel-2));
-  border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 18px; box-shadow: var(--shadow);
+  background: linear-gradient(158deg,
+    color-mix(in srgb, var(--surface-2) 58%, transparent),
+    color-mix(in srgb, var(--surface) 34%, transparent));
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px; box-shadow: var(--shadow), inset 0 1px 0 color-mix(in srgb, #fff 5%, transparent);
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
 }
 .grid { display: grid; gap: 16px; }
 .cols-2 { grid-template-columns: repeat(2, 1fr); }
@@ -104,26 +218,36 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
   .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; }
   .cols-2, .cols-3, .cols-4 { grid-template-columns: 1fr; }
 }
-.kpi .n { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
-.kpi .l { color: var(--muted); font-size: 12px; margin-top: 2px; }
-.kpi .n.ember { color: var(--ember-2); }
+
+/* KPI — hover que levanta e acende a borda */
+.kpi { position: relative; overflow: hidden; }
+.kpi:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--ember) 42%, var(--border));
+  box-shadow: 0 16px 34px -20px rgba(0, 0, 0, 0.9), 0 0 0 1px color-mix(in srgb, var(--ember) 14%, transparent);
+}
+.kpi .n { font-family: var(--display); font-size: 30px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.05; }
+.kpi .l { color: var(--muted); font-size: 12px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; font-family: var(--sans); }
+.kpi .n.ember { color: var(--ember-hi); }
 .kpi .n.risk { color: var(--risk); }
 
 .eyebrow {
-  text-transform: uppercase; letter-spacing: 0.12em;
-  font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 10px;
+  font-family: var(--sans);
+  text-transform: uppercase; letter-spacing: 0.14em;
+  font-size: 11px; color: var(--ember); font-weight: 700; margin-bottom: 12px;
 }
 .badge {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 600;
-  border: 1px solid var(--line-2); color: var(--ink-2); background: var(--bg-2);
+  font-family: var(--sans);
+  border: 1px solid var(--border-2); color: var(--ink-2); background: var(--surface);
 }
-.badge.ember { color: var(--ember-2); border-color: rgba(255, 106, 26, 0.4); }
-.badge.ok { color: var(--ok); border-color: rgba(55, 178, 107, 0.4); }
-.badge.risk { color: var(--risk); border-color: rgba(239, 68, 68, 0.4); }
+.badge.ember { color: var(--ember-hi); border-color: rgba(255, 106, 26, 0.4); background: var(--ember-soft); }
+.badge.ok { color: var(--ok); border-color: rgba(41, 192, 122, 0.4); }
+.badge.risk { color: var(--risk); border-color: rgba(255, 58, 68, 0.4); }
 .badge.dim { color: var(--muted); }
 
-.row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
 .row:last-child { border-bottom: 0; }
 .row .grow { flex: 1; min-width: 0; }
 .row .t { font-weight: 600; }
@@ -132,23 +256,28 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 9px 15px; border-radius: 10px; font-weight: 600; font-size: 13px;
-  border: 1px solid var(--line-2); background: var(--panel-2); color: var(--ink);
-  cursor: pointer; transition: transform 0.08s, background 0.15s;
+  font-family: var(--sans);
+  border: 1px solid var(--border-2); background: var(--surface-2); color: var(--text);
+  cursor: pointer; transition: transform 0.1s, filter 0.14s, background 0.15s, box-shadow 0.16s;
 }
-.btn:hover { background: var(--panel); }
-.btn:active { transform: translateY(1px); }
+.btn:hover { background: var(--surface); border-color: color-mix(in srgb, var(--ember) 34%, var(--border-2)); }
+.btn:active { transform: translateY(1px) scale(0.99); }
 .btn.primary {
-  background: linear-gradient(135deg, var(--ember), var(--brasa));
-  border-color: transparent; color: #1a0f08;
-  box-shadow: 0 6px 18px rgba(226, 59, 18, 0.35);
+  background: linear-gradient(135deg, var(--ember), var(--ember-deep));
+  border-color: transparent; color: #160c06;
+  box-shadow: 0 8px 22px -8px rgba(226, 59, 18, 0.6);
 }
+.btn.primary:hover { filter: brightness(1.06); }
+
 .table { width: 100%; border-collapse: collapse; }
 .table th {
   text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line);
+  color: var(--muted); font-weight: 600; font-family: var(--sans);
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
 }
-.table td { padding: 12px 10px; border-bottom: 1px solid var(--line); }
-.table tr:hover td { background: rgba(255, 106, 26, 0.05); }
+.table td { padding: 12px 10px; border-bottom: 1px solid var(--border); }
+.table tr:hover td { background: color-mix(in srgb, var(--ember) 6%, transparent); box-shadow: inset 3px 0 0 var(--ember); }
+
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .dot.ativa { background: var(--ok); }
 .dot.pausada { background: var(--warn); }
@@ -156,12 +285,250 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 
 .empty {
   text-align: center; padding: 44px 20px; color: var(--muted);
-  border: 1px dashed var(--line-2); border-radius: var(--radius);
+  border: 1px dashed var(--border-2); border-radius: var(--radius);
 }
 .empty .big { font-size: 34px; margin-bottom: 10px; }
 
-/* barra de progresso da Forja */
+/* termômetro da Forja — ferro frio → branco incandescente */
 .steps { display: flex; gap: 6px; }
-.steps .st { flex: 1; height: 7px; border-radius: 4px; background: var(--line); }
-.steps .st.done { background: linear-gradient(90deg, var(--ember), var(--flame)); }
-.steps .st.cur { background: var(--flame); box-shadow: 0 0 10px rgba(255, 176, 32, 0.6); }
+.steps .st { flex: 1; height: 7px; border-radius: 4px; background: var(--border); }
+.steps .st.done { background: linear-gradient(90deg, var(--ember-deep), var(--ember)); }
+.steps .st.cur { background: var(--flame); box-shadow: 0 0 12px rgba(255, 192, 26, 0.7); }
+
+/* ── movimento — entrada suave (degrada com reduce-motion) ───── */
+@media (prefers-reduced-motion: no-preference) {
+  .content > * { animation: sf-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  .content > *:nth-child(2) { animation-delay: 0.06s; }
+  .content > *:nth-child(3) { animation-delay: 0.12s; }
+  .content > *:nth-child(4) { animation-delay: 0.18s; }
+  @keyframes sf-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+}
+:root.no-anim *, :root.no-anim *::before, :root.no-anim *::after { animation: none !important; transition: none !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Covil (dashboard) + sidebar rica — portado do design/covil-imersivo
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── sidebar rica: seções, ícones em tile, Pulso, rodapé ──────── */
+.nav .lbl { font-family: var(--sans); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); padding: 2px 8px 3px; margin-top: 12px; }
+.nav .lbl:first-child { margin-top: 2px; }
+.nav a .ico {
+  width: 28px; height: 28px; flex: 0 0 auto; border-radius: 8px;
+  background: var(--inset); display: grid; place-items: center; transition: background 0.14s, color 0.14s;
+}
+.nav a .ico svg { width: 16px; height: 16px; }
+.nav a:hover .ico { background: var(--surface-2); }
+.nav a.active .ico { background: var(--ember-soft); color: var(--ember); filter: none; }
+.insight {
+  margin-top: 4px; border: 1px solid color-mix(in srgb, var(--ember) 34%, var(--border));
+  border-radius: 12px; padding: 10px; display: flex; gap: 10px; align-items: center;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ember) 8%, transparent), transparent);
+}
+.insight .fire { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 9px; display: grid; place-items: center; background: var(--ember-soft); color: var(--ember); }
+.insight .fire svg { width: 19px; height: 19px; }
+.insight .txt { min-width: 0; overflow: hidden; }
+.insight .txt .h { font-size: 11px; font-weight: 700; white-space: nowrap; }
+.insight .txt .h b { color: var(--ember); }
+.insight .txt .s { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar .foot { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 11px; border: 1px solid var(--border); background: var(--surface); overflow: hidden; }
+.sidebar .foot .who { font-size: 12px; font-weight: 600; line-height: 1.25; min-width: 0; }
+.sidebar .foot .who small { display: block; color: var(--muted); font-weight: 500; font-size: 10.5px; }
+.badge.admin { color: var(--ember-hi); border-color: rgba(255, 106, 26, 0.4); background: var(--ember-soft); font-size: 9.5px; padding: 1px 6px; }
+
+/* ── topbar: controles segmentados (switcher de papel + período) ─ */
+.seg, .range { display: flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.seg a, .seg button { border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; padding: 6px 12px; border-radius: 7px; transition: 0.14s; font-family: var(--sans); }
+.seg a:hover { color: var(--text); }
+.seg a.on { background: var(--surface-2); color: var(--ember); }
+.range button { font-family: var(--mono); font-size: 11.5px; padding: 5px 10px; border: 0; background: transparent; color: var(--muted); border-radius: 7px; cursor: pointer; }
+.range button.on { background: var(--surface-2); color: var(--text); }
+
+/* ── hero por papel (retrato em armadura) ─────────────────────── */
+.hero { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 16px; min-height: 340px; background: var(--surface); display: flex; box-shadow: var(--shadow); }
+.hero .bg { position: absolute; inset: 0; z-index: 0; background:
+  radial-gradient(72% 130% at 84% 36%, color-mix(in srgb, var(--ember) 22%, transparent), transparent 58%),
+  radial-gradient(60% 90% at 66% 128%, color-mix(in srgb, var(--ember-deep) 15%, transparent), transparent 72%); }
+.hero .portrait { position: absolute; right: 0; top: 0; bottom: 0; width: 56%; z-index: 1; overflow: hidden; }
+.hero .portrait .member { position: absolute; right: 3%; top: 7%; height: 114%; width: auto;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%); mask-image: linear-gradient(90deg, transparent 0%, #000 30%);
+  filter: saturate(1.06) contrast(1.03) drop-shadow(0 0 60px rgba(255, 90, 20, 0.2)); }
+.hero .portrait::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(0deg, var(--surface) 1%, transparent 25%); }
+.hero .hcontent { position: relative; z-index: 3; padding: 28px 30px; display: flex; flex-direction: column; justify-content: center; max-width: 60%; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+.hero .eye { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ember); font-weight: 700; }
+.hero .big { font-family: var(--display); font-size: 38px; font-weight: 700; letter-spacing: 0.005em; margin: 8px 0; line-height: 1.05; }
+.hero .hcontent p { color: var(--ink-2); font-size: 13.5px; max-width: 370px; margin: 0 0 22px; }
+.hero .glass { display: flex; gap: 11px; flex-wrap: wrap; }
+.hero .g-stat { background: color-mix(in srgb, var(--surface-2) 62%, transparent); backdrop-filter: blur(12px); border: 1px solid var(--border-2); border-radius: 13px; padding: 12px 15px; min-width: 98px; }
+.hero .g-stat .v { font-family: var(--display); font-size: 24px; font-weight: 700; letter-spacing: 0.01em; }
+.hero .g-stat .l { font-family: var(--sans); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px; white-space: nowrap; }
+.hero .g-stat.crit { border-color: color-mix(in srgb, var(--risk) 42%, var(--border)); }
+.hero .g-stat.crit .v { color: var(--risk); }
+.hero .g-stat.warn { border-color: color-mix(in srgb, var(--warn) 38%, var(--border)); }
+.hero .g-stat.warn .v { color: var(--warn); }
+@media (max-width: 900px) { .hero .hcontent { max-width: 100%; } .hero .portrait { opacity: 0.35; } }
+
+/* ── cards de gráfico ─────────────────────────────────────────── */
+.g-2 { grid-template-columns: 1.5fr 1fr; }
+.g-3 { grid-template-columns: 1.15fr 0.95fr 0.9fr; }
+.stack-col { display: flex; flex-direction: column; gap: 16px; }
+.c-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.c-h .t { font-size: 13px; font-weight: 680; }
+.c-h .s { font-size: 11.5px; color: var(--faint); }
+@media (max-width: 1080px) { .g-2, .g-3 { grid-template-columns: 1fr; } }
+
+/* svg dos gráficos */
+svg .grid-line { stroke: var(--grid); stroke-width: 1; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 10px; font-variant-numeric: tabular-nums; }
+svg .axis { fill: var(--faint); }
+
+/* legenda da rosca */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; }
+.legend .item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+.legend .dot { width: 9px; height: 9px; border-radius: 3px; flex: 0 0 auto; }
+.legend .v { margin-left: auto; font-family: var(--mono); color: var(--text); font-weight: 600; }
+.legend.rows { flex-direction: column; gap: 9px; }
+.legend.rows .item { width: 100%; }
+
+/* medidor (no prazo vs meta) */
+.meter-wrap { margin-top: 6px; }
+.meter { height: 12px; border-radius: 7px; background: var(--inset); overflow: hidden; position: relative; border: 1px solid var(--border); }
+.meter .fill { height: 100%; border-radius: 7px; background: linear-gradient(90deg, var(--ember-deep), var(--ember)); }
+.meter .target { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text); opacity: 0.7; }
+.meter-tags { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+.meter-tags .big { font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: 0.01em; }
+
+/* listas do dashboard (rotina, alertas) */
+.list .lrow { display: flex; align-items: center; gap: 11px; padding: 10px 0; border-top: 1px solid var(--border); }
+.list .lrow:first-child { border-top: 0; }
+.list .rmain { min-width: 0; flex: 1; }
+.list .rmain .t { font-size: 13px; font-weight: 580; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list .rmain .s { font-size: 11.5px; color: var(--muted); }
+.list .rside { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+.pill .d { width: 6px; height: 6px; border-radius: 50%; }
+.pill.crit { color: var(--risk); background: color-mix(in srgb, var(--risk) 14%, transparent); }
+.pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+.pill.good { color: var(--ember-hi); background: color-mix(in srgb, var(--ember) 14%, transparent); }
+.chk { width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid var(--faint); flex: 0 0 auto; display: grid; place-items: center; }
+.chk.done { background: var(--ember); border-color: var(--ember); }
+.chk svg { width: 11px; height: 11px; color: #160c06; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Meu Dia (cockpit do membro) — portado do design/app.html
+   ═══════════════════════════════════════════════════════════════ */
+
+/* topbar: busca + sino */
+.tsearch { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 7px 12px; color: var(--muted); min-width: 210px; }
+.tsearch svg { width: 15px; height: 15px; flex: 0 0 auto; }
+.tsearch input { border: 0; background: transparent; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; width: 100%; }
+.tsearch input::placeholder { color: var(--faint); }
+.bell { position: relative; width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); border-radius: 10px; color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+.bell:hover { border-color: var(--ember); color: var(--ember); }
+.bell svg { width: 17px; height: 17px; }
+.bell .dot-n { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--ember); color: #160c06; font-size: 10px; font-weight: 700; display: grid; place-items: center; }
+
+/* saudação do dia */
+.daygreet { margin-bottom: 16px; }
+.daygreet .eye { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ember); font-weight: 700; }
+.daygreet h2 { font-family: var(--display); font-size: 26px; margin: 5px 0 3px; }
+.daygreet p { margin: 0; color: var(--muted); font-size: 13px; }
+
+/* banner do dia (briefing etc.) */
+.daybanner { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding: 14px 16px; }
+.daybanner .ic { width: 40px; height: 40px; flex: 0 0 auto; border-radius: 10px; background: var(--ember-soft); color: var(--ember); display: grid; place-items: center; }
+.daybanner .ic svg { width: 20px; height: 20px; }
+.daybanner .bt { font-weight: 680; font-size: 13.5px; }
+.daybanner .bs { color: var(--muted); font-size: 12.5px; }
+
+/* KPIs ricos (label + chip, valor, sub) */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+.kpi .k-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.kpi .k-label { font-family: var(--sans); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.kpi .k-val { font-family: var(--display); font-size: 30px; font-weight: 700; letter-spacing: 0.01em; margin: 8px 0 2px; }
+.kpi .k-sub { font-size: 11.5px; color: var(--muted); }
+.kpi.flag-crit { border-color: color-mix(in srgb, var(--risk) 34%, var(--border)); }
+.kpi.flag-warn { border-color: color-mix(in srgb, var(--warn) 30%, var(--border)); }
+.chip { font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; padding: 2px 7px; border-radius: 20px; font-family: var(--sans); }
+.chip.crit { color: var(--risk); background: color-mix(in srgb, var(--risk) 15%, transparent); }
+.chip.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 15%, transparent); }
+.chip.good { color: var(--ember-hi); background: color-mix(in srgb, var(--ember) 15%, transparent); }
+@media (max-width: 1080px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .kpis { grid-template-columns: 1fr; } }
+
+/* agenda do dia (horário + título + tag) */
+.agn .time { font-family: var(--mono); font-size: 12.5px; color: var(--ember-hi); flex: 0 0 auto; width: 46px; }
+.linkact { color: var(--ember); font-weight: 600; font-size: 12.5px; white-space: nowrap; }
+.linkact:hover { color: var(--ember-hi); }
+.avatar.sm { width: 30px; height: 30px; font-size: 11px; }
+
+/* ── Crias (carteira) ─────────────────────────────────────────── */
+.pagehead { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.pagehead .eye { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ember); font-weight: 700; }
+.pagehead h2 { font-family: var(--display); font-size: 24px; margin: 5px 0 3px; }
+.pagehead p { margin: 0; color: var(--muted); font-size: 13px; max-width: 620px; }
+.table .crname { font-weight: 600; }
+.pill.dim { color: var(--faint); background: var(--inset); }
+.chip.dim { color: var(--faint); background: var(--inset); border: 1px solid var(--border); }
+
+/* ── Fogueira (Linha de Fogo / Kanban) ────────────────────────── */
+.kboard { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+.kcol { min-width: 236px; flex: 0 0 236px; display: flex; flex-direction: column; gap: 8px; }
+.kcol-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 2px 4px; }
+.kcol-h .kt { font-family: var(--display); font-size: 14px; letter-spacing: 0.01em; }
+.kcol-h .kc { font-family: var(--mono); font-size: 11px; color: var(--faint); background: var(--inset); border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px; }
+.kcol-h .ks { display: block; font-size: 10.5px; color: var(--muted); font-weight: 400; }
+.kcard { display: block; padding: 12px; border-radius: 11px; }
+.kcard .kn { font-size: 13px; font-weight: 620; }
+.kcard .kmeta { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.kcol .empty-min { font-size: 12px; color: var(--faint); padding: 8px 2px; border: 1px dashed var(--border); border-radius: 10px; text-align: center; }
+
+/* ── Tarefas (Lenhas) ─────────────────────────────────────────── */
+.tkfilter { display: flex; gap: 7px; margin: 2px 0 16px; flex-wrap: wrap; }
+.tkfilter button, .tkfilter a { border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 20px; cursor: pointer; font-family: var(--sans); transition: 0.14s; }
+.tkfilter button:hover, .tkfilter a:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(--border)); color: var(--text); }
+.tkfilter button.on, .tkfilter a.on { background: var(--ember-soft); border-color: color-mix(in srgb, var(--ember) 46%, var(--border)); color: var(--ember); }
+.tkgroup + .tkgroup { margin-top: 14px; }
+.tkg-h { display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
+.tkg-h .tt { font-family: var(--display); font-size: 15px; letter-spacing: 0.01em; }
+.tkg-h .ct { font-family: var(--mono); font-size: 11px; color: var(--faint); background: var(--inset); border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px; }
+.tk { display: flex; align-items: center; gap: 12px; padding: 11px 2px; border-top: 1px solid var(--border); }
+.tk:first-of-type { border-top: 0; }
+.tk .rmain { flex: 1; min-width: 0; }
+.tk .rmain .t { font-size: 13.5px; color: var(--text); font-weight: 600; }
+.tk.done .rmain .t { text-decoration: line-through; color: var(--muted); }
+.tk .rmain .s { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.ttag { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; flex: 0 0 auto; }
+.ttag.forja { color: var(--ember); background: color-mix(in srgb, var(--ember) 13%, transparent); border: 1px solid color-mix(in srgb, var(--ember) 30%, transparent); }
+.ttag.rotina { color: var(--plasma); background: color-mix(in srgb, var(--plasma) 12%, transparent); border: 1px solid color-mix(in srgb, var(--plasma) 28%, transparent); }
+.tk .who { width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto; border: 1px solid var(--border-2); font-size: 9.5px; font-weight: 700; color: var(--muted); display: grid; place-items: center; background: var(--surface-2); }
+.tk .due { font-family: var(--mono); font-size: 11.5px; color: var(--muted); flex: 0 0 auto; min-width: 58px; text-align: right; }
+.tk .due.crit { color: var(--risk); }
+.tk .due.warn { color: var(--warn); }
+
+/* ── Brigada (barra de carga) ─────────────────────────────────── */
+.loadbar { height: 8px; border-radius: 6px; background: var(--inset); overflow: hidden; border: 1px solid var(--border); margin-top: 4px; }
+.loadbar .f { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--ember-deep), var(--ember)); }
+
+/* ── Calendário (grade do mês) ────────────────────────────────── */
+.cal-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.cal-nav .mo { font-family: var(--display); font-size: 20px; text-transform: capitalize; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.cal-dow { font-family: var(--sans); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); text-align: center; padding-bottom: 2px; }
+.cal-cell { min-height: 92px; border: 1px solid var(--border); border-radius: 10px; padding: 8px; background: color-mix(in srgb, var(--surface) 40%, transparent); display: flex; flex-direction: column; gap: 4px; }
+.cal-cell.out { opacity: 0.35; }
+.cal-cell.today { border-color: color-mix(in srgb, var(--ember) 50%, var(--border)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ember) 20%, transparent); }
+.cal-cell .dn { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.cal-cell.today .dn { color: var(--ember); font-weight: 700; }
+.cal-ev { font-size: 10.5px; padding: 2px 6px; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-ev.fase { color: var(--ember-hi); background: color-mix(in srgb, var(--ember) 14%, transparent); }
+.cal-ev.cli { color: var(--text); background: var(--surface-2); }
+.cal-ev.roda { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+@media (max-width: 720px) { .cal-cell { min-height: 64px; } }
+
+/* ── Faísca (IA) ──────────────────────────────────────────────── */
+.fa-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.fa-chip { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); font-size: 12.5px; cursor: pointer; transition: 0.14s; }
+.fa-chip:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(--border)); color: var(--text); }
+.fa-composer { background: var(--inset); border: 1px solid var(--border-2); border-radius: 12px; padding: 12px; }
+.fa-composer textarea { width: 100%; min-height: 96px; background: transparent; border: 0; color: var(--ink); font-family: var(--body); font-size: 14px; resize: vertical; outline: none; }
+.fa-composer .bar { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }

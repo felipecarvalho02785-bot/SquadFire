@@ -1,10 +1,20 @@
-export function Topbar({ title, sub, action }: { title: string; sub?: string; action?: React.ReactNode }) {
+export function Topbar({
+  title,
+  sub,
+  right,
+  action,
+}: {
+  title: string;
+  sub?: string;
+  right?: React.ReactNode;
+  action?: React.ReactNode;
+}) {
   return (
     <div className="topbar">
-      <div style={{ flex: 1 }}>
-        <h1>{title}</h1>
-        {sub && <div className="sub">{sub}</div>}
-      </div>
+      <h1>{title}</h1>
+      {sub && <span className="sub">· {sub}</span>}
+      <div style={{ flex: 1 }} />
+      {right}
       {action}
     </div>
   );

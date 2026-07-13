@@ -1,14 +1,20 @@
 import { Sidebar } from '@/components/Sidebar';
 import { getCurrentMembro } from '@/lib/auth';
+import { getPulso } from '@/lib/data/covil';
 import { isSupabaseConfigured } from '@/lib/env';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
+  const [membro, pulso] = await Promise.all([
+    isSupabaseConfigured ? getCurrentMembro() : Promise.resolve(null),
+    getPulso(),
+  ]);
 
   return (
-    <div className="shell">
-      <Sidebar membro={membro} />
-      <div className="main">
+    <>
+      <div className="dragon-bg" aria-hidden />
+      <div className="shell">
+        <Sidebar membro={membro} pulso={pulso} />
+        <div className="main">
         {!isSupabaseConfigured && (
           <div
             style={{
@@ -19,12 +25,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               fontSize: 12.5,
             }}
           >
-            ⚙️ Modo demonstração — Supabase não configurado. Defina as variáveis de ambiente para
+            Modo demonstração — Supabase não configurado. Defina as variáveis de ambiente para
             conectar o banco (ver <code>.env.example</code>).
           </div>
         )}
-        {children}
+          {children}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

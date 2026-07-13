@@ -38,7 +38,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
             <span className={`dot ${cria.status}`} /> {statusLabel(cria.status)}
           </span>
           {forja?.flag_contrato && (
-            <span className="badge">{forja.flag_contrato === 'forja_quente' ? '🔥 Forja Quente' : '♨️ Brasa Viva'}</span>
+            <span className="badge">{forja.flag_contrato === 'forja_quente' ? 'Forja Quente' : 'Brasa Viva'}</span>
           )}
           {cria.em_risco && <span className="badge risk">em risco</span>}
           {gestor && <span className="badge dim">Contas: {gestor.nome}</span>}
@@ -69,7 +69,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
             {forja && !forja.concluida && faseAtual && (
               <AvancarFaseBtn forjaId={forja.id} />
             )}
-            {forja?.concluida && <span className="badge ok">Forja concluída 🎉</span>}
+            {forja?.concluida && <span className="badge ok">Forja concluída</span>}
           </div>
         </div>
 
@@ -142,7 +142,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
 
         {/* briefing por áudio → Faísca estrutura os 6 campos */}
         <div className="card">
-          <div className="eyebrow">🎙️ Briefing por áudio · Faísca</div>
+          <div className="eyebrow">Briefing por áudio · Faísca</div>
           <p className="s" style={{ marginBottom: 10 }}>
             Grave o áudio da Roda de Fogo — a Faísca transcreve (Gemini) e estrutura os 6 campos
             (Claude). Requer as chaves de IA configuradas.
@@ -152,7 +152,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
 
         {/* comentários (registro contínuo) */}
         <div className="card">
-          <div className="eyebrow">💬 Comentários</div>
+          <div className="eyebrow">Comentários</div>
           <ComentarioForm criaId={cria.id} />
           <div style={{ marginTop: 14 }}>
             {comentarios.length === 0 ? (
