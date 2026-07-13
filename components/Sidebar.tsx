@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { iniciais } from '@/lib/format';
 
-type IconKey = 'meu-dia' | 'covil' | 'crias' | 'fogueira' | 'tarefas' | 'calendario' | 'brigada' | 'faisca' | 'forjaria';
+type IconKey = 'meu-dia' | 'covil' | 'crias' | 'linha-de-fogo' | 'tarefas' | 'calendario' | 'biblioteca' | 'brigada' | 'forjaria';
 
 const NAV: { grupo: string; itens: { href: string; ic: IconKey; label: string }[] }[] = [
   {
@@ -13,10 +13,10 @@ const NAV: { grupo: string; itens: { href: string; ic: IconKey; label: string }[
       { href: '/meu-dia', ic: 'meu-dia', label: 'Meu Dia' },
       { href: '/covil', ic: 'covil', label: 'Covil' },
       { href: '/crias', ic: 'crias', label: 'Crias' },
-      { href: '/fogueira', ic: 'fogueira', label: 'Fogueira' },
+      { href: '/fogueira', ic: 'linha-de-fogo', label: 'Linha de Fogo' },
       { href: '/tarefas', ic: 'tarefas', label: 'Tarefas' },
       { href: '/calendario', ic: 'calendario', label: 'Calendário' },
-      { href: '/faisca', ic: 'faisca', label: 'Faísca' },
+      { href: '/biblioteca', ic: 'biblioteca', label: 'Biblioteca' },
     ],
   },
   {
@@ -32,11 +32,11 @@ const ICON: Record<IconKey, React.ReactNode> = {
   'meu-dia': <path d="M12 7v5l3 2M12 21a9 9 0 100-18 9 9 0 000 18z" />,
   covil: <path d="M3 12l9-8 9 8M5 10v10h14V10" />,
   crias: <path d="M9 8a3.2 3.2 0 100-.01M3 20c0-3.3 2.7-5.5 6-5.5m6 0a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4m0 0c3.3 0 6 2.2 6 5.5" />,
-  fogueira: <path d="M12 3c1.8 3-1 4-.7 6.3.3 1.8 2.2 2 2-.2 1.7 1.3 2.5 3.4 2.2 5.4C16.9 19 14.7 22 12 22c-3.1 0-5.4-2.4-5.4-5.6 0-2.5 1.5-4 2.4-5.2.5 1.7 2.2 1.4 2.1-.4C11 8.5 9.6 6 12 3z" />,
+  'linha-de-fogo': <path d="M4 4v16M4 4h5v11H4M9 4h5v8H9M14 4h5v13h-5" />,
   tarefas: <path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2" />,
   calendario: <path d="M4 5h16v16H4zM4 9h16M8 3v4M16 3v4" />,
+  biblioteca: <path d="M4 5h6a2 2 0 012 2v13a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v13a2 2 0 012-2h6z" />,
   brigada: <path d="M12 3l7 3v5c0 4.2-2.9 7.7-7 9-4.1-1.3-7-4.8-7-9V6z" />,
-  faisca: <path d="M12 2l2.2 6.2L20 10l-5.8 1.8L12 18l-2.2-6.2L4 10l5.8-1.8z" />,
   forjaria: <><circle cx="12" cy="12" r="3.2" /><path d="M12 3v2.4M12 18.6V21M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M3 12h2.4M18.6 12H21M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7" /></>,
 };
 
@@ -62,6 +62,19 @@ export function Sidebar({
         </div>
       </div>
 
+      {/* Faísca — assistente IA em destaque no topo */}
+      <Link href="/faisca" className={`faisca-card${path.startsWith('/faisca') ? ' on' : ''}`}>
+        <span className="fc-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2l2.2 6.2L20 10l-5.8 1.8L12 18l-2.2-6.2L4 10l5.8-1.8z" />
+          </svg>
+        </span>
+        <span className="fc-txt">
+          <b>Faísca</b>
+          <small>assistente IA · voz &amp; texto</small>
+        </span>
+      </Link>
+
       <nav className="nav">
         {NAV.map((g) => (
           <div key={g.grupo} style={{ display: 'contents' }}>
@@ -70,7 +83,7 @@ export function Sidebar({
               const active = path === n.href || path.startsWith(n.href + '/');
               return (
                 <Link key={n.href} href={n.href} className={active ? 'active' : ''}>
-                  <span className="ico">
+                  <span className="ic">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
                       {ICON[n.ic]}
                     </svg>
@@ -103,7 +116,7 @@ export function Sidebar({
           {membro?.nome ?? 'Visitante'}
           <small>
             {papelLabel(membro?.papel_primario)}
-            {membro?.is_admin ? <span className="badge admin" style={{ marginLeft: 6 }}>Admin</span> : null}
+            {membro?.is_admin ? ' · Admin' : ''}
           </small>
         </span>
       </div>

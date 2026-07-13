@@ -42,7 +42,7 @@ export default function LoginPage() {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
         <div className="eyebrow" style={{ marginBottom: 8 }}>Squad 08 · E3 Digital</div>
-        <h1 style={{ fontFamily: 'var(--sans)', fontSize: 30, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+        <h1 style={{ fontFamily: 'var(--display)', fontSize: 36, fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
           Squad<span style={{ color: 'var(--ember)' }}>Fire</span>
         </h1>
         <p style={{ color: 'var(--muted)', marginTop: 8, marginBottom: 26, fontSize: 14 }}>

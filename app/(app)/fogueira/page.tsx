@@ -16,12 +16,12 @@ export default async function FogueiraPage() {
 
   return (
     <div className="main">
-      <Topbar title="Fogueira" sub="Linha de Fogo — as Crias por fase da Forja" />
+      <Topbar title="Linha de Fogo" sub="as Crias por fase da Forja" />
       <div className="content">
         <div className="pagehead">
           <div>
             <div className="eye">Operação · Linha de Fogo</div>
-            <h2>Fogueira</h2>
+            <h2>Linha de Fogo</h2>
             <p>As {crias.length} Crias distribuídas nas 7 fases da Forja (frio → quente). Clique numa Cria pra abrir.</p>
           </div>
         </div>
