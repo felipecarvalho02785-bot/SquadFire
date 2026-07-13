@@ -4,8 +4,30 @@ import type { Cria, Forja, Fase, FaseDaForja, Lenha } from '@/lib/types/database
 
 // Todas as leituras respeitam RLS (rodam como o membro logado).
 
+// Crias de demonstração (sem Supabase) — pra ver as telas populadas.
+function demoCrias(): Cria[] {
+  const base = { email: null, telefone_whatsapp: null, produto: 'estruturacao' as const, closer: null, gestor_contas_id: null, clickup_task_id: null, clickup_squad: '08', sincronizado_em: null, created_at: '', updated_at: '' };
+  const mk = (id: string, nome: string, area: string, semana: number | null, status: Cria['status'], risco: boolean, inv: number | null): Cria => ({
+    ...base, id, nome_cliente: nome, area_atuacao: area, clickup_semana: semana, status, em_risco: risco, investimento_midia: inv,
+  });
+  return [
+    mk('d1', 'M. Oliveira Sociedade de Advogados', 'Previdenciário', 1, 'ativa', false, 3000),
+    mk('d2', 'Edi Carlos Advocacia', 'Trabalhista', 2, 'ativa', false, 2500),
+    mk('d3', 'Renato Leo e Advogados Associados', 'Cível', 2, 'ativa', false, 4000),
+    mk('d4', 'Letícia Stein Carlos de Souza', 'Família', 3, 'ativa', true, 3500),
+    mk('d5', 'Mozini Advocacia', 'Empresarial', 3, 'ativa', false, 5000),
+    mk('d6', 'Giancarlo Terezam Advocacia', 'Tributário', 3, 'ativa', false, 2200),
+    mk('d7', 'Giuliane Giorgi Torres', 'Previdenciário', 4, 'ativa', false, 2800),
+    mk('d8', 'Luzia Barbosa Advocacia', 'Cível', 4, 'ativa', false, 3100),
+    mk('d9', 'Mendes Advocacia Previdenciária', 'Previdenciário', 5, 'ativa', true, 6000),
+    mk('d10', 'Ribeiro & Advogados Associados', 'Trabalhista', 6, 'ativa', false, 4500),
+    mk('d11', 'Cardoso & Martins Advocacia', 'A definir', null, 'ativa', false, null),
+    mk('d12', 'Lima & Moraes Advogados', 'A definir', null, 'ativa', false, null),
+  ];
+}
+
 export async function listCrias(): Promise<Cria[]> {
-  if (!isSupabaseConfigured) return [];
+  if (!isSupabaseConfigured) return demoCrias();
   const supabase = await getSupabaseServer();
   const { data, error } = await supabase
     .from('cria')

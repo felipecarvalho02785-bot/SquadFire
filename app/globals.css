@@ -68,8 +68,10 @@
   /* fontes */
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --body: 'Grenze', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
-  --display: 'Grenze Gotisch', 'Cinzel', 'Trajan Pro', Georgia, 'Times New Roman', serif;
+  /* Tipografia: sans limpa em tudo (igual ao protótipo do Covil). A hierarquia
+     vem de peso + tracking, não de família. Gótico/serifa saíram do corpo. */
+  --body: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --display: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font: var(--body);   /* alias legado */
   /* forma */
   --radius: 12px;
@@ -341,7 +343,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
 .hero .portrait::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(0deg, var(--surface) 1%, transparent 25%); }
 .hero .hcontent { position: relative; z-index: 3; padding: 28px 30px; display: flex; flex-direction: column; justify-content: center; max-width: 60%; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
 .hero .eye { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ember); font-weight: 700; }
-.hero .big { font-family: var(--display); font-size: 38px; font-weight: 700; letter-spacing: 0.005em; margin: 8px 0; line-height: 1.05; }
+.hero .big { font-family: var(--display); font-size: 36px; font-weight: 780; letter-spacing: -0.02em; margin: 8px 0; line-height: 1.05; }
 .hero .hcontent p { color: var(--ink-2); font-size: 13.5px; max-width: 370px; margin: 0 0 22px; }
 .hero .glass { display: flex; gap: 11px; flex-wrap: wrap; }
 .hero .g-stat { background: color-mix(in srgb, var(--surface-2) 62%, transparent); backdrop-filter: blur(12px); border: 1px solid var(--border-2); border-radius: 13px; padding: 12px 15px; min-width: 98px; }
@@ -455,3 +457,66 @@ svg .axis { fill: var(--faint); }
 .table .crname { font-weight: 600; }
 .pill.dim { color: var(--faint); background: var(--inset); }
 .chip.dim { color: var(--faint); background: var(--inset); border: 1px solid var(--border); }
+
+/* ── Fogueira (Linha de Fogo / Kanban) ────────────────────────── */
+.kboard { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+.kcol { min-width: 236px; flex: 0 0 236px; display: flex; flex-direction: column; gap: 8px; }
+.kcol-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 0 2px 4px; }
+.kcol-h .kt { font-family: var(--display); font-size: 14px; letter-spacing: 0.01em; }
+.kcol-h .kc { font-family: var(--mono); font-size: 11px; color: var(--faint); background: var(--inset); border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px; }
+.kcol-h .ks { display: block; font-size: 10.5px; color: var(--muted); font-weight: 400; }
+.kcard { display: block; padding: 12px; border-radius: 11px; }
+.kcard .kn { font-size: 13px; font-weight: 620; }
+.kcard .kmeta { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.kcol .empty-min { font-size: 12px; color: var(--faint); padding: 8px 2px; border: 1px dashed var(--border); border-radius: 10px; text-align: center; }
+
+/* ── Tarefas (Lenhas) ─────────────────────────────────────────── */
+.tkfilter { display: flex; gap: 7px; margin: 2px 0 16px; flex-wrap: wrap; }
+.tkfilter button, .tkfilter a { border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 20px; cursor: pointer; font-family: var(--sans); transition: 0.14s; }
+.tkfilter button:hover, .tkfilter a:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(--border)); color: var(--text); }
+.tkfilter button.on, .tkfilter a.on { background: var(--ember-soft); border-color: color-mix(in srgb, var(--ember) 46%, var(--border)); color: var(--ember); }
+.tkgroup + .tkgroup { margin-top: 14px; }
+.tkg-h { display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
+.tkg-h .tt { font-family: var(--display); font-size: 15px; letter-spacing: 0.01em; }
+.tkg-h .ct { font-family: var(--mono); font-size: 11px; color: var(--faint); background: var(--inset); border: 1px solid var(--border); border-radius: 20px; padding: 1px 8px; }
+.tk { display: flex; align-items: center; gap: 12px; padding: 11px 2px; border-top: 1px solid var(--border); }
+.tk:first-of-type { border-top: 0; }
+.tk .rmain { flex: 1; min-width: 0; }
+.tk .rmain .t { font-size: 13.5px; color: var(--text); font-weight: 600; }
+.tk.done .rmain .t { text-decoration: line-through; color: var(--muted); }
+.tk .rmain .s { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.ttag { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; flex: 0 0 auto; }
+.ttag.forja { color: var(--ember); background: color-mix(in srgb, var(--ember) 13%, transparent); border: 1px solid color-mix(in srgb, var(--ember) 30%, transparent); }
+.ttag.rotina { color: var(--plasma); background: color-mix(in srgb, var(--plasma) 12%, transparent); border: 1px solid color-mix(in srgb, var(--plasma) 28%, transparent); }
+.tk .who { width: 26px; height: 26px; border-radius: 50%; flex: 0 0 auto; border: 1px solid var(--border-2); font-size: 9.5px; font-weight: 700; color: var(--muted); display: grid; place-items: center; background: var(--surface-2); }
+.tk .due { font-family: var(--mono); font-size: 11.5px; color: var(--muted); flex: 0 0 auto; min-width: 58px; text-align: right; }
+.tk .due.crit { color: var(--risk); }
+.tk .due.warn { color: var(--warn); }
+
+/* ── Brigada (barra de carga) ─────────────────────────────────── */
+.loadbar { height: 8px; border-radius: 6px; background: var(--inset); overflow: hidden; border: 1px solid var(--border); margin-top: 4px; }
+.loadbar .f { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--ember-deep), var(--ember)); }
+
+/* ── Calendário (grade do mês) ────────────────────────────────── */
+.cal-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.cal-nav .mo { font-family: var(--display); font-size: 20px; text-transform: capitalize; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.cal-dow { font-family: var(--sans); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); text-align: center; padding-bottom: 2px; }
+.cal-cell { min-height: 92px; border: 1px solid var(--border); border-radius: 10px; padding: 8px; background: color-mix(in srgb, var(--surface) 40%, transparent); display: flex; flex-direction: column; gap: 4px; }
+.cal-cell.out { opacity: 0.35; }
+.cal-cell.today { border-color: color-mix(in srgb, var(--ember) 50%, var(--border)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ember) 20%, transparent); }
+.cal-cell .dn { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.cal-cell.today .dn { color: var(--ember); font-weight: 700; }
+.cal-ev { font-size: 10.5px; padding: 2px 6px; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-ev.fase { color: var(--ember-hi); background: color-mix(in srgb, var(--ember) 14%, transparent); }
+.cal-ev.cli { color: var(--text); background: var(--surface-2); }
+.cal-ev.roda { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+@media (max-width: 720px) { .cal-cell { min-height: 64px; } }
+
+/* ── Faísca (IA) ──────────────────────────────────────────────── */
+.fa-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.fa-chip { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); font-size: 12.5px; cursor: pointer; transition: 0.14s; }
+.fa-chip:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(--border)); color: var(--text); }
+.fa-composer { background: var(--inset); border: 1px solid var(--border-2); border-radius: 12px; padding: 12px; }
+.fa-composer textarea { width: 100%; min-height: 96px; background: transparent; border: 0; color: var(--ink); font-family: var(--body); font-size: 14px; resize: vertical; outline: none; }
+.fa-composer .bar { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }

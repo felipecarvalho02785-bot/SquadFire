@@ -1,34 +1,12 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
 import { listCrias } from '@/lib/data/crias';
-import { isSupabaseConfigured } from '@/lib/env';
 import { brl, faseLabel, saudeDaCria } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
-interface CriaRow {
-  id: string;
-  nome_cliente: string;
-  area_atuacao: string | null;
-  clickup_semana: number | null;
-  status: 'ativa' | 'pausada' | 'encerrada';
-  em_risco: boolean;
-  investimento_midia: number | null;
-}
-
-const DEMO: CriaRow[] = [
-  { id: 'd1', nome_cliente: 'M. Oliveira Sociedade de Advogados', area_atuacao: 'Previdenciário', clickup_semana: 1, status: 'ativa', em_risco: false, investimento_midia: 3000 },
-  { id: 'd2', nome_cliente: 'Edi Carlos Advocacia', area_atuacao: 'Trabalhista', clickup_semana: 2, status: 'ativa', em_risco: false, investimento_midia: 2500 },
-  { id: 'd3', nome_cliente: 'Renato Leo e Advogados Associados', area_atuacao: 'Cível', clickup_semana: 2, status: 'ativa', em_risco: false, investimento_midia: 4000 },
-  { id: 'd4', nome_cliente: 'Letícia Stein Carlos de Souza', area_atuacao: 'Família', clickup_semana: 3, status: 'ativa', em_risco: true, investimento_midia: 3500 },
-  { id: 'd5', nome_cliente: 'Mozini Advocacia', area_atuacao: 'Empresarial', clickup_semana: 3, status: 'ativa', em_risco: false, investimento_midia: 5000 },
-  { id: 'd6', nome_cliente: 'Giuliane Giorgi Torres', area_atuacao: 'Previdenciário', clickup_semana: 4, status: 'ativa', em_risco: false, investimento_midia: 2800 },
-  { id: 'd7', nome_cliente: 'Mendes Advocacia Previdenciária', area_atuacao: 'Previdenciário', clickup_semana: 5, status: 'ativa', em_risco: true, investimento_midia: 6000 },
-  { id: 'd8', nome_cliente: 'Cardoso & Martins Advocacia', area_atuacao: 'A definir', clickup_semana: null, status: 'ativa', em_risco: false, investimento_midia: null },
-];
-
 export default async function CriasPage() {
-  const crias: CriaRow[] = isSupabaseConfigured ? await listCrias() : DEMO;
+  const crias = await listCrias();
   const emForja = crias.filter((c) => c.clickup_semana != null).length;
   const backlog = crias.length - emForja;
 

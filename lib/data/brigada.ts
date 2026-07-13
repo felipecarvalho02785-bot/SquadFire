@@ -12,9 +12,20 @@ export interface MembroView {
   lenhas_abertas: number;
 }
 
+function demoBrigada(): MembroView[] {
+  return [
+    { id: 'm1', nome: 'Felipe Carvalho', email: 'felipe@e3.com.br', is_admin: true, papel_primario: 'gestor_contas', papeis: ['gestor_contas'], lenhas_abertas: 8 },
+    { id: 'm2', nome: 'Luiz Mattos', email: 'luiz@e3.com.br', is_admin: false, papel_primario: 'gestor_projetos', papeis: ['gestor_projetos', 'gestor_contas'], lenhas_abertas: 14 },
+    { id: 'm3', nome: 'João Bernardes', email: 'joao@e3.com.br', is_admin: false, papel_primario: 'gestor_projetos', papeis: ['gestor_projetos'], lenhas_abertas: 11 },
+    { id: 'm4', nome: 'Marina Alves', email: 'marina@e3.com.br', is_admin: false, papel_primario: 'gestor_trafego', papeis: ['gestor_trafego'], lenhas_abertas: 9 },
+    { id: 'm5', nome: 'Rafael Nunes', email: 'rafael@e3.com.br', is_admin: false, papel_primario: 'gestor_trafego', papeis: ['gestor_trafego', 'gestor_projetos'], lenhas_abertas: 7 },
+    { id: 'm6', nome: 'Kezia Marciely', email: 'kezia@e3.com.br', is_admin: false, papel_primario: 'gestor_contas', papeis: ['gestor_contas'], lenhas_abertas: 6 },
+  ];
+}
+
 // Brigada: membros ativos + papéis + carga de Lenhas em aberto.
 export async function getBrigada(): Promise<MembroView[]> {
-  if (!isSupabaseConfigured) return [];
+  if (!isSupabaseConfigured) return demoBrigada();
   const supabase = await getSupabaseServer();
 
   const { data: membros } = await supabase
