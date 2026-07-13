@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
 import { estruturarBriefing, iaConfigurada } from '@/lib/ia/anthropic';
-import { transcreverAudio, transcricaoConfigurada } from '@/lib/ia/gemini';
+import { estruturarBriefingGemini, iaGeminiConfigurada, transcreverAudio, transcricaoConfigurada } from '@/lib/ia/gemini';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -16,9 +16,9 @@ export async function POST(request: Request) {
   if (!membro) {
     return NextResponse.json({ error: 'não autenticado' }, { status: 401 });
   }
-  if (!iaConfigurada()) {
+  if (!iaGeminiConfigurada() && !iaConfigurada()) {
     return NextResponse.json(
-      { error: 'IA não configurada (defina ANTHROPIC_API_KEY)' },
+      { error: 'IA não configurada (defina GOOGLE_GENERATIVE_AI_API_KEY)' },
       { status: 501 },
     );
   }
@@ -68,15 +68,18 @@ export async function POST(request: Request) {
     }
   }
 
-  // 2) estruturar os 6 campos com a Faísca (Claude)
+  // 2) estruturar os 6 campos com a Faísca (Gemini primário; Claude fallback)
   let campos;
   try {
-    campos = await estruturarBriefing(transcricao, {
+    const ctx = {
       cliente: (cria as { nome_cliente: string }).nome_cliente,
       fase: (cria as { clickup_semana: number | null }).clickup_semana
         ? `Semana ${(cria as { clickup_semana: number }).clickup_semana}`
         : null,
-    });
+    };
+    campos = iaGeminiConfigurada()
+      ? await estruturarBriefingGemini(transcricao, ctx)
+      : await estruturarBriefing(transcricao, ctx);
   } catch (e) {
     return NextResponse.json({ error: `falha na estruturação: ${String(e)}` }, { status: 502 });
   }

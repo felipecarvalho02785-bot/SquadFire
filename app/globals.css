@@ -797,7 +797,12 @@ svg .axis { fill: var(--faint); }
 .fd-head .ic svg { width: 20px; height: 20px; }
 .fd-head .t { font-family: var(--display); font-size: 17px; line-height: 1.1; }
 .fd-head .s { font-size: 11px; color: var(--muted); }
-.fd-head .x { margin-left: auto; width: 30px; height: 30px; border: 0; background: transparent; color: var(--muted); border-radius: 8px; cursor: pointer; font-size: 18px; }
+.fd-head .fd-voz { margin-left: auto; width: 30px; height: 30px; border: 0; background: transparent; color: var(--muted); border-radius: 8px; cursor: pointer; display: grid; place-items: center; transition: 0.14s; }
+.fd-head .fd-voz svg { width: 18px; height: 18px; }
+.fd-head .fd-voz:hover { background: var(--surface); color: var(--text); }
+.fd-head .fd-voz.on { color: var(--ember); }
+.fd-head .x { width: 30px; height: 30px; border: 0; background: transparent; color: var(--muted); border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+.fd-head .x svg { width: 17px; height: 17px; }
 .fd-head .x:hover { background: var(--surface); color: var(--text); }
 .fd-msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
 .fd-msg { max-width: 84%; }
