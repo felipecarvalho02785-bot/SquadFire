@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { iniciais } from '@/lib/format';
 
 type Papel = 'gestor_contas' | 'gestor_projetos' | 'gestor_trafego';
@@ -56,17 +56,54 @@ export function ForjariaClient({ membro, integracoes, team }: { membro: Membro |
   const [twofa, setTwofa] = useState(false);
   const [salvo, setSalvo] = useState(false);
 
+  // Ao montar, reflete no formulário o que já está salvo (o script inline do
+  // layout já aplicou tema/densidade/animações no documento antes da pintura).
+  useEffect(() => {
+    try {
+      const l = localStorage;
+      const t = l.getItem('sf-tema');
+      if (t) setTema(t);
+      if (l.getItem('sf-densidade') === 'compacto') setDensidade('compacto');
+      if (l.getItem('sf-reduz') === '1') setReduz(true);
+      const raw = l.getItem('sf-prefs');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p.notif) setNotif(p.notif);
+        if (p.canais) setCanais(p.canais);
+        if (p.ia) setIa(p.ia);
+        if (p.forja) setForja(p.forja);
+        if (typeof p.sla === 'number') setSla(p.sla);
+        if (typeof p.twofa === 'boolean') setTwofa(p.twofa);
+      }
+    } catch {
+      /* localStorage indisponível — segue com os defaults */
+    }
+  }, []);
+
+  function persiste(chave: string, valor: string) {
+    try { localStorage.setItem(chave, valor); } catch { /* ignora */ }
+  }
+
   function aplicaTema(v: string) {
     setTema(v);
+    persiste('sf-tema', v);
     const root = document.documentElement;
     const claro = v === 'claro' || (v === 'sistema' && window.matchMedia('(prefers-color-scheme: light)').matches);
     if (claro) root.setAttribute('data-theme', 'light');
     else root.removeAttribute('data-theme');
   }
-  function aplicaReduz(v: boolean) { setReduz(v); document.documentElement.classList.toggle('no-anim', v); }
-  function aplicaDensidade(v: string) { setDensidade(v); document.documentElement.classList.toggle('density-compact', v === 'compacto'); }
+  function aplicaReduz(v: boolean) { setReduz(v); persiste('sf-reduz', v ? '1' : '0'); document.documentElement.classList.toggle('no-anim', v); }
+  function aplicaDensidade(v: string) { setDensidade(v); persiste('sf-densidade', v); document.documentElement.classList.toggle('density-compact', v === 'compacto'); }
 
-  function salvar() { setSalvo(true); setTimeout(() => setSalvo(false), 1800); }
+  function salvar() {
+    try {
+      localStorage.setItem('sf-prefs', JSON.stringify({ notif, canais, ia, forja, sla, twofa }));
+    } catch {
+      /* localStorage indisponível */
+    }
+    setSalvo(true);
+    setTimeout(() => setSalvo(false), 1800);
+  }
 
   const nome = membro?.nome ?? 'Felipe Carvalho';
   const email = membro?.email ?? 'felipecarve3digital@gmail.com';
