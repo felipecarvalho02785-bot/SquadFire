@@ -118,7 +118,7 @@ function fira(r: RotinaRow, d: Date): boolean {
   const dow = d.getDay();
   const diaTxt = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'][dow];
   switch (r.recorrencia_tipo) {
-    case 'diaria': return true;
+    case 'diaria': return dow >= 1 && dow <= 5; // dias úteis (seg–sex)
     case 'semanal': return DOW_MAP[String(cfg.dia)] === dow;
     case 'dias_da_semana': return Array.isArray(cfg.dias) && (cfg.dias as string[]).includes(diaTxt);
     case 'mensal': return d.getDate() === Number(cfg.dia_mes);
