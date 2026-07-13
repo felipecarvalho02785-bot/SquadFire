@@ -16,6 +16,7 @@ export interface RodaProps {
   gestorContas: string | null;
   cliente: string;
   proximas: { id: string; titulo: string; sub: string; done: boolean }[];
+  googleConectado: boolean;
 }
 
 type Campos = {
@@ -43,7 +44,7 @@ type Estado = 'idle' | 'gravando' | 'processando' | 'pronto' | 'erro';
 
 function mmss(s: number) { return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }
 
-export function RodaDeFogo({ criaId, nome, area, faseOrdem, faseNome, gestorContas, cliente, proximas }: RodaProps) {
+export function RodaDeFogo({ criaId, nome, area, faseOrdem, faseNome, gestorContas, cliente, proximas, googleConectado }: RodaProps) {
   const [estado, setEstado] = useState<Estado>('idle');
   const [seg, setSeg] = useState(0);
   const [pauta, setPauta] = useState(PAUTA_PADRAO.map((p) => ({ ...p, done: false })));
@@ -54,12 +55,53 @@ export function RodaDeFogo({ criaId, nome, area, faseOrdem, faseNome, gestorCont
   const [notaOk, setNotaOk] = useState(false);
   const [salvandoNota, startNota] = useTransition();
 
+  // Agendar a Roda de Fogo no Google Agenda
+  const [quando, setQuando] = useState('');
+  const [dur, setDur] = useState(30);
+  const [agLink, setAgLink] = useState<string | null>(null);
+  const [agErro, setAgErro] = useState<string | null>(null);
+  const [agendando, startAgendar] = useTransition();
+
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const speechRef = useRef<SpeechRec | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+
+  // Sugere um horário padrão (amanhã 10:00) — feito no cliente pra não quebrar
+  // a hidratação (datetime-local depende do fuso do navegador).
+  useEffect(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(10, 0, 0, 0);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    setQuando(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+  }, []);
+
+  function agendarNoGoogle() {
+    setAgErro(null); setAgLink(null);
+    if (!quando) { setAgErro('escolha a data e a hora'); return; }
+    const inicio = new Date(quando);
+    const fim = new Date(inicio.getTime() + dur * 60000);
+    startAgendar(async () => {
+      try {
+        const res = await fetch('/api/google/roda', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            titulo: `Roda de Fogo · ${nome}`,
+            descricao: `Reunião semanal${faseOrdem ? ` · Fase ${faseOrdem} — ${faseNome}` : ''}`,
+            inicioISO: inicio.toISOString(), fimISO: fim.toISOString(),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) { setAgErro(data.error ?? 'não deu para agendar'); return; }
+        setAgLink(data.htmlLink ?? null);
+      } catch {
+        setAgErro('não deu para agendar — tenta de novo');
+      }
+    });
+  }
 
   async function iniciar() {
     setMsg(null); setCampos(null); setTranscricao('');
@@ -249,6 +291,30 @@ export function RodaDeFogo({ criaId, nome, area, faseOrdem, faseNome, gestorCont
                 <div className="drow"><span>Fase</span><b>{faseOrdem ? `${faseOrdem} de 7 · ${faseNome}` : 'Backlog'}</b></div>
                 <div className="drow"><span>Data</span><b className="mono">{dataHoje}</b></div>
               </div>
+            </div>
+
+            {/* agendar no Google Agenda */}
+            <div className="card">
+              <div className="c-h"><span className="t">Agendar no Google Agenda</span>{googleConectado && <span className="chip good">conectado</span>}</div>
+              {googleConectado ? (
+                <>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                    <input type="datetime-local" className="txtin" style={{ flex: 1 }} value={quando} onChange={(e) => setQuando(e.target.value)} />
+                    <select className="selin" value={dur} onChange={(e) => setDur(Number(e.target.value))}>
+                      <option value={30}>30 min</option>
+                      <option value={45}>45 min</option>
+                      <option value={60}>1 h</option>
+                    </select>
+                  </div>
+                  <button className="btn primary" style={{ marginTop: 10 }} onClick={agendarNoGoogle} disabled={agendando}>
+                    {agendando ? 'Agendando…' : 'Agendar Roda de Fogo'}
+                  </button>
+                  {agLink && <div className="s" style={{ marginTop: 8 }}><a href={agLink} target="_blank" rel="noreferrer" style={{ color: 'var(--ember-hi)' }}>Evento criado — abrir no Google ↗</a></div>}
+                  {agErro && <div className="s" style={{ color: 'var(--risk)', marginTop: 8 }}>{agErro}</div>}
+                </>
+              ) : (
+                <p className="s" style={{ color: 'var(--muted)' }}>Conecte o Google Agenda em <a href="/forjaria" style={{ color: 'var(--ember-hi)' }}>Configurações</a> pra agendar a reunião direto no seu calendário.</p>
+              )}
             </div>
 
             <div className="card">
