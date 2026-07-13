@@ -33,7 +33,7 @@ export function AreaChart({ data }: { data: number[] }) {
           <text x={L - 6} y={Y(g) + 3} textAnchor="end">{g}</text>
         </g>
       ))}
-      <path d={area} fill={EMBER} opacity={0.13} />
+      <path className="area-in" d={area} fill={EMBER} opacity={0.13} />
       <path d={line} fill="none" stroke={EMBER} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
       <circle cx={X(n - 1)} cy={Y(last)} r={5} fill={EMBER} stroke={SURFACE} strokeWidth={2} />
       <text x={X(n - 1) - 4} y={Y(last) - 9} textAnchor="end" fill="#9a8e85">{last}</text>
@@ -119,7 +119,7 @@ export function Bars({ data }: { data: number[] }) {
         const y = T + ih - h;
         return (
           <g key={i}>
-            {v > 0 && <rect x={x} y={y} width={bw} height={h} rx={4} fill={EMBER} />}
+            {v > 0 && <rect className="bar-grow" x={x} y={y} width={bw} height={h} rx={4} fill={EMBER} />}
             <text x={x + bw / 2} y={y - 5} textAnchor="middle" fill="#9a8e85">{v}</text>
             <text x={x + bw / 2} y={H - 26} textAnchor="middle" className="axis" fontSize={8.5}>{i + 1}</text>
           </g>
@@ -153,7 +153,7 @@ export function HBars({ data }: { data: CargaItem[] }) {
         return (
           <g key={i}>
             <text x={L - 8} y={y + bh / 2 + 3} textAnchor="end" fill="#9a8e85" fontSize={11}>{d.nome}</text>
-            <rect x={L} y={y} width={Math.max(2, w)} height={bh} rx={4} fill={EMBER} />
+            <rect className="hbar-grow" x={L} y={y} width={Math.max(2, w)} height={bh} rx={4} fill={EMBER} />
             <text x={L + w + 7} y={y + bh / 2 + 3} fill="#9a8e85" fontSize={11}>{d.valor}</text>
           </g>
         );

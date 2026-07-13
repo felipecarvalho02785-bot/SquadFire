@@ -535,3 +535,125 @@ svg .axis { fill: var(--faint); }
 .fa-composer { background: var(--inset); border: 1px solid var(--border-2); border-radius: 12px; padding: 12px; }
 .fa-composer textarea { width: 100%; min-height: 96px; background: transparent; border: 0; color: var(--ink); font-family: var(--body); font-size: 14px; resize: vertical; outline: none; }
 .fa-composer .bar { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SF · VIDA — vida em cada interação (bordas de brasa, reveal, gráficos)
+   ═══════════════════════════════════════════════════════════════ */
+@property --sf-ang { syntax: '<angle>'; inherits: false; initial-value: 218deg; }
+
+/* borda de brasa que corre ao passar o mouse — em todo card/kpi */
+.card, .kpi { position: relative; }
+.card::after, .kpi::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; z-index: 2;
+  pointer-events: none; opacity: 0;
+  background: conic-gradient(from var(--sf-ang),
+    transparent 0 55%, color-mix(in srgb, var(--ember) 55%, transparent) 70%, var(--ember-hi) 82%, transparent 92%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  transition: opacity 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.card > *, .kpi > * { position: relative; z-index: 1; }
+.card:hover { border-color: color-mix(in srgb, var(--ember) 30%, var(--border)); box-shadow: 0 16px 34px -22px rgba(0, 0, 0, 0.9), 0 0 0 1px color-mix(in srgb, var(--ember) 10%, transparent); }
+@media (prefers-reduced-motion: no-preference) {
+  .card:hover::after, .kpi:hover::after { opacity: 0.9; animation: sf-border-run 2.8s linear infinite; }
+  @keyframes sf-border-run { to { --sf-ang: 578deg; } }
+}
+
+/* reveal escalonado dos cards dentro dos grids */
+@media (prefers-reduced-motion: no-preference) {
+  .grid > *, .kpis > * { animation: sf-rise 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  .grid > *:nth-child(2), .kpis > *:nth-child(2) { animation-delay: 0.05s; }
+  .grid > *:nth-child(3), .kpis > *:nth-child(3) { animation-delay: 0.1s; }
+  .grid > *:nth-child(4), .kpis > *:nth-child(4) { animation-delay: 0.15s; }
+}
+
+/* animações dos gráficos (crescer/encher na entrada) */
+@media (prefers-reduced-motion: no-preference) {
+  .bar-grow { transform-box: fill-box; transform-origin: bottom; animation: sf-bar 0.75s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  @keyframes sf-bar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .hbar-grow { transform-box: fill-box; transform-origin: left; animation: sf-hbar 0.85s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  @keyframes sf-hbar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .meter .fill { transform-origin: left; animation: sf-hbar 1.05s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  .area-in { animation: sf-fade 0.9s ease both; }
+  @keyframes sf-fade { from { opacity: 0; } to { opacity: 1; } }
+  .livedot { animation: sf-pulse 2.4s ease-in-out infinite; }
+  @keyframes sf-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+}
+
+/* pressionar controles dá retorno */
+.btn:active, .seg a:active, .range button:active, .switch:active { transform: translateY(1px) scale(0.99); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Tema claro (toggle na Forjaria) — data-theme="light" na raiz
+   ═══════════════════════════════════════════════════════════════ */
+:root[data-theme="light"] {
+  --bg: #f4efe9; --bg-2: #ffffff; --surface: #ffffff; --surface-2: #f5efe9; --inset: #ece4db; --panel: #ffffff; --panel-2: #f5efe9;
+  --border: #e6ddd2; --border-2: #d9ccbe; --line: #e6ddd2; --line-2: #d9ccbe; --grid: #e7ded4;
+  --text: #211814; --ink: #211814; --ink-2: #4a3f38; --muted: #6e6157; --faint: #9c8e83;
+  --ember: #e1560b; --ember-hi: #ff8636; --ember-deep: #bf430a; --ember-soft: rgba(225, 86, 11, 0.12);
+  --plasma: #0c8ca6; --plasma-hi: #33b3cb; --plasma-soft: rgba(12, 140, 166, 0.12);
+  --ok: #1a9e63; --warn: #b37d08; --risk: #d22b38;
+}
+:root[data-theme="light"] body, :root[data-theme="light"] * { text-shadow: none !important; }
+:root[data-theme="light"] .dragon-bg { opacity: 0.06; }
+:root[data-theme="light"] .topbar h1, :root[data-theme="light"] .hero .big { text-shadow: none !important; }
+
+/* densidade compacta (toggle) — aperta ainda mais */
+:root.density-compact .content { padding: 12px 18px 32px; }
+:root.density-compact .card { padding: 12px 13px; }
+:root.density-compact .grid, :root.density-compact .kpis { gap: 12px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Configurações (Forjaria) — controles com vida
+   ═══════════════════════════════════════════════════════════════ */
+.set-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.set-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .set-grid { grid-template-columns: 1fr; } }
+.setcard .sc-h { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.setcard .sc-h .ic { width: 30px; height: 30px; border-radius: 8px; background: var(--ember-soft); color: var(--ember); display: grid; place-items: center; flex: 0 0 auto; }
+.setcard .sc-h .ic svg { width: 17px; height: 17px; }
+.setcard .sc-h .t { font-family: var(--display); font-size: 16px; }
+.setcard .sc-h .s { margin-left: auto; font-size: 11px; color: var(--faint); }
+.setrow { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
+.setrow:first-of-type { border-top: 0; }
+.setrow .rmain { flex: 1; min-width: 0; }
+.setrow .rmain .t { font-weight: 600; font-size: 13.5px; }
+.setrow .rmain .s { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+/* toggle */
+.switch { width: 44px; height: 25px; border-radius: 20px; border: 1px solid var(--border-2); background: var(--inset); position: relative; cursor: pointer; flex: 0 0 auto; transition: background 0.2s, border-color 0.2s; padding: 0; }
+.switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 19px; height: 19px; border-radius: 50%; background: var(--muted); transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), background 0.2s; }
+.switch.on { background: linear-gradient(90deg, var(--ember-deep), var(--ember)); border-color: transparent; }
+.switch.on::after { transform: translateX(19px); background: #fff; }
+
+/* segmented (tema, densidade) */
+.seg2 { display: inline-flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; flex: 0 0 auto; }
+.seg2 button { border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; padding: 6px 11px; border-radius: 7px; font-family: var(--sans); display: inline-flex; align-items: center; gap: 6px; transition: 0.14s; }
+.seg2 button svg { width: 14px; height: 14px; }
+.seg2 button:hover { color: var(--text); }
+.seg2 button.on { background: var(--surface-2); color: var(--ember); }
+
+/* select + input + stepper */
+.selin, .txtin { background: var(--surface); border: 1px solid var(--border-2); border-radius: 9px; color: var(--text); font-family: var(--body); font-size: 13px; padding: 8px 11px; outline: none; min-width: 160px; transition: border-color 0.14s; }
+.selin:focus, .txtin:focus { border-color: color-mix(in srgb, var(--ember) 45%, var(--border-2)); }
+.stepper { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border-2); border-radius: 9px; padding: 4px; }
+.stepper button { width: 26px; height: 26px; border-radius: 6px; border: 0; background: var(--surface-2); color: var(--text); cursor: pointer; font-size: 15px; line-height: 1; display: grid; place-items: center; transition: 0.12s; }
+.stepper button:hover { background: var(--ember-soft); color: var(--ember); }
+.stepper .val { font-family: var(--mono); font-size: 13px; min-width: 52px; text-align: center; }
+
+/* chips de canal */
+.chipsel { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 20px; border: 1px solid var(--border-2); background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; transition: 0.14s; }
+.chipsel.on { color: var(--ember); border-color: rgba(255, 106, 26, 0.4); background: var(--ember-soft); }
+
+/* integrações + membros */
+.intg-row, .mrow { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid var(--border); }
+.intg-row:first-of-type, .mrow:first-of-type { border-top: 0; }
+.intg-row .iic { width: 34px; height: 34px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--border-2); display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--muted); flex: 0 0 auto; }
+.intg-row .rmain, .mrow .rmain { flex: 1; min-width: 0; }
+.intg-row .rmain .t, .mrow .rmain .t { font-weight: 600; font-size: 13.5px; }
+.intg-row .rmain .s, .mrow .rmain .s { font-size: 11.5px; color: var(--muted); }
+.stbadge { font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; }
+.stbadge.on { color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); }
+.stbadge.off { color: var(--faint); background: var(--inset); border: 1px solid var(--border); }
+.savebtn { font-family: var(--sans); }
