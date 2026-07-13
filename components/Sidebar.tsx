@@ -26,7 +26,10 @@ export function Sidebar({ membro }: { membro: { nome: string; papel_primario: st
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="mark">🔥</div>
+        <div className="mark">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/img/squad-icon.png" alt="SquadFire" width={36} height={36} />
+        </div>
         <div>
           <b>SquadFire</b>
           <span>Squad 08 · a Forja</span>

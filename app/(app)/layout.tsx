@@ -6,9 +6,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
 
   return (
-    <div className="shell">
-      <Sidebar membro={membro} />
-      <div className="main">
+    <>
+      <div className="dragon-bg" aria-hidden />
+      <div className="shell">
+        <Sidebar membro={membro} />
+        <div className="main">
         {!isSupabaseConfigured && (
           <div
             style={{
@@ -23,8 +25,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             conectar o banco (ver <code>.env.example</code>).
           </div>
         )}
-        {children}
+          {children}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
