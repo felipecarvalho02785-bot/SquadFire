@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/Sidebar';
+import { FaiscaDrawer } from '@/components/FaiscaDrawer';
 import { getCurrentMembro } from '@/lib/auth';
 import { getPulso } from '@/lib/data/covil';
 import { isSupabaseConfigured } from '@/lib/env';
@@ -32,6 +33,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {children}
         </div>
       </div>
+      <FaiscaDrawer />
     </>
   );
 }

@@ -61,8 +61,8 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Faísca — assistente IA em destaque no topo */}
-      <Link href="/faisca" className={`faisca-card${path.startsWith('/faisca') ? ' on' : ''}`}>
+      {/* Faísca — assistente IA (abre o drawer de chat) */}
+      <button type="button" className="faisca-card" onClick={() => window.dispatchEvent(new Event('faisca:open'))}>
         <span className="fc-ic">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2l2.2 6.2L20 10l-5.8 1.8L12 18l-2.2-6.2L4 10l5.8-1.8z" />
@@ -72,7 +72,7 @@ export function Sidebar({
           <b>Faísca</b>
           <small>assistente IA · voz &amp; texto</small>
         </span>
-      </Link>
+      </button>
 
       <nav className="nav">
         {NAV.map((g) => (
