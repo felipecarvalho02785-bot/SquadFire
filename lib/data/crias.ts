@@ -37,16 +37,57 @@ export async function listCrias(): Promise<Cria[]> {
   return (data as Cria[]) ?? [];
 }
 
+export interface GargaloView {
+  id: string;
+  descricao: string;
+  status: 'aberto' | 'em_resolucao' | 'resolvido';
+}
+
 export interface CriaDetalhe {
   cria: Cria;
   forja: Forja | null;
   fases: (FaseDaForja & { fase: Fase })[];
   lenhas: Lenha[];
   gestor: { nome: string } | null;
+  gargalos: GargaloView[];
+  briefingsSemana: number;
+}
+
+const FASES_NOMES = ['Alinhamento', 'Diagnóstico 360', 'Treinamento', 'Consultoria', 'Implementação CRM + IA', 'Auditoria de Mídia', 'Auditoria Criativa'];
+
+function demoCriaDetalhe(id: string): CriaDetalhe {
+  const cria = demoCrias().find((c) => c.id === id) ?? demoCrias()[0];
+  const atual = 1; // fase corrente (demo)
+  const forjaId = `${cria.id}-forja`;
+  const fases = FASES_NOMES.map((nome, i): FaseDaForja & { fase: Fase } => {
+    const ordem = i + 1;
+    return {
+      id: `${cria.id}-f${ordem}`,
+      forja_id: forjaId,
+      fase_id: `fase-${ordem}`,
+      ordem,
+      data_prevista_inicio: null,
+      data_prevista_fim: null,
+      data_realizada_inicio: null,
+      data_realizada_fim: null,
+      status: ordem < atual ? 'concluida' : ordem === atual ? 'em_andamento' : 'pendente',
+      fase: { id: `fase-${ordem}`, ordem, nome, duracao_dias: 7, is_gate: ordem === 2, gate_descricao: null },
+    };
+  });
+  const faseAtualId = fases[atual - 1].id;
+  const lenhas: Lenha[] = [
+    { id: `${cria.id}-l1`, tipo: 'forja', titulo: 'Revisar entregáveis da fase', descricao: null, status: 'pendente', prioridade: 'alta', prazo: null, responsavel_id: null, fase_da_forja_id: faseAtualId, rotina_id: null, data_referencia: null, concluida_em: null, created_at: '', updated_at: '' },
+    { id: `${cria.id}-l2`, tipo: 'forja', titulo: 'Agendar Roda de Fogo semanal', descricao: null, status: 'pendente', prioridade: 'media', prazo: null, responsavel_id: null, fase_da_forja_id: faseAtualId, rotina_id: null, data_referencia: null, concluida_em: null, created_at: '', updated_at: '' },
+  ];
+  const forja: Forja = {
+    id: forjaId, cria_id: cria.id, data_inicio: '2026-07-07', flag_contrato: cria.em_risco ? 'brasa_viva' : 'forja_quente',
+    fase_atual_id: faseAtualId, concluida: false, created_at: '', updated_at: '',
+  };
+  return { cria, forja, fases, lenhas, gestor: { nome: 'Felipe Carvalho' }, gargalos: [], briefingsSemana: 0 };
 }
 
 export async function getCriaDetalhe(id: string): Promise<CriaDetalhe | null> {
-  if (!isSupabaseConfigured) return null;
+  if (!isSupabaseConfigured) return demoCriaDetalhe(id);
   const supabase = await getSupabaseServer();
 
   const { data: cria } = await supabase.from('cria').select('*').eq('id', id).maybeSingle();
@@ -88,7 +129,24 @@ export async function getCriaDetalhe(id: string): Promise<CriaDetalhe | null> {
     gestor = (g as { nome: string }) ?? null;
   }
 
-  return { cria: cria as Cria, forja: (forja as Forja) ?? null, fases, lenhas, gestor };
+  // gargalos abertos + briefings desta semana (KPIs e aba Gargalos)
+  const seteDias = new Date();
+  seteDias.setDate(seteDias.getDate() - 7);
+  const [{ data: gargData }, { count: briefCount }] = await Promise.all([
+    supabase.from('gargalo').select('id, descricao, status').eq('cria_id', id).order('created_at', { ascending: false }),
+    supabase.from('briefing').select('*', { count: 'exact', head: true }).eq('cria_id', id).gte('created_at', seteDias.toISOString()),
+  ]);
+  const gargalos = (gargData as GargaloView[]) ?? [];
+
+  return {
+    cria: cria as Cria,
+    forja: (forja as Forja) ?? null,
+    fases,
+    lenhas,
+    gestor,
+    gargalos,
+    briefingsSemana: briefCount ?? 0,
+  };
 }
 
 export interface ComentarioView {

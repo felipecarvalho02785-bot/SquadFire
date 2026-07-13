@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { iniciais } from '@/lib/format';
 
 type IconKey = 'meu-dia' | 'covil' | 'crias' | 'linha-de-fogo' | 'tarefas' | 'calendario' | 'biblioteca' | 'brigada' | 'forjaria';
@@ -48,6 +49,23 @@ export function Sidebar({
   pulso: { forjasQuentes: number; noPrazoPct: number };
 }) {
   const path = usePathname();
+  const [rail, setRail] = useState(false);
+
+  // Sincroniza o estado local com a classe aplicada pelo script inline (sem flash).
+  useEffect(() => {
+    setRail(document.documentElement.classList.contains('sf-rail'));
+  }, []);
+
+  function toggleRail() {
+    const next = !document.documentElement.classList.contains('sf-rail');
+    document.documentElement.classList.toggle('sf-rail', next);
+    try {
+      localStorage.setItem('sf-rail', next ? '1' : '0');
+    } catch {
+      /* localStorage indisponível — segue só no estado da sessão */
+    }
+    setRail(next);
+  }
 
   return (
     <aside className="sidebar">
@@ -59,10 +77,22 @@ export function Sidebar({
         <div className="brandtext">
           <b>Squad<i>Fire</i></b>
         </div>
+        <button
+          type="button"
+          className="rail-toggle"
+          onClick={toggleRail}
+          aria-label={rail ? 'Expandir menu' : 'Minimizar menu'}
+          aria-pressed={rail}
+          title={rail ? 'Expandir menu' : 'Minimizar menu'}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
       </div>
 
       {/* Faísca — assistente IA (abre o drawer de chat) */}
-      <button type="button" className="faisca-card" onClick={() => window.dispatchEvent(new Event('faisca:open'))}>
+      <button type="button" className="faisca-card" title="Faísca — assistente IA" onClick={() => window.dispatchEvent(new Event('faisca:open'))}>
         <span className="fc-ic">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2l2.2 6.2L20 10l-5.8 1.8L12 18l-2.2-6.2L4 10l5.8-1.8z" />
@@ -81,13 +111,13 @@ export function Sidebar({
             {g.itens.map((n) => {
               const active = path === n.href || path.startsWith(n.href + '/');
               return (
-                <Link key={n.href} href={n.href} className={active ? 'active' : ''}>
+                <Link key={n.href} href={n.href} className={active ? 'active' : ''} title={n.label}>
                   <span className="ic">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
                       {ICON[n.ic]}
                     </svg>
                   </span>
-                  {n.label}
+                  <span className="nm">{n.label}</span>
                 </Link>
               );
             })}
