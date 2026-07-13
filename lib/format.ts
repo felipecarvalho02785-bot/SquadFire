@@ -24,3 +24,15 @@ export function faseLabel(semana: number | null | undefined): string {
 export function iniciais(nome: string): string {
   return nome.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
 }
+
+// Saúde da Forja de uma Cria (para o pill da carteira).
+export function saudeDaCria(c: { status: string; em_risco: boolean; clickup_semana: number | null }): {
+  label: string;
+  kind: 'good' | 'warn' | 'crit' | 'dim';
+} {
+  if (c.status === 'pausada') return { label: 'Cinzas', kind: 'dim' };
+  if (c.status === 'encerrada') return { label: 'Temperada', kind: 'dim' };
+  if (!c.clickup_semana) return { label: 'Pré-Forja', kind: 'dim' };
+  if (c.em_risco) return { label: 'Apagando', kind: 'crit' };
+  return { label: 'Em Chamas', kind: 'good' };
+}

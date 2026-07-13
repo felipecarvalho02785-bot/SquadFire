@@ -446,3 +446,12 @@ svg .axis { fill: var(--faint); }
 .linkact { color: var(--ember); font-weight: 600; font-size: 12.5px; white-space: nowrap; }
 .linkact:hover { color: var(--ember-hi); }
 .avatar.sm { width: 30px; height: 30px; font-size: 11px; }
+
+/* ── Crias (carteira) ─────────────────────────────────────────── */
+.pagehead { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.pagehead .eye { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ember); font-weight: 700; }
+.pagehead h2 { font-family: var(--display); font-size: 24px; margin: 5px 0 3px; }
+.pagehead p { margin: 0; color: var(--muted); font-size: 13px; max-width: 620px; }
+.table .crname { font-weight: 600; }
+.pill.dim { color: var(--faint); background: var(--inset); }
+.chip.dim { color: var(--faint); background: var(--inset); border: 1px solid var(--border); }
