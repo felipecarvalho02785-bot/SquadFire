@@ -1177,3 +1177,23 @@ create policy "squad_atualiza_storage" on storage.objects for update to authenti
 create policy "squad_remove_storage" on storage.objects for delete to authenticated
   using (bucket_id in ('contratos','briefings','entregaveis') and app.is_membro());
 
+
+
+-- ┌── supabase/migrations/0012_lenha_avulsa.sql
+-- ─────────────────────────────────────────────────────────────
+-- Lenha avulsa — "tarefas do dia" criáveis e delegáveis por qualquer membro.
+alter type tipo_lenha add value if not exists 'avulsa';
+
+alter table lenha drop constraint if exists lenha_tipo_coerente;
+alter table lenha add constraint lenha_tipo_coerente check (
+  (tipo = 'forja'  and fase_da_forja_id is not null and rotina_id is null) or
+  (tipo = 'rotina' and rotina_id is not null and fase_da_forja_id is null) or
+  (tipo not in ('forja','rotina') and fase_da_forja_id is null and rotina_id is null)
+);
+
+drop policy if exists p_lenha_ins on lenha;
+create policy p_lenha_ins on lenha for insert to authenticated
+  with check (
+    (fase_da_forja_id is not null and (app.has_papel('gestor_projetos') or app.is_admin()))
+    or (fase_da_forja_id is null and app.is_membro())
+  );

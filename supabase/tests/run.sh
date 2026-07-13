@@ -93,6 +93,18 @@ begin
   exception when check_violation then null; -- ok
   end;
 
+  -- lenha avulsa: aceita sem fase e sem rotina (tarefa do dia)
+  insert into lenha (tipo, titulo) values ('avulsa','tarefa do dia teste');
+  delete from lenha where titulo='tarefa do dia teste';
+
+  -- lenha avulsa NÃO pode pendurar numa fase (senão deixa de ser avulsa)
+  begin
+    insert into lenha (tipo, titulo, fase_da_forja_id)
+      values ('avulsa','avulsa com fase', (select id from fase_da_forja limit 1));
+    raise exception 'lenha avulsa com fase passou no check';
+  exception when check_violation then null; -- ok
+  end;
+
   -- RPC pública avancar_fase (wrapper) opera igual à função de app
   update lenha set status='concluida'
     where fase_da_forja_id=(select id from fase_da_forja where ordem=2 limit 1);
