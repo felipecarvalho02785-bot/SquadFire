@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, type FunctionDeclaration, type Part } from '@google/generative-ai';
 
 // Gemini é o ÚNICO provedor de IA (tier gratuito, sem depender de crédito pago):
 // ingestão (áudio→texto), chat da Faísca e estruturação de briefing.
@@ -100,25 +100,56 @@ export async function transcreverAudio(audio: Buffer, mimeType: string): Promise
   return result.response.text().trim();
 }
 
-// ── chat da Faísca (drawer) ─────────────────────────────────────────────────
-export async function conversarFaiscaGemini(
+// ── chat da Faísca COM ferramentas (function calling) ───────────────────────
+const SISTEMA_FAISCA =
+  'Você é a Faísca, a assistente de IA do Squad 08 da E3 Digital — uma agência que ' +
+  'estrutura escritórios de advocacia. Vocabulário da casa: Cria = cliente, Forja = a ' +
+  'Estruturação (projeto de 7 fases × 7 dias), Lenha = tarefa, Roda de Fogo = reunião ' +
+  'semanal, Estopim = SLA. Responda SEMPRE em português do Brasil, objetiva, prática e ' +
+  'calorosa.\n\nVocê PODE AGIR usando as ferramentas: criar Lenhas (tarefas), buscar ' +
+  'Crias e resumir o dia. Quando o usuário PEDIR uma ação (ex.: "cria uma tarefa", ' +
+  '"quem é o cliente X", "como está meu dia"), CHAME a ferramenta certa em vez de só ' +
+  'responder — depois confirme em uma frase o que você fez. Não invente dados: use o ' +
+  'CONTEXTO e o resultado das ferramentas; se faltar informação, diga que não tem.';
+
+// Conversa com function calling: a IA pode chamar ferramentas, que executamos e
+// devolvemos, até ela formular a resposta final. `executar` roda no servidor
+// (como o membro logado), então a IA respeita RLS e as regras de negócio.
+export async function conversarFaiscaComFerramentas(
   mensagens: { role: 'user' | 'assistant'; content: string }[],
   contexto: string,
+  ferramentas: FunctionDeclaration[],
+  executar: (nome: string, args: Record<string, unknown>) => Promise<unknown>,
 ): Promise<string> {
+  if (!mensagens.length) return '';
   const genAI = new GoogleGenerativeAI(chave());
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODEL,
-    systemInstruction:
-      'Você é a Faísca, a assistente de IA do Squad 08 da E3 Digital — uma agência ' +
-      'que estrutura escritórios de advocacia. Vocabulário da casa: Cria = cliente, ' +
-      'Forja = a Estruturação (projeto de 7 fases × 7 dias), Lenha = tarefa, ' +
-      'Roda de Fogo = reunião semanal, Estopim = SLA. Responda SEMPRE em português ' +
-      'do Brasil, objetiva, prática e calorosa. Use o CONTEXTO real abaixo; se um ' +
-      'dado não estiver nele, diga que não tem essa informação em vez de inventar. ' +
-      'Não invente números, nomes ou prazos.\n\nCONTEXTO ATUAL:\n' + contexto,
+    systemInstruction: `${SISTEMA_FAISCA}\n\nCONTEXTO ATUAL:\n${contexto}`,
+    tools: ferramentas.length ? [{ functionDeclarations: ferramentas }] : undefined,
   });
-  const contents = mensagens.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
-  const result = await comRetry(() => model.generateContent({ contents }));
+
+  const history = mensagens.slice(0, -1).map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
+  const ultima = mensagens[mensagens.length - 1].content;
+  const chat = model.startChat({ history });
+
+  let result = await comRetry(() => chat.sendMessage(ultima));
+  // Laço de ferramentas (teto de 4 rodadas por segurança).
+  for (let i = 0; i < 4; i++) {
+    const calls = result.response.functionCalls?.() ?? [];
+    if (!calls.length) break;
+    const respostas: Part[] = [];
+    for (const c of calls) {
+      let saida: unknown;
+      try {
+        saida = await executar(c.name, (c.args ?? {}) as Record<string, unknown>);
+      } catch (e) {
+        saida = { ok: false, erro: (e as Error).message ?? 'falhou' };
+      }
+      respostas.push({ functionResponse: { name: c.name, response: (saida ?? {}) as object } });
+    }
+    result = await comRetry(() => chat.sendMessage(respostas));
+  }
   return result.response.text().trim();
 }
 
