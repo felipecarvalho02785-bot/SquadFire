@@ -1,5 +1,6 @@
 import { getCurrentMembro } from '@/lib/auth';
 import { getBrigada } from '@/lib/data/brigada';
+import { getSupabaseServer } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { googleConfigurado } from '@/lib/google/oauth';
 import { statusGoogle } from '@/lib/google/calendar';
@@ -15,6 +16,15 @@ export default async function ForjariaPage() {
   const gStatus = membro ? await statusGoogle(membro.id) : { conectado: false, email: null };
   const google = { conectado: gStatus.conectado, email: gStatus.email, configurado: googleConfigurado() };
 
+  // Preferências já salvas no banco (fonte da verdade; o cliente cai pro
+  // localStorage só quando não há banco/membro).
+  let prefs: Record<string, unknown> | null = null;
+  if (membro) {
+    const supabase = await getSupabaseServer();
+    const { data } = await supabase.from('preferencia').select('dados').eq('membro_id', membro.id).maybeSingle();
+    prefs = ((data as { dados: Record<string, unknown> } | null)?.dados) ?? null;
+  }
+
   const integracoes = [
     { sigla: 'CU', nome: 'ClickUp', nota: 'Briefing vira comentário na task do cliente; Lenhas viram tarefas.', ok: !!process.env.CLICKUP_API_TOKEN },
     { sigla: 'SB', nome: 'Supabase', nota: 'Banco de dados e Storage de contratos/documentos.', ok: isSupabaseConfigured },
@@ -29,6 +39,7 @@ export default async function ForjariaPage() {
       integracoes={integracoes}
       team={team}
       google={google}
+      prefs={prefs}
     />
   );
 }

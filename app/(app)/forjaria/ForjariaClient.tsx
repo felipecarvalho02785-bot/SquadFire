@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { iniciais } from '@/lib/format';
+import { salvarConta, salvarPreferencias } from '@/lib/actions';
 
 type Papel = 'gestor_contas' | 'gestor_projetos' | 'gestor_trafego';
 const PAPEL_LABEL: Record<Papel, string> = { gestor_contas: 'Contas', gestor_projetos: 'Projetos', gestor_trafego: 'Tráfego' };
@@ -10,6 +11,23 @@ const PAPEL_LABEL: Record<Papel, string> = { gestor_contas: 'Contas', gestor_pro
 interface Integr { sigla: string; nome: string; nota: string; ok: boolean }
 interface GoogleStatus { conectado: boolean; email: string | null; configurado: boolean }
 interface Membro { id: string; nome: string; email: string; is_admin: boolean; papel_primario: Papel; papeis: Papel[] }
+
+type PrefsDados = {
+  notif?: { sla: boolean; roda: boolean; briefing: boolean; mencoes: boolean };
+  canais?: { inapp: boolean; email: boolean; whatsapp: boolean };
+  ia?: { voz: boolean; cross: boolean; cache: boolean };
+  forja?: { auto: boolean; manual: boolean; travado: boolean };
+  sla?: number;
+  twofa?: boolean;
+};
+const DEFAULTS = {
+  notif: { sla: true, roda: true, briefing: true, mencoes: false },
+  canais: { inapp: true, email: true, whatsapp: false },
+  ia: { voz: true, cross: false, cache: true },
+  forja: { auto: true, manual: true, travado: true },
+  sla: 7,
+  twofa: false,
+};
 
 function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
   return <button type="button" className={`switch${on ? ' on' : ''}`} aria-pressed={on} onClick={() => onChange(!on)} />;
@@ -44,27 +62,35 @@ const Svg = ({ children }: { children: React.ReactNode }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
 );
 
-export function ForjariaClient({ membro, integracoes, team, google }: { membro: Membro | null; integracoes: Integr[]; team: Membro[]; google?: GoogleStatus }) {
+export function ForjariaClient({ membro, integracoes, team, google, prefs }: { membro: Membro | null; integracoes: Integr[]; team: Membro[]; google?: GoogleStatus; prefs?: PrefsDados | null }) {
   const router = useRouter();
   async function desconectarGoogle() {
     await fetch('/api/google/disconnect', { method: 'POST' });
     router.refresh();
   }
-  // Aparência — aplica ao vivo no documento
+  // Aparência — aplica ao vivo no documento (fica no localStorage: precisa
+  // valer antes da 1ª pintura, sem ida ao banco).
   const [tema, setTema] = useState('escuro');
   const [reduz, setReduz] = useState(false);
   const [densidade, setDensidade] = useState('confortavel');
-  // demais preferências (persistem na P1)
-  const [notif, setNotif] = useState({ sla: true, roda: true, briefing: true, mencoes: false });
-  const [canais, setCanais] = useState({ inapp: true, email: true, whatsapp: false });
-  const [ia, setIa] = useState({ voz: true, cross: false, cache: true });
-  const [forja, setForja] = useState({ auto: true, manual: true, travado: true });
-  const [sla, setSla] = useState(7);
-  const [twofa, setTwofa] = useState(false);
+  // Preferências — inicializadas do banco (prefs); localStorage é só fallback
+  // no modo demo (sem membro/banco).
+  const P = (prefs ?? {}) as PrefsDados;
+  const [notif, setNotif] = useState(P.notif ?? DEFAULTS.notif);
+  const [canais, setCanais] = useState(P.canais ?? DEFAULTS.canais);
+  const [ia, setIa] = useState(P.ia ?? DEFAULTS.ia);
+  const [forja, setForja] = useState(P.forja ?? DEFAULTS.forja);
+  const [sla, setSla] = useState(P.sla ?? DEFAULTS.sla);
+  const [twofa, setTwofa] = useState(P.twofa ?? DEFAULTS.twofa);
+  // Conta — controlados pra poder gravar
+  const [contaNome, setContaNome] = useState(membro?.nome ?? 'Felipe Carvalho');
+  const [contaPapel, setContaPapel] = useState<Papel>(membro?.papel_primario ?? 'gestor_contas');
   const [salvo, setSalvo] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [salvando, startSalvar] = useTransition();
 
-  // Ao montar, reflete no formulário o que já está salvo (o script inline do
-  // layout já aplicou tema/densidade/animações no documento antes da pintura).
+  // Ao montar: aparência sempre vem do localStorage (o script inline do layout
+  // já aplicou no documento). Sem membro (demo), lê também as prefs do cache.
   useEffect(() => {
     try {
       const l = localStorage;
@@ -72,20 +98,22 @@ export function ForjariaClient({ membro, integracoes, team, google }: { membro: 
       if (t) setTema(t);
       if (l.getItem('sf-densidade') === 'compacto') setDensidade('compacto');
       if (l.getItem('sf-reduz') === '1') setReduz(true);
-      const raw = l.getItem('sf-prefs');
-      if (raw) {
-        const p = JSON.parse(raw);
-        if (p.notif) setNotif(p.notif);
-        if (p.canais) setCanais(p.canais);
-        if (p.ia) setIa(p.ia);
-        if (p.forja) setForja(p.forja);
-        if (typeof p.sla === 'number') setSla(p.sla);
-        if (typeof p.twofa === 'boolean') setTwofa(p.twofa);
+      if (!membro) {
+        const raw = l.getItem('sf-prefs');
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (p.notif) setNotif(p.notif);
+          if (p.canais) setCanais(p.canais);
+          if (p.ia) setIa(p.ia);
+          if (p.forja) setForja(p.forja);
+          if (typeof p.sla === 'number') setSla(p.sla);
+          if (typeof p.twofa === 'boolean') setTwofa(p.twofa);
+        }
       }
     } catch {
       /* localStorage indisponível — segue com os defaults */
     }
-  }, []);
+  }, [membro]);
 
   function persiste(chave: string, valor: string) {
     try { localStorage.setItem(chave, valor); } catch { /* ignora */ }
@@ -103,16 +131,28 @@ export function ForjariaClient({ membro, integracoes, team, google }: { membro: 
   function aplicaDensidade(v: string) { setDensidade(v); persiste('sf-densidade', v); document.documentElement.classList.toggle('density-compact', v === 'compacto'); }
 
   function salvar() {
-    try {
-      localStorage.setItem('sf-prefs', JSON.stringify({ notif, canais, ia, forja, sla, twofa }));
-    } catch {
-      /* localStorage indisponível */
-    }
-    setSalvo(true);
-    setTimeout(() => setSalvo(false), 1800);
+    setErro(null);
+    const dados = { notif, canais, ia, forja, sla, twofa };
+    // cache local imediato (e única fonte no modo demo)
+    try { localStorage.setItem('sf-prefs', JSON.stringify(dados)); } catch { /* ignora */ }
+
+    if (!membro) { setSalvo(true); setTimeout(() => setSalvo(false), 1800); return; }
+
+    startSalvar(async () => {
+      const [rp, rc] = await Promise.all([
+        salvarPreferencias(dados),
+        salvarConta({ nome: contaNome, papel: contaPapel }),
+      ]);
+      if (!rp.ok || !rc.ok) {
+        setErro(rp.error ?? rc.error ?? 'não deu para salvar');
+        return;
+      }
+      setSalvo(true);
+      setTimeout(() => setSalvo(false), 1800);
+      router.refresh();
+    });
   }
 
-  const nome = membro?.nome ?? 'Felipe Carvalho';
   const email = membro?.email ?? 'felipecarve3digital@gmail.com';
 
   return (
@@ -120,7 +160,8 @@ export function ForjariaClient({ membro, integracoes, team, google }: { membro: 
       <div className="topbar">
         <h1>Forjaria</h1><span className="sub">· configurações</span>
         <div style={{ flex: 1 }} />
-        <button className={`btn primary savebtn${salvo ? '' : ''}`} onClick={salvar}>{salvo ? 'Salvo ✓' : 'Salvar alterações'}</button>
+        {erro && <span className="s" style={{ color: 'var(--risk)', marginRight: 10 }}>{erro}</span>}
+        <button className="btn primary savebtn" onClick={salvar} disabled={salvando}>{salvando ? 'Salvando…' : salvo ? 'Salvo ✓' : 'Salvar alterações'}</button>
       </div>
       <div className="content">
         <div className="daygreet">
@@ -154,10 +195,10 @@ export function ForjariaClient({ membro, integracoes, team, google }: { membro: 
           {/* Conta */}
           <div className="card setcard">
             <div className="sc-h"><span className="ic"><Svg>{ic.conta}</Svg></span><span className="t">Conta</span></div>
-            <div className="setrow"><div className="rmain"><div className="t">Nome</div></div><input className="txtin" defaultValue={nome} /></div>
+            <div className="setrow"><div className="rmain"><div className="t">Nome</div></div><input className="txtin" value={contaNome} onChange={(e) => setContaNome(e.target.value)} maxLength={80} /></div>
             <div className="setrow"><div className="rmain"><div className="t">E-mail</div><div className="s">Login via Google SSO</div></div><input className="txtin" defaultValue={email} readOnly /></div>
             <div className="setrow"><div className="rmain"><div className="t">Papel primário</div><div className="s">Define a tela-casa do Covil.</div></div>
-              <select className="selin" defaultValue={membro?.papel_primario ?? 'gestor_contas'}>
+              <select className="selin" value={contaPapel} onChange={(e) => setContaPapel(e.target.value as Papel)}>
                 <option value="gestor_contas">Gestor de Contas</option>
                 <option value="gestor_projetos">Gestor de Projetos</option>
                 <option value="gestor_trafego">Gestor de Tráfego</option>

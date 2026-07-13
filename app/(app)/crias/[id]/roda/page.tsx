@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
 import { RodaDeFogo } from '@/components/RodaDeFogo';
 import { getCriaDetalhe } from '@/lib/data/crias';
+import { getCurrentMembro } from '@/lib/auth';
+import { statusGoogle } from '@/lib/google/calendar';
+import { isSupabaseConfigured } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +17,13 @@ export default async function RodaDeFogoPage({ params }: { params: Promise<{ id:
   const proximas = (faseAtual ? lenhas.filter((l) => l.fase_da_forja_id === faseAtual.id) : [])
     .map((l) => ({ id: l.id, titulo: l.titulo, sub: faseAtual?.fase?.nome ?? 'Fase', done: l.status === 'concluida' }));
 
+  // Google conectado? (pra habilitar o "Agendar no Google Agenda")
+  let googleConectado = false;
+  if (isSupabaseConfigured) {
+    const membro = await getCurrentMembro();
+    if (membro) googleConectado = (await statusGoogle(membro.id)).conectado;
+  }
+
   return (
     <RodaDeFogo
       criaId={cria.id}
@@ -24,6 +34,7 @@ export default async function RodaDeFogoPage({ params }: { params: Promise<{ id:
       gestorContas={gestor?.nome ?? null}
       cliente={cria.nome_cliente}
       proximas={proximas}
+      googleConectado={googleConectado}
     />
   );
 }

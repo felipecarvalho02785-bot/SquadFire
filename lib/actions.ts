@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
-import type { PrioridadeLenha } from '@/lib/types/database';
+import type { Papel, PrioridadeLenha } from '@/lib/types/database';
 
 export type ActionResult = { ok: boolean; error?: string };
 
@@ -136,5 +136,32 @@ export async function avancarFase(forjaId: string): Promise<ActionResult> {
   const { error } = await supabase.rpc('avancar_fase', { p_forja_id: forjaId });
   if (error) return { ok: false, error: error.message };
   revalidatePath('/crias/[id]', 'page');
+  return { ok: true };
+}
+
+// Persistir as preferências da Forjaria (bloco jsonb) do membro logado.
+// RLS: cada membro só grava a própria linha (policy p_pref_self).
+export async function salvarPreferencias(dados: Record<string, unknown>): Promise<ActionResult> {
+  const membro = await getCurrentMembro();
+  if (!membro) return { ok: false, error: 'membro não identificado' };
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase
+    .from('preferencia')
+    .upsert({ membro_id: membro.id, dados }, { onConflict: 'membro_id' });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/forjaria');
+  return { ok: true };
+}
+
+// Editar a própria Conta (nome + papel primário) via RPC SECURITY DEFINER
+// (a tabela membro é admin-only na RLS). Trocar o papel muda a tela-casa.
+export async function salvarConta(input: { nome: string; papel: Papel }): Promise<ActionResult> {
+  const nome = input.nome.trim();
+  if (!nome) return { ok: false, error: 'informe o nome' };
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.rpc('atualizar_minha_conta', { p_nome: nome, p_papel: input.papel });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/forjaria');
+  revalidatePath('/covil');
   return { ok: true };
 }
