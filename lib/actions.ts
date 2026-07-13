@@ -115,6 +115,21 @@ export async function atualizarStatusGargalo(id: string, status: 'aberto' | 'em_
   return { ok: true };
 }
 
+// Definir a data de início da Forja (projeto). Dispara a cascata de prazos das
+// 7 fases (app.aplicar_data_inicio) — base do SLA e do Calendário. RLS/guard:
+// Projetos/Admin (checado dentro do RPC).
+export async function iniciarForja(criaId: string, data: string): Promise<ActionResult> {
+  if (!data) return { ok: false, error: 'informe a data de início' };
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.rpc('iniciar_forja', { p_cria_id: criaId, p_data: data });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/crias/[id]', 'page');
+  revalidatePath('/crias');
+  revalidatePath('/calendario');
+  revalidatePath('/covil');
+  return { ok: true };
+}
+
 // Avançar a fase da Forja (checklist + gate de papel validados no banco).
 export async function avancarFase(forjaId: string): Promise<ActionResult> {
   const supabase = await getSupabaseServer();

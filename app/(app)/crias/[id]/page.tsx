@@ -6,6 +6,7 @@ import { ComentarioForm } from '@/components/ComentarioForm';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { CriaTabs, type TabDef } from '@/components/CriaTabs';
 import { EditInvestimento } from '@/components/EditInvestimento';
+import { EditInicioForja } from '@/components/EditInicioForja';
 import { GargalosPanel } from '@/components/GargalosPanel';
 import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
 import { iniciais } from '@/lib/format';
@@ -95,7 +96,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
     <>
       <div className="dl" style={{ maxWidth: 540 }}>
         <div className="drow"><span>Plano</span><b>Estruturação · 7 fases × 7 dias</b></div>
-        <div className="drow"><span>Início da Forja</span><b className="mono">{fmtData(forja?.data_inicio ?? null)}</b></div>
+        <div className="drow"><span>Início da Forja</span><EditInicioForja criaId={cria.id} data={forja?.data_inicio ?? null} /></div>
         <div className="drow"><span>Flag do contrato</span><b>{forja?.flag_contrato === 'brasa_viva' ? 'Brasa Viva' : 'Forja Quente'}</b></div>
         <div className="drow"><span>Status</span><b>{forja?.data_inicio ? 'Assinado' : 'Pré-Forja'}</b></div>
       </div>
