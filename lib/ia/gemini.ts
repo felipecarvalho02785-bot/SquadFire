@@ -12,6 +12,25 @@ export function iaGeminiConfigurada(): boolean {
   return !!chave();
 }
 
+// Reexecuta a chamada quando o Gemini devolve limite de uso (429 /
+// RESOURCE_EXHAUSTED) ou erro transitório (5xx), com backoff curto. Absorve os
+// picos do tier gratuito sem jogar erro na cara do usuário.
+async function comRetry<T>(fn: () => Promise<T>, tentativas = 3): Promise<T> {
+  let ultimo: unknown;
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      ultimo = e;
+      const raw = (e instanceof Error ? e.message : String(e)).toLowerCase();
+      const retryable = /429|quota|rate|resource_exhausted|exhaust|overload|unavailable|503|500|internal/.test(raw);
+      if (!retryable || i === tentativas - 1) break;
+      await new Promise((r) => setTimeout(r, 1200 * (i + 1) + Math.floor(500 * (i + 1))));
+    }
+  }
+  throw ultimo;
+}
+
 export function transcricaoConfigurada(): boolean {
   return iaGeminiConfigurada();
 }
@@ -69,14 +88,14 @@ export async function transcreverAudio(audio: Buffer, mimeType: string): Promise
   const genAI = new GoogleGenerativeAI(chave());
   const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
-  const result = await model.generateContent([
+  const result = await comRetry(() => model.generateContent([
     { inlineData: { data: audio.toString('base64'), mimeType } },
     {
       text:
         'Transcreva este áudio em português do Brasil. ' +
         'Devolva apenas a transcrição, sem comentários nem formatação extra.',
     },
-  ]);
+  ]));
 
   return result.response.text().trim();
 }
@@ -99,7 +118,7 @@ export async function conversarFaiscaGemini(
       'Não invente números, nomes ou prazos.\n\nCONTEXTO ATUAL:\n' + contexto,
   });
   const contents = mensagens.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
-  const result = await model.generateContent({ contents });
+  const result = await comRetry(() => model.generateContent({ contents }));
   return result.response.text().trim();
 }
 
@@ -114,6 +133,6 @@ export async function estruturarBriefingGemini(
     systemInstruction: sistemaBriefing(contexto),
     generationConfig: { responseMimeType: 'application/json' },
   });
-  const result = await model.generateContent(`Transcrição do áudio do briefing:\n\n${transcricao}`);
+  const result = await comRetry(() => model.generateContent(`Transcrição do áudio do briefing:\n\n${transcricao}`));
   return parseCampos(result.response.text());
 }

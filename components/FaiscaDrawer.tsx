@@ -109,7 +109,7 @@ export function FaiscaDrawer() {
           </span>
           <div>
             <div className="t">Faísca</div>
-            <div className="s">assistente do Squad 8 · Gemini + Claude</div>
+            <div className="s">assistente do Squad 8 · Google Gemini</div>
           </div>
           <button className={`fd-voz${falar ? ' on' : ''}`} aria-label={falar ? 'Desligar voz' : 'Ligar voz'} aria-pressed={falar} title={falar ? 'Voz ligada — clique para silenciar' : 'Ler respostas em voz alta'} onClick={toggleFalar}>
             {falar ? (
