@@ -1,5 +1,6 @@
 import { Sidebar } from '@/components/Sidebar';
 import { FaiscaDrawer } from '@/components/FaiscaDrawer';
+import { VidaFx } from '@/components/VidaFx';
 import { getCurrentMembro } from '@/lib/auth';
 import { getPulso } from '@/lib/data/covil';
 import { isSupabaseConfigured } from '@/lib/env';
@@ -34,6 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </div>
       <FaiscaDrawer />
+      <VidaFx />
     </>
   );
 }

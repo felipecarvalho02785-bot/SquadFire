@@ -35,6 +35,7 @@ export function AreaChart({ data }: { data: number[] }) {
       ))}
       <path className="area-in" d={area} fill={EMBER} opacity={0.13} />
       <path d={line} fill="none" stroke={EMBER} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+      <circle className="livedot" cx={X(n - 1)} cy={Y(last)} r={6} fill={EMBER} />
       <circle cx={X(n - 1)} cy={Y(last)} r={5} fill={EMBER} stroke={SURFACE} strokeWidth={2} />
       <text x={X(n - 1) - 4} y={Y(last) - 9} textAnchor="end" fill="#9a8e85">{last}</text>
       {data.map((_, i) =>

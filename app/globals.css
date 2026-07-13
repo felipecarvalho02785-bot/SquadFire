@@ -709,3 +709,34 @@ svg .axis { fill: var(--faint); }
 .fd-send:hover { filter: brightness(1.06); }
 .fd-send:active { transform: scale(0.95); }
 .fd-send svg { width: 18px; height: 18px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SF · VIDA — camada 2 (brilho no cursor, contagem, pulso, hovers)
+   ═══════════════════════════════════════════════════════════════ */
+/* brilho radial que segue o cursor dentro do card */
+.card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(220px circle at var(--sf-mx, 50%) var(--sf-my, 50%), color-mix(in srgb, var(--ember) 15%, transparent), transparent 60%);
+  transition: opacity 0.3s ease;
+}
+.card:hover::before { opacity: 1; }
+
+/* hover nas linhas de lista — realce + leve deslize */
+.row, .list .lrow, .intg-row, .mrow, .setrow, .fd-chip { transition: background 0.16s ease, padding-left 0.16s ease, transform 0.14s ease; }
+.list .lrow:hover, .intg-row:hover, .mrow:hover { background: color-mix(in srgb, var(--ember) 5%, transparent); padding-left: 6px; border-radius: 8px; }
+.table tbody tr { transition: background 0.14s ease, box-shadow 0.14s ease; }
+
+/* entrada do retrato do hero */
+@media (prefers-reduced-motion: no-preference) {
+  .hero .member { animation: sf-hero 0.85s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  @keyframes sf-hero { from { opacity: 0; transform: translateX(26px) scale(1.03); } to { opacity: 1; transform: none; } }
+  /* respiração nos cards/kpis de risco */
+  .kpi.flag-crit, .hero .g-stat.crit { animation: sf-breathe 3.6s ease-in-out infinite; }
+  @keyframes sf-breathe {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--risk) 0%, transparent); }
+    50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--risk) 16%, transparent); }
+  }
+  /* ponto pulsante no fim do gráfico de área */
+  .livedot { transform-box: fill-box; transform-origin: center; animation: sf-live 2.2s ease-in-out infinite; }
+  @keyframes sf-live { 0%, 100% { opacity: 0.15; transform: scale(1); } 50% { opacity: 0.4; transform: scale(2.1); } }
+}
