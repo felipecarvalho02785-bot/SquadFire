@@ -1,5 +1,16 @@
-import { getSupabaseServer } from '@/lib/supabase/server';
+import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
+
+// Materializa as Lenhas de Rotina de hoje (idempotente) — pra os rituais
+// aparecerem como tarefas de verdade mesmo antes do cron diário rodar.
+export async function garantirRituaisHoje(): Promise<void> {
+  if (!isSupabaseConfigured) return;
+  try {
+    await getSupabaseAdmin().rpc('gerar_lenhas_do_dia');
+  } catch {
+    /* sem service_role ou falha — o cron diário cobre de qualquer forma */
+  }
+}
 
 const FASES_NOMES = ['Alinhamento', 'Diagnóstico 360', 'Treinamento', 'Consultoria', 'Implementação CRM + IA', 'Auditoria de Mídia', 'Auditoria Criativa'];
 
@@ -82,6 +93,66 @@ function demo(): ForjaTimeline[] {
     mk('Mozini Advocacia', 16, 3),
     mk('Mendes Advocacia Previdenciária', 30, 5),
   ];
+}
+
+// ── Rituais (rotinas) projetados no calendário ─────────────────────────────
+const DOW_MAP: Record<string, number> = { dom: 0, seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6 };
+
+type RotinaRow = { titulo: string; recorrencia_tipo: string; recorrencia_config: Record<string, unknown> };
+
+function rotinasDemo(): RotinaRow[] {
+  return [
+    { titulo: 'Daily (alinhamento interno)', recorrencia_tipo: 'diaria', recorrencia_config: {} },
+    { titulo: 'Relatório diário das tarefas', recorrencia_tipo: 'diaria', recorrencia_config: {} },
+    { titulo: 'Check-in com cada Cria', recorrencia_tipo: 'semanal', recorrencia_config: { dia: 'seg' } },
+    { titulo: 'Envio de relatórios pelo criativo', recorrencia_tipo: 'semanal', recorrencia_config: { dia: 'seg' } },
+    { titulo: 'Relatório de saúde do projeto (ClickUp)', recorrencia_tipo: 'semanal', recorrencia_config: { dia: 'qui' } },
+    { titulo: 'Weekly (alinhamento da squad)', recorrencia_tipo: 'semanal', recorrencia_config: { dia: 'sex' } },
+    { titulo: 'Planilha BSC', recorrencia_tipo: 'semanal', recorrencia_config: { dia: 'sex' } },
+  ];
+}
+
+// Fira uma rotina num dia específico? Espelha app.gerar_lenhas_do_dia.
+function fira(r: RotinaRow, d: Date): boolean {
+  const cfg = r.recorrencia_config ?? {};
+  const dow = d.getDay();
+  const diaTxt = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'][dow];
+  switch (r.recorrencia_tipo) {
+    case 'diaria': return true;
+    case 'semanal': return DOW_MAP[String(cfg.dia)] === dow;
+    case 'dias_da_semana': return Array.isArray(cfg.dias) && (cfg.dias as string[]).includes(diaTxt);
+    case 'mensal': return d.getDate() === Number(cfg.dia_mes);
+    default: return false;
+  }
+}
+
+export interface RituaisMes {
+  porDia: Record<number, string[]>; // rituais semanais/mensais pontuados no dia
+  diarios: string[]; // rituais diários (todo dia útil) — listados à parte
+}
+
+// Projeta as rotinas ativas nos dias do mês (cada uma no seu dia da semana).
+export async function getRituaisDoMes(year: number, month: number): Promise<RituaisMes> {
+  let rotinas: RotinaRow[];
+  if (!isSupabaseConfigured) {
+    rotinas = rotinasDemo();
+  } else {
+    const supabase = await getSupabaseServer();
+    const { data } = await supabase.from('rotina').select('titulo, recorrencia_tipo, recorrencia_config').eq('ativo', true);
+    rotinas = (data as RotinaRow[]) ?? [];
+  }
+
+  const diarios = rotinas.filter((r) => r.recorrencia_tipo === 'diaria').map((r) => r.titulo);
+  const periodicas = rotinas.filter((r) => r.recorrencia_tipo !== 'diaria');
+  const porDia: Record<number, string[]> = {};
+  const diasNoMes = new Date(year, month + 1, 0).getDate();
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    const d = new Date(year, month, dia);
+    for (const r of periodicas) {
+      if (fira(r, d)) (porDia[dia] ??= []).push(r.titulo);
+    }
+  }
+  return { porDia, diarios };
 }
 
 // Linha do tempo das Forjas ativas: em que fase/dia cada Cria está e o SLA

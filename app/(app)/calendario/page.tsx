@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
-import { getForjasTimeline, type SlaStatus } from '@/lib/data/agenda';
+import { getForjasTimeline, getRituaisDoMes, type SlaStatus } from '@/lib/data/agenda';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
 import { listarEventos, statusGoogle } from '@/lib/google/calendar';
@@ -14,8 +14,8 @@ const SLA_KIND: Record<SlaStatus, string> = { atrasada: 'crit', no_prazo: 'good'
 function nomeCurto(n: string) { return n.length > 22 ? n.slice(0, 20) + '…' : n; }
 
 export default async function CalendarioPage() {
-  const timeline = await getForjasTimeline();
   const now = new Date();
+  const [timeline, rituais] = await Promise.all([getForjasTimeline(), getRituaisDoMes(now.getFullYear(), now.getMonth())]);
   const year = now.getFullYear();
   const month = now.getMonth();
   const today = now.getDate();
@@ -34,6 +34,11 @@ export default async function CalendarioPage() {
     if (d.getFullYear() === year && d.getMonth() === month) {
       (eventos[d.getDate()] ??= []).push({ label: `Fase ${t.faseAtualOrdem} · ${nomeCurto(t.nome)}`, kind: t.sla === 'atrasada' ? 'fase-crit' : 'fase' });
     }
+  }
+
+  // Rituais recorrentes pontuados no dia (cada um no seu dia da semana).
+  for (const [dia, titulos] of Object.entries(rituais.porDia)) {
+    for (const tt of titulos) (eventos[Number(dia)] ??= []).push({ label: nomeCurto(tt), kind: 'ritual' });
   }
 
   // Overlay do Google Agenda (se o membro conectou).
@@ -124,8 +129,14 @@ export default async function CalendarioPage() {
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
             <span className="badge ember">Prazo de fase (no prazo)</span>
             <span className="badge risk">Prazo de fase (atrasada)</span>
+            <span className="badge" style={{ color: 'var(--warn)', background: 'color-mix(in srgb, var(--warn) 15%, transparent)' }}>Ritual recorrente</span>
             {googleConectado && <span className="badge" style={{ color: 'var(--plasma)', background: 'var(--plasma-soft)' }}>Google Agenda</span>}
           </div>
+          {rituais.diarios.length > 0 && (
+            <p className="fl-legenda" style={{ marginTop: 10 }}>
+              <b style={{ color: 'var(--muted)' }}>Rituais diários</b> (todo dia útil): {rituais.diarios.join(' · ')}.
+            </p>
+          )}
         </div>
       </div>
     </div>

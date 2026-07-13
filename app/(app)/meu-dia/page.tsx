@@ -1,6 +1,7 @@
 import { Topbar } from '@/components/Topbar';
 import { getCurrentMembro } from '@/lib/auth';
 import { getMeuDiaDashboard } from '@/lib/data/meudia';
+import { garantirRituaisHoje } from '@/lib/data/agenda';
 import { isSupabaseConfigured } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
@@ -13,6 +14,7 @@ function saudacao(): string {
 const tagKind: Record<string, string> = { cliente: 'ember', roda: 'ok', interna: 'dim' };
 
 export default async function MeuDiaPage() {
+  await garantirRituaisHoje(); // materializa os rituais do dia (idempotente)
   const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
   const d = await getMeuDiaDashboard(membro);
 
