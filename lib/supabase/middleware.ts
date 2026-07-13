@@ -14,6 +14,11 @@ export async function updateSession(request: NextRequest) {
     path.startsWith('/login') ||
     path.startsWith('/auth') ||
     path.startsWith('/_next') ||
+    // Endpoints máquina-a-máquina: autenticam por CRON_SECRET / assinatura do
+    // webhook — não podem passar pela trava de sessão (senão redirecionam).
+    path.startsWith('/api/clickup') ||
+    path.startsWith('/api/rotinas') ||
+    path.startsWith('/api/crias') ||
     path === '/favicon.ico';
 
   // Sem Supabase configurado, não há como autenticar: libera para o app
