@@ -6,10 +6,10 @@ interface Msg { role: 'ai' | 'me'; text: string }
 
 const SAUDACAO: Msg = {
   role: 'ai',
-  text: 'E aí! Sou a Faísca, sua copiloto do Squad 8. Posso te dar o pulso das Forjas, achar Crias em risco, resumir seu dia ou ajudar a escrever — manda ver, por texto ou voz.',
+  text: 'E aí! Sou a Faísca, sua copiloto do Squad 8. Além de responder, eu AJO: crio Lenhas (tarefas), busco Crias e resumo seu dia. É só pedir — por texto ou voz. Ex.: "cria uma tarefa: ligar pro closer amanhã".',
 };
 
-const CHIPS = ['Quais Forjas estão atrasadas?', 'Resumo do meu dia', 'Alguma Cria em risco?', 'O que é uma Roda de Fogo?'];
+const CHIPS = ['Cria uma Lenha pra hoje', 'Resumo do meu dia', 'Como está a Cria Letícia?', 'Alguma Cria em risco?'];
 
 // Tipos do Web Speech API (não vêm no lib.dom padrão).
 type SpeechRec = { lang: string; interimResults: boolean; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; start: () => void; stop: () => void };

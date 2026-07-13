@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentMembro } from '@/lib/auth';
-import { conversarFaiscaGemini, iaGeminiConfigurada } from '@/lib/ia/gemini';
+import { conversarFaiscaComFerramentas, iaGeminiConfigurada } from '@/lib/ia/gemini';
+import { FERRAMENTAS_FAISCA, executarFerramentaFaisca } from '@/lib/ia/faisca-tools';
 import { getContextoFaisca } from '@/lib/data/faisca';
 import { isSupabaseConfigured } from '@/lib/env';
 
@@ -55,8 +56,14 @@ export async function POST(request: Request) {
   try {
     const contexto = await getContextoFaisca();
     const ctx = `${contexto}\n\nQuem fala com você agora: ${membro.nome} (${membro.papel_primario}${membro.is_admin ? ', admin' : ''}).`;
-    // Gemini é o único provedor (tier gratuito, sem depender de crédito pago).
-    const reply = await conversarFaiscaGemini(messages, ctx);
+    // Gemini é o único provedor (tier gratuito). Com ferramentas, a Faísca AGE:
+    // cria Lenha, busca Cria e resume o dia — tudo como o membro logado (RLS).
+    const reply = await conversarFaiscaComFerramentas(
+      messages,
+      ctx,
+      FERRAMENTAS_FAISCA,
+      (nome, args) => executarFerramentaFaisca(nome, args, membro),
+    );
     return NextResponse.json({ reply: reply || 'Não consegui formular uma resposta agora — tenta de novo?' });
   } catch (e) {
     // Loga o erro cru pro servidor, mas devolve uma mensagem limpa pro chat
