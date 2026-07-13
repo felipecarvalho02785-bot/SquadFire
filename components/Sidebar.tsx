@@ -32,8 +32,8 @@ const NAV: { grupo: string; itens: { href: string; ic: IconKey; label: string }[
 const ICON: Record<IconKey, React.ReactNode> = {
   'meu-dia': <path d="M12 7v5l3 2M12 21a9 9 0 100-18 9 9 0 000 18z" />,
   covil: <path d="M3 12l9-8 9 8M5 10v10h14V10" />,
-  crias: <path d="M9 8a3.2 3.2 0 100-.01M3 20c0-3.3 2.7-5.5 6-5.5m6 0a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4m0 0c3.3 0 6 2.2 6 5.5" />,
-  'linha-de-fogo': <path d="M4 4v16M4 4h5v11H4M9 4h5v8H9M14 4h5v13h-5" />,
+  crias: <><circle cx="9" cy="7" r="3.4" /><path d="M2.5 20a6.5 6.5 0 0113 0M16 4.2a3.4 3.4 0 010 5.6M22 20a6.5 6.5 0 00-4.2-6.1" /></>,
+  'linha-de-fogo': <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M8.5 7v7M12 7v10M15.5 7v4" /></>,
   tarefas: <path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2" />,
   calendario: <path d="M4 5h16v16H4zM4 9h16M8 3v4M16 3v4" />,
   biblioteca: <path d="M4 5h6a2 2 0 012 2v13a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v13a2 2 0 012-2h6z" />,

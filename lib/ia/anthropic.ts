@@ -42,6 +42,35 @@ function parseCampos(texto: string): BriefingCampos {
   return out;
 }
 
+// Conversa da Faísca (chat drawer). Recebe o histórico + um retrato real do
+// estado do Squad e responde em pt-BR, no tom da marca (fogo/forja).
+export async function conversarFaisca(
+  mensagens: { role: 'user' | 'assistant'; content: string }[],
+  contexto: string,
+): Promise<string> {
+  const client = new Anthropic(); // lê ANTHROPIC_API_KEY do ambiente
+
+  const system =
+    'Você é a Faísca, a assistente de IA do Squad 08 da E3 Digital — uma agência ' +
+    'que estrutura escritórios de advocacia. Vocabulário da casa: Cria = cliente, ' +
+    'Forja = a Estruturação (projeto de 7 fases × 7 dias), Lenha = tarefa, ' +
+    'Roda de Fogo = reunião semanal, Estopim = SLA. Responda SEMPRE em português ' +
+    'do Brasil, de forma objetiva, prática e calorosa — sem enrolação. Use o ' +
+    'CONTEXTO real abaixo para responder sobre o estado do squad; se algum dado ' +
+    'não estiver no contexto, diga que não tem essa informação em vez de inventar. ' +
+    'Não invente números, nomes ou prazos.\n\nCONTEXTO ATUAL:\n' + contexto;
+
+  const response = await client.messages.create({
+    model: MODEL,
+    max_tokens: 1024,
+    system,
+    messages: mensagens.map((m) => ({ role: m.role, content: m.content })),
+  });
+
+  const bloco = response.content.find((b) => b.type === 'text');
+  return bloco && bloco.type === 'text' ? bloco.text.trim() : '';
+}
+
 // Estrutura a transcrição do áudio nos 6 campos do briefing semanal (pt-BR).
 export async function estruturarBriefing(
   transcricao: string,
