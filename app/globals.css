@@ -144,8 +144,8 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
   box-shadow: 0 6px 18px rgba(226, 59, 18, 0.4);
 }
 .brand .mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.brand b { font-family: var(--display); font-size: 17px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
-.brand span { color: var(--muted); font-size: 11px; display: block; }
+.brand b { font-family: var(--display); font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; display: block; line-height: 1.1; }
+.brand span { color: var(--muted); font-size: 11px; display: block; white-space: nowrap; }
 .nav { display: flex; flex-direction: column; gap: 2px; }
 .nav a {
   display: flex; align-items: center; gap: 11px;
@@ -290,3 +290,111 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.01em; }
   @keyframes sf-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 }
 :root.no-anim *, :root.no-anim *::before, :root.no-anim *::after { animation: none !important; transition: none !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Covil (dashboard) + sidebar rica — portado do design/covil-imersivo
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── sidebar rica: seções, ícones em tile, Pulso, rodapé ──────── */
+.nav .lbl { font-family: var(--sans); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); padding: 2px 8px 3px; margin-top: 12px; }
+.nav .lbl:first-child { margin-top: 2px; }
+.nav a .ico {
+  width: 28px; height: 28px; flex: 0 0 auto; border-radius: 8px;
+  background: var(--inset); display: grid; place-items: center; transition: background 0.14s, color 0.14s;
+}
+.nav a .ico svg { width: 16px; height: 16px; }
+.nav a:hover .ico { background: var(--surface-2); }
+.nav a.active .ico { background: var(--ember-soft); color: var(--ember); filter: none; }
+.insight {
+  margin-top: 4px; border: 1px solid color-mix(in srgb, var(--ember) 34%, var(--border));
+  border-radius: 12px; padding: 10px; display: flex; gap: 10px; align-items: center;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ember) 8%, transparent), transparent);
+}
+.insight .fire { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 9px; display: grid; place-items: center; background: var(--ember-soft); color: var(--ember); }
+.insight .fire svg { width: 19px; height: 19px; }
+.insight .txt { min-width: 0; overflow: hidden; }
+.insight .txt .h { font-size: 11px; font-weight: 700; white-space: nowrap; }
+.insight .txt .h b { color: var(--ember); }
+.insight .txt .s { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar .foot { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 11px; border: 1px solid var(--border); background: var(--surface); overflow: hidden; }
+.sidebar .foot .who { font-size: 12px; font-weight: 600; line-height: 1.25; min-width: 0; }
+.sidebar .foot .who small { display: block; color: var(--muted); font-weight: 500; font-size: 10.5px; }
+.badge.admin { color: var(--ember-hi); border-color: rgba(255, 106, 26, 0.4); background: var(--ember-soft); font-size: 9.5px; padding: 1px 6px; }
+
+/* ── topbar: controles segmentados (switcher de papel + período) ─ */
+.seg, .range { display: flex; gap: 2px; padding: 3px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.seg a, .seg button { border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; padding: 6px 12px; border-radius: 7px; transition: 0.14s; font-family: var(--sans); }
+.seg a:hover { color: var(--text); }
+.seg a.on { background: var(--surface-2); color: var(--ember); }
+.range button { font-family: var(--mono); font-size: 11.5px; padding: 5px 10px; border: 0; background: transparent; color: var(--muted); border-radius: 7px; cursor: pointer; }
+.range button.on { background: var(--surface-2); color: var(--text); }
+
+/* ── hero por papel (retrato em armadura) ─────────────────────── */
+.hero { position: relative; overflow: hidden; border: 1px solid var(--border); border-radius: 16px; min-height: 340px; background: var(--surface); display: flex; box-shadow: var(--shadow); }
+.hero .bg { position: absolute; inset: 0; z-index: 0; background:
+  radial-gradient(72% 130% at 84% 36%, color-mix(in srgb, var(--ember) 22%, transparent), transparent 58%),
+  radial-gradient(60% 90% at 66% 128%, color-mix(in srgb, var(--ember-deep) 15%, transparent), transparent 72%); }
+.hero .portrait { position: absolute; right: 0; top: 0; bottom: 0; width: 56%; z-index: 1; overflow: hidden; }
+.hero .portrait .member { position: absolute; right: 3%; top: 7%; height: 114%; width: auto;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%); mask-image: linear-gradient(90deg, transparent 0%, #000 30%);
+  filter: saturate(1.06) contrast(1.03) drop-shadow(0 0 60px rgba(255, 90, 20, 0.2)); }
+.hero .portrait::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(0deg, var(--surface) 1%, transparent 25%); }
+.hero .hcontent { position: relative; z-index: 3; padding: 28px 30px; display: flex; flex-direction: column; justify-content: center; max-width: 60%; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+.hero .eye { font-family: var(--sans); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ember); font-weight: 700; }
+.hero .big { font-family: var(--display); font-size: 38px; font-weight: 700; letter-spacing: 0.005em; margin: 8px 0; line-height: 1.05; }
+.hero .hcontent p { color: var(--ink-2); font-size: 13.5px; max-width: 370px; margin: 0 0 22px; }
+.hero .glass { display: flex; gap: 11px; flex-wrap: wrap; }
+.hero .g-stat { background: color-mix(in srgb, var(--surface-2) 62%, transparent); backdrop-filter: blur(12px); border: 1px solid var(--border-2); border-radius: 13px; padding: 12px 15px; min-width: 98px; }
+.hero .g-stat .v { font-family: var(--display); font-size: 24px; font-weight: 700; letter-spacing: 0.01em; }
+.hero .g-stat .l { font-family: var(--sans); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px; white-space: nowrap; }
+.hero .g-stat.crit { border-color: color-mix(in srgb, var(--risk) 42%, var(--border)); }
+.hero .g-stat.crit .v { color: var(--risk); }
+.hero .g-stat.warn { border-color: color-mix(in srgb, var(--warn) 38%, var(--border)); }
+.hero .g-stat.warn .v { color: var(--warn); }
+@media (max-width: 900px) { .hero .hcontent { max-width: 100%; } .hero .portrait { opacity: 0.35; } }
+
+/* ── cards de gráfico ─────────────────────────────────────────── */
+.g-2 { grid-template-columns: 1.5fr 1fr; }
+.g-3 { grid-template-columns: 1.15fr 0.95fr 0.9fr; }
+.stack-col { display: flex; flex-direction: column; gap: 16px; }
+.c-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.c-h .t { font-size: 13px; font-weight: 680; }
+.c-h .s { font-size: 11.5px; color: var(--faint); }
+@media (max-width: 1080px) { .g-2, .g-3 { grid-template-columns: 1fr; } }
+
+/* svg dos gráficos */
+svg .grid-line { stroke: var(--grid); stroke-width: 1; }
+svg text { fill: var(--muted); font-family: var(--mono); font-size: 10px; font-variant-numeric: tabular-nums; }
+svg .axis { fill: var(--faint); }
+
+/* legenda da rosca */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; }
+.legend .item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+.legend .dot { width: 9px; height: 9px; border-radius: 3px; flex: 0 0 auto; }
+.legend .v { margin-left: auto; font-family: var(--mono); color: var(--text); font-weight: 600; }
+.legend.rows { flex-direction: column; gap: 9px; }
+.legend.rows .item { width: 100%; }
+
+/* medidor (no prazo vs meta) */
+.meter-wrap { margin-top: 6px; }
+.meter { height: 12px; border-radius: 7px; background: var(--inset); overflow: hidden; position: relative; border: 1px solid var(--border); }
+.meter .fill { height: 100%; border-radius: 7px; background: linear-gradient(90deg, var(--ember-deep), var(--ember)); }
+.meter .target { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text); opacity: 0.7; }
+.meter-tags { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+.meter-tags .big { font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: 0.01em; }
+
+/* listas do dashboard (rotina, alertas) */
+.list .lrow { display: flex; align-items: center; gap: 11px; padding: 10px 0; border-top: 1px solid var(--border); }
+.list .lrow:first-child { border-top: 0; }
+.list .rmain { min-width: 0; flex: 1; }
+.list .rmain .t { font-size: 13px; font-weight: 580; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list .rmain .s { font-size: 11.5px; color: var(--muted); }
+.list .rside { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+.pill .d { width: 6px; height: 6px; border-radius: 50%; }
+.pill.crit { color: var(--risk); background: color-mix(in srgb, var(--risk) 14%, transparent); }
+.pill.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+.pill.good { color: var(--ember-hi); background: color-mix(in srgb, var(--ember) 14%, transparent); }
+.chk { width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid var(--faint); flex: 0 0 auto; display: grid; place-items: center; }
+.chk.done { background: var(--ember); border-color: var(--ember); }
+.chk svg { width: 11px; height: 11px; color: #160c06; }

@@ -1,15 +1,19 @@
 import { Sidebar } from '@/components/Sidebar';
 import { getCurrentMembro } from '@/lib/auth';
+import { getPulso } from '@/lib/data/covil';
 import { isSupabaseConfigured } from '@/lib/env';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
+  const [membro, pulso] = await Promise.all([
+    isSupabaseConfigured ? getCurrentMembro() : Promise.resolve(null),
+    getPulso(),
+  ]);
 
   return (
     <>
       <div className="dragon-bg" aria-hidden />
       <div className="shell">
-        <Sidebar membro={membro} />
+        <Sidebar membro={membro} pulso={pulso} />
         <div className="main">
         {!isSupabaseConfigured && (
           <div
