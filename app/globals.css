@@ -1006,3 +1006,24 @@ button.cal-cell:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(-
 .briefcard .bc-sem { color: var(--muted); font-size: 12px; flex: 1; }
 .briefcard[open] > summary { margin-bottom: 6px; }
 .ia-resumo { margin-top: 12px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--ember) 22%, transparent); background: color-mix(in srgb, var(--ember) 6%, transparent); border-radius: 12px; font-size: 13px; }
+
+/* ── Faísca proativa (resumo do dia) + Sino de notificações ──────── */
+.faisca-resumo { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.faisca-resumo .ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 11px; background: var(--ember-soft, color-mix(in srgb, var(--ember) 16%, transparent)); color: var(--ember-hi); flex: none; }
+.faisca-resumo .ic svg { width: 20px; height: 20px; }
+.faisca-resumo .bt { font-weight: 700; font-size: 13px; color: var(--ember-hi); }
+.faisca-resumo .bs { color: var(--muted); font-size: 13px; }
+
+.sino-wrap { position: relative; }
+.sino-pop { position: absolute; right: 0; top: calc(100% + 8px); width: 340px; max-width: 86vw; max-height: 60vh; overflow-y: auto; z-index: 60;
+  background: var(--panel, #18120e); border: 1px solid color-mix(in srgb, var(--ember) 22%, transparent); border-radius: 14px; box-shadow: 0 18px 50px rgba(0,0,0,0.5); padding: 6px; }
+.sino-h { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; font-weight: 700; font-size: 13px; }
+.sino-empty { padding: 16px 12px; color: var(--muted); font-size: 13px; }
+.sino-list { display: grid; gap: 2px; }
+.sino-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 10px; border-radius: 9px; text-decoration: none; color: inherit; }
+.sino-row:hover { background: color-mix(in srgb, var(--ember) 10%, transparent); }
+.sino-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex: none; background: var(--muted); }
+.sino-dot.crit { background: var(--risk); }
+.sino-dot.warn { background: var(--warn); }
+.sino-main .t { font-size: 13px; font-weight: 600; line-height: 1.3; }
+.sino-main .s { font-size: 11.5px; color: var(--muted); }
