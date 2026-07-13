@@ -8,6 +8,7 @@ import { CriaTabs, type TabDef } from '@/components/CriaTabs';
 import { EditInvestimento } from '@/components/EditInvestimento';
 import { EditInicioForja } from '@/components/EditInicioForja';
 import { GargalosPanel } from '@/components/GargalosPanel';
+import { UploadPdf } from '@/components/UploadPdf';
 import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
 import { iniciais } from '@/lib/format';
 
@@ -27,7 +28,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
   if (!det) notFound();
   const comentarios = await getComentarios(id);
 
-  const { cria, forja, fases, lenhas, gestor, gargalos, briefingsSemana } = det;
+  const { cria, forja, fases, lenhas, gestor, gargalos, briefingsSemana, diagnostico, contrato, briefings } = det;
   const faseAtual = fases.find((f) => f.id === forja?.fase_atual_id) ?? fases.find((f) => f.status === 'em_andamento');
   const ordemAtual = faseAtual?.ordem ?? 0;
   const concluidas = fases.filter((f) => f.status === 'concluida').length;
@@ -50,6 +51,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
 
   // ── painéis das abas ────────────────────────────────────────
   const panelGeral = (
+    <>
     <div className="grid g-2">
       <div>
         <div className="c-h" style={{ marginBottom: 6 }}><span className="t">Dados</span></div>
@@ -90,6 +92,9 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
         )}
       </div>
     </div>
+    <div className="c-h" style={{ margin: '18px 0 8px' }}><span className="t">Diagnóstico 360</span><span className="s">PDF com todas as informações do cliente</span></div>
+    <UploadPdf criaId={cria.id} kind="diagnostico" atual={diagnostico} />
+    </>
   );
 
   const panelContrato = (
@@ -98,10 +103,13 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
         <div className="drow"><span>Plano</span><b>Estruturação · 7 fases × 7 dias</b></div>
         <div className="drow"><span>Início da Forja</span><EditInicioForja criaId={cria.id} data={forja?.data_inicio ?? null} /></div>
         <div className="drow"><span>Flag do contrato</span><b>{forja?.flag_contrato === 'brasa_viva' ? 'Brasa Viva' : 'Forja Quente'}</b></div>
+        <div className="drow"><span>Valor do contrato</span><b>{contrato?.valor != null ? contrato.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—'}</b></div>
         <div className="drow"><span>Status</span><b>{forja?.data_inicio ? 'Assinado' : 'Pré-Forja'}</b></div>
       </div>
+      <div className="c-h" style={{ margin: '16px 0 8px' }}><span className="t">Contrato (PDF)</span><span className="s">arquivo assinado do cliente</span></div>
+      <UploadPdf criaId={cria.id} kind="contrato" atual={{ url: contrato?.url ?? null, nome: contrato?.nome ?? null }} />
       <p style={{ fontSize: 11, color: 'var(--faint)', margin: '10px 2px 0', lineHeight: 1.45, maxWidth: 540 }}>
-        <b style={{ color: 'var(--muted)' }}>Valor do contrato</b> = a mensalidade que o cliente paga pela Estruturação (lida do PDF pela IA). Não confundir com o <b style={{ color: 'var(--muted)' }}>investimento em mídia</b> da Visão geral.
+        <b style={{ color: 'var(--muted)' }}>Valor do contrato</b> = a mensalidade que o cliente paga pela Estruturação. Não confundir com o <b style={{ color: 'var(--muted)' }}>investimento em mídia</b> da Visão geral.
       </p>
     </>
   );
@@ -133,9 +141,33 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
     <div>
       <p className="s" style={{ marginBottom: 10, color: 'var(--muted)' }}>
         Grave o áudio da Roda de Fogo — a Faísca (Gemini) transcreve e estrutura os 6 campos do briefing. Depois publica como comentário na task do ClickUp.
-        {briefingsSemana > 0 && <> · <b style={{ color: 'var(--good)' }}>{briefingsSemana} briefing(s) nesta semana.</b></>}
+        {briefingsSemana > 0 && <> · <b style={{ color: 'var(--ember-hi)' }}>{briefingsSemana} briefing(s) nesta semana.</b></>}
       </p>
       <AudioRecorder criaId={cria.id} />
+
+      <div className="c-h" style={{ margin: '18px 0 8px' }}><span className="t">Briefings salvos</span><span className="s">{briefings.length} no histórico</span></div>
+      {briefings.length === 0 ? (
+        <div className="s" style={{ color: 'var(--muted)' }}>Nenhum briefing ainda. Grave a primeira Roda de Fogo — ele fica salvo aqui e vai pro ClickUp.</div>
+      ) : (
+        <div style={{ display: 'grid', gap: 10 }}>
+          {briefings.map((b) => (
+            <details className="card briefcard" key={b.id}>
+              <summary>
+                <span className="bc-data">{new Date(b.data).toLocaleDateString('pt-BR')}</span>
+                <span className="bc-sem">{b.semana ? `semana de ${new Date(b.semana + 'T00:00:00').toLocaleDateString('pt-BR')}` : 'briefing'}</span>
+                <span className={`badge ${b.enviadoClickup ? 'ok' : 'dim'}`}>{b.enviadoClickup ? 'no ClickUp ✓' : 'só no CRM'}</span>
+              </summary>
+              <div className="report" style={{ marginTop: 10 }}>
+                {b.campos.length === 0 ? (
+                  <div className="s" style={{ color: 'var(--muted)' }}>Sem conteúdo estruturado.</div>
+                ) : b.campos.map((c) => (
+                  <div className="rsec" key={c.label}><div className="rl">{c.label}</div><div className="rt">{c.texto}</div></div>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      )}
     </div>
   );
 

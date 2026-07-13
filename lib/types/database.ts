@@ -40,6 +40,8 @@ export interface Cria {
   clickup_squad: string | null;
   clickup_semana: number | null;
   sincronizado_em: string | null;
+  diagnostico_path: string | null;
+  diagnostico_nome: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -102,6 +102,28 @@ export async function delegarTarefa(id: string, responsavelId: string): Promise<
   return { ok: true };
 }
 
+// Vincular o PDF do Diagnóstico 360 à Cria (o arquivo já foi subido pro
+// Storage; aqui só gravamos o caminho + nome). RLS de cria: Contas/Admin.
+export async function vincularDiagnostico(criaId: string, path: string, nome: string): Promise<ActionResult> {
+  if (!path) return { ok: false, error: 'arquivo ausente' };
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.from('cria').update({ diagnostico_path: path, diagnostico_nome: nome || null }).eq('id', criaId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/crias/[id]', 'page');
+  return { ok: true };
+}
+
+// Vincular o PDF do Contrato à Cria (registra uma linha em `contrato`; a mais
+// recente é a que aparece). RLS de contrato: Contas/Admin.
+export async function vincularContrato(criaId: string, path: string): Promise<ActionResult> {
+  if (!path) return { ok: false, error: 'arquivo ausente' };
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.from('contrato').insert({ cria_id: criaId, arquivo_url: path });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/crias/[id]', 'page');
+  return { ok: true };
+}
+
 // Editar o investimento em mídia da Cria (verba de campanha). RLS: Contas,
 // Tráfego ou Admin. Valor null = "a definir".
 export async function atualizarInvestimento(criaId: string, valor: number | null): Promise<ActionResult> {
