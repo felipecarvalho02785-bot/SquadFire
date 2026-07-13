@@ -40,8 +40,9 @@ function extrairComentario(payload) {
 }
 
 // Verifica a assinatura HMAC-SHA256 que o ClickUp manda no header `X-Signature`.
-export function verifySignature(rawBody, signatureHeader) {
-  const secret = getWebhookSecret();
+// O secret pode vir explícito (guardado no banco) ou, se ausente, cai na env.
+export function verifySignature(rawBody, signatureHeader, secretArg) {
+  const secret = secretArg || getWebhookSecret();
   if (!secret) return false; // sem segredo configurado → rejeita por segurança
   const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
   try {
@@ -55,8 +56,8 @@ export function verifySignature(rawBody, signatureHeader) {
 
 // Processa o payload já parseado. Devolve uma "ação" pro chamador aplicar no DB.
 // rawBody + signature são passados pra verificação (chamador tem o corpo cru).
-export async function handleWebhook({ rawBody, signature, payload }) {
-  if (!verifySignature(rawBody, signature)) {
+export async function handleWebhook({ rawBody, signature, payload, secret }) {
+  if (!verifySignature(rawBody, signature, secret)) {
     return { ok: false, status: 401, reason: 'assinatura inválida' };
   }
 

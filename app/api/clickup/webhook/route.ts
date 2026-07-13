@@ -20,7 +20,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, reason: 'json inválido' }, { status: 400 });
   }
 
-  const result = await handleWebhook({ rawBody, signature, payload });
+  // Secret do webhook: preferimos o guardado no banco (setado pelo botão
+  // "Ativar tempo real"); se não houver, o handler cai na env.
+  let secret: string | undefined;
+  try {
+    const { data } = await getSupabaseAdmin().from('integracao_clickup').select('webhook_secret').eq('id', true).maybeSingle();
+    secret = (data as { webhook_secret: string | null } | null)?.webhook_secret ?? undefined;
+  } catch {
+    /* sem tabela/serviço — usa a env */
+  }
+
+  const result = await handleWebhook({ rawBody, signature, payload, secret });
 
   // Comentário do ClickUp → comentário no CRM (com anti-eco pelo id).
   if (result.action === 'comment' && result.comment && result.clickup_task_id) {

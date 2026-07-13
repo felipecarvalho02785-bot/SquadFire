@@ -19,10 +19,15 @@ export default async function ForjariaPage() {
   // Preferências já salvas no banco (fonte da verdade; o cliente cai pro
   // localStorage só quando não há banco/membro).
   let prefs: Record<string, unknown> | null = null;
+  let clickupRealtime = false;
   if (membro) {
     const supabase = await getSupabaseServer();
     const { data } = await supabase.from('preferencia').select('dados').eq('membro_id', membro.id).maybeSingle();
     prefs = ((data as { dados: Record<string, unknown> } | null)?.dados) ?? null;
+    if (membro.is_admin) {
+      const { data: cu } = await supabase.from('integracao_clickup').select('webhook_id').eq('id', true).maybeSingle();
+      clickupRealtime = !!(cu as { webhook_id: string | null } | null)?.webhook_id;
+    }
   }
 
   const integracoes = [
@@ -40,6 +45,7 @@ export default async function ForjariaPage() {
       team={team}
       google={google}
       prefs={prefs}
+      clickupRealtime={clickupRealtime}
     />
   );
 }
