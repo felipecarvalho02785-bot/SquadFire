@@ -100,6 +100,45 @@ export async function transcreverAudio(audio: Buffer, mimeType: string): Promise
   return result.response.text().trim();
 }
 
+// ── ingestão de documentos (PDF): contrato + diagnóstico ────────────────────
+// Lê o PDF do contrato e extrai o essencial (mensalidade, início, resumo).
+export async function extrairContratoGemini(pdf: Buffer): Promise<{ valor: number | null; dataInicio: string | null; resumo: string }> {
+  const genAI = new GoogleGenerativeAI(chave());
+  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL, generationConfig: { responseMimeType: 'application/json' } });
+  const prompt =
+    'Você recebe o PDF de um contrato de prestação de serviço (agência de marketing → escritório de advocacia). ' +
+    'Extraia e responda APENAS um JSON: {"valor_mensal": número ou null (a mensalidade/fee em reais, só o número, sem R$), ' +
+    '"data_inicio": "AAAA-MM-DD" ou null (início da vigência), "resumo": "2-3 frases com o essencial: objeto, prazo e valores"}. ' +
+    'Se não achar um campo, use null. Não invente.';
+  const result = await comRetry(() => model.generateContent([{ inlineData: { data: pdf.toString('base64'), mimeType: 'application/pdf' } }, { text: prompt }]));
+  let obj: Record<string, unknown> = {};
+  try {
+    obj = JSON.parse(result.response.text());
+  } catch {
+    const raw = result.response.text();
+    const a = raw.indexOf('{'); const b = raw.lastIndexOf('}');
+    if (a >= 0 && b > a) { try { obj = JSON.parse(raw.slice(a, b + 1)); } catch { /* deixa vazio */ } }
+  }
+  const bruto = obj.valor_mensal;
+  const num = typeof bruto === 'number' ? bruto : bruto ? Number(String(bruto).replace(/[^\d.,]/g, '').replace(/\.(?=\d{3})/g, '').replace(',', '.')) : NaN;
+  const valor = isFinite(num) && num > 0 ? num : null;
+  const di = obj.data_inicio;
+  const dataInicio = typeof di === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(di) ? di : null;
+  return { valor, dataInicio, resumo: String(obj.resumo ?? '').trim() };
+}
+
+// Lê o PDF do Diagnóstico 360 e devolve um resumo objetivo pra squad/IA.
+export async function resumirDiagnosticoGemini(pdf: Buffer): Promise<string> {
+  const genAI = new GoogleGenerativeAI(chave());
+  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+  const prompt =
+    'Você recebe o PDF do Diagnóstico 360 de um cliente (escritório de advocacia), feito pela agência. ' +
+    'Faça um resumo objetivo em português do Brasil (5 a 8 linhas) com o que a squad precisa saber pra atender bem: ' +
+    'área de atuação, principais dores/gargalos, metas e pontos de atenção. Direto ao ponto, sem enrolação e sem inventar.';
+  const result = await comRetry(() => model.generateContent([{ inlineData: { data: pdf.toString('base64'), mimeType: 'application/pdf' } }, { text: prompt }]));
+  return result.response.text().trim();
+}
+
 // ── chat da Faísca COM ferramentas (function calling) ───────────────────────
 const SISTEMA_FAISCA =
   'Você é a Faísca, a assistente de IA do Squad 08 da E3 Digital — uma agência que ' +

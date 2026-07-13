@@ -16,6 +16,7 @@ export function UploadPdf({ criaId, kind, atual }: {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [iaMsg, setIaMsg] = useState<string | null>(null);
   const [enviando, start] = useTransition();
 
   const bucket = kind === 'contrato' ? 'contratos' : 'entregaveis';
@@ -42,6 +43,28 @@ export function UploadPdf({ criaId, kind, atual }: {
           : await vincularDiagnostico(criaId, path, file.name);
         if (!res.ok) throw new Error(res.error ?? 'não deu para vincular');
         router.refresh();
+
+        // Faísca lê o PDF (extrai contrato / resume diagnóstico).
+        setIaMsg('Faísca lendo o PDF…');
+        try {
+          const r = await fetch('/api/faisca/documento', {
+            method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ criaId, kind, path }),
+          });
+          const data = await r.json().catch(() => ({}));
+          if (data.ok) {
+            setIaMsg(kind === 'contrato'
+              ? `Faísca leu ✓${data.valor ? ` · valor ${Number(data.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}`
+              : 'Diagnóstico resumido pela Faísca ✓');
+            router.refresh();
+          } else if (!data.skipped) {
+            setIaMsg('PDF vinculado (a Faísca não conseguiu ler agora)');
+          } else {
+            setIaMsg(null);
+          }
+        } catch {
+          setIaMsg('PDF vinculado (a Faísca não conseguiu ler agora)');
+        }
       } catch (err) {
         setErro((err as Error).message ?? 'falha no upload');
       }
@@ -62,7 +85,8 @@ export function UploadPdf({ criaId, kind, atual }: {
       <button className="btn" type="button" onClick={escolher} disabled={enviando}>
         {enviando ? 'Enviando…' : atual.url ? 'Trocar PDF' : 'Vincular PDF'}
       </button>
-      {erro && <div className="s" style={{ color: 'var(--risk)', marginTop: 6 }}>{erro}</div>}
+      {iaMsg && <div className="s" style={{ color: 'var(--ember-hi)', marginTop: 6, flexBasis: '100%' }}>{iaMsg}</div>}
+      {erro && <div className="s" style={{ color: 'var(--risk)', marginTop: 6, flexBasis: '100%' }}>{erro}</div>}
     </div>
   );
 }

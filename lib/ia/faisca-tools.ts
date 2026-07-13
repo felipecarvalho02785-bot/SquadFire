@@ -39,7 +39,7 @@ export const FERRAMENTAS_FAISCA: FunctionDeclaration[] = [
   },
 ];
 
-type CriaRow = { id: string; nome_cliente: string; area_atuacao: string | null; status: string; em_risco: boolean; clickup_semana: number | null };
+type CriaRow = { id: string; nome_cliente: string; area_atuacao: string | null; status: string; em_risco: boolean; clickup_semana: number | null; diagnostico_resumo: string | null };
 
 // Executa a ferramenta pedida pela Faísca e devolve um objeto simples (a IA
 // transforma em resposta natural). Erros viram { ok:false, erro } — nunca lança.
@@ -74,7 +74,7 @@ export async function executarFerramentaFaisca(nome: string, args: Record<string
       if (!termo) return { encontrada: false, erro: 'me diz o nome do cliente' };
       const { data } = await supabase
         .from('cria')
-        .select('id, nome_cliente, area_atuacao, status, em_risco, clickup_semana')
+        .select('id, nome_cliente, area_atuacao, status, em_risco, clickup_semana, diagnostico_resumo')
         .ilike('nome_cliente', `%${termo}%`)
         .limit(3);
       const crias = (data as CriaRow[]) ?? [];
@@ -87,6 +87,7 @@ export async function executarFerramentaFaisca(nome: string, args: Record<string
           status: c.status,
           fase: c.clickup_semana != null ? faseLabel(c.clickup_semana) : 'sem fase',
           em_risco: c.em_risco,
+          diagnostico: c.diagnostico_resumo ?? undefined,
         })),
       };
     }

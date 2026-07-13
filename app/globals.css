@@ -1005,3 +1005,4 @@ button.cal-cell:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(-
 .briefcard .bc-data { font-weight: 700; }
 .briefcard .bc-sem { color: var(--muted); font-size: 12px; flex: 1; }
 .briefcard[open] > summary { margin-bottom: 6px; }
+.ia-resumo { margin-top: 12px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--ember) 22%, transparent); background: color-mix(in srgb, var(--ember) 6%, transparent); border-radius: 12px; font-size: 13px; }

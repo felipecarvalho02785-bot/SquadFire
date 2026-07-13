@@ -94,6 +94,12 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
     </div>
     <div className="c-h" style={{ margin: '18px 0 8px' }}><span className="t">Diagnóstico 360</span><span className="s">PDF com todas as informações do cliente</span></div>
     <UploadPdf criaId={cria.id} kind="diagnostico" atual={diagnostico} />
+    {diagnostico.resumo && (
+      <div className="ia-resumo">
+        <div className="s" style={{ marginBottom: 4 }}><b style={{ color: 'var(--ember-hi)' }}>Resumo da Faísca</b> · lido do Diagnóstico 360</div>
+        <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, margin: 0 }}>{diagnostico.resumo}</p>
+      </div>
+    )}
     </>
   );
 
@@ -104,6 +110,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
         <div className="drow"><span>Início da Forja</span><EditInicioForja criaId={cria.id} data={forja?.data_inicio ?? null} /></div>
         <div className="drow"><span>Flag do contrato</span><b>{forja?.flag_contrato === 'brasa_viva' ? 'Brasa Viva' : 'Forja Quente'}</b></div>
         <div className="drow"><span>Valor do contrato</span><b>{contrato?.valor != null ? contrato.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—'}</b></div>
+        {contrato?.dataInicio && <div className="drow"><span>Início sugerido (IA)</span><b className="mono">{new Date(contrato.dataInicio + 'T00:00:00').toLocaleDateString('pt-BR')}</b></div>}
         <div className="drow"><span>Status</span><b>{forja?.data_inicio ? 'Assinado' : 'Pré-Forja'}</b></div>
       </div>
       <div className="c-h" style={{ margin: '16px 0 8px' }}><span className="t">Contrato (PDF)</span><span className="s">arquivo assinado do cliente</span></div>
