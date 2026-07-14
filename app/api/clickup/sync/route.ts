@@ -41,7 +41,7 @@ async function runSync(request: Request) {
   const erros: string[] = [];
 
   for (const c of resultado.crias) {
-    const { error } = await supabase.from('cria').upsert(
+    const { data: up, error } = await supabase.from('cria').upsert(
       {
         clickup_task_id: c.clickup_task_id,
         nome_cliente: c.nome_cliente,
@@ -51,9 +51,16 @@ async function runSync(request: Request) {
         sincronizado_em: agora,
       },
       { onConflict: 'clickup_task_id' },
-    );
-    if (error) erros.push(`${c.nome_cliente}: ${error.message}`);
-    else upserts += 1;
+    ).select('id').maybeSingle();
+    if (error) { erros.push(`${c.nome_cliente}: ${error.message}`); continue; }
+    upserts += 1;
+
+    // "Data inicial" do ClickUp → data de início da Forja (cascateia as fases).
+    const criaId = (up as { id: string } | null)?.id;
+    if (c.data_inicio && criaId) {
+      const { error: e2 } = await supabase.rpc('definir_inicio_forja_sync', { p_cria_id: criaId, p_data: c.data_inicio });
+      if (e2) erros.push(`${c.nome_cliente} (data inicial): ${e2.message}`);
+    }
   }
 
   return NextResponse.json({

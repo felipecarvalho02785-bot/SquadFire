@@ -9,6 +9,7 @@ import { EditInvestimento } from '@/components/EditInvestimento';
 import { EditInicioForja } from '@/components/EditInicioForja';
 import { GargalosPanel } from '@/components/GargalosPanel';
 import { UploadPdf } from '@/components/UploadPdf';
+import { ImportarDiagnostico } from '@/components/ImportarDiagnostico';
 import { AvisarWhatsapp } from '@/components/AvisarWhatsapp';
 import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
 import { iniciais } from '@/lib/format';
@@ -95,7 +96,10 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
       </div>
     </div>
     <div className="c-h" style={{ margin: '18px 0 8px' }}><span className="t">Diagnóstico 360</span><span className="s">PDF com todas as informações do cliente</span></div>
-    <UploadPdf criaId={cria.id} kind="diagnostico" atual={diagnostico} />
+    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+      <UploadPdf criaId={cria.id} kind="diagnostico" atual={diagnostico} />
+      {cria.clickup_task_id && <ImportarDiagnostico criaId={cria.id} />}
+    </div>
     {diagnostico.resumo && (
       <div className="ia-resumo">
         <div className="s" style={{ marginBottom: 4 }}><b style={{ color: 'var(--ember-hi)' }}>Resumo da Faísca</b> · lido do Diagnóstico 360</div>
