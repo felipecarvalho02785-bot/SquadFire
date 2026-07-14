@@ -61,6 +61,30 @@ function mapStatus(task) {
   return { status: 'ativa', motivo: null, backlog: false };
 }
 
+// Lê um campo "Label: valor" da descrição (Briefing Inicial do Cliente).
+function campoDescricao(texto, labelRe) {
+  // [ \t] em vez de \s pra NÃO atravessar a quebra de linha (campo vazio = null).
+  const re = new RegExp(labelRe + '[ \\t]*:[ \\t]*([^\\n]*)', 'i');
+  const m = texto.match(re);
+  if (!m) return null;
+  const v = m[1].trim();
+  // descarta vazios e placeholders tipo "( ) Sim ( ) Não"
+  if (!v || v.length < 2 || /^[()\s/x-]*$/i.test(v)) return null;
+  return v;
+}
+
+// Extrai os dados do cliente da descrição da task (o que estiver preenchido).
+export function dadosDaDescricao(task) {
+  const texto = task.text_content || task.description || task.markdown_description || '';
+  if (!texto) return {};
+  return {
+    email: campoDescricao(texto, 'E-?mail'),
+    telefone_whatsapp: campoDescricao(texto, 'Telefone\\s*/?\\s*WhatsApp') || campoDescricao(texto, 'Telefone'),
+    area_atuacao: campoDescricao(texto, '(?:Á|A)rea de Atua(?:ç|c)(?:ã|a)o'),
+    closer: campoDescricao(texto, 'Closer'),
+  };
+}
+
 // "Data inicial" = start_date nativo da task (quando ocorreu a reunião/início).
 // Converte o timestamp (ms) pra AAAA-MM-DD no fuso de Brasília.
 export function dataInicioDaTask(task) {
@@ -86,6 +110,8 @@ export function mapTaskToCria(task) {
     backlog,
     // Data inicial (start_date) → vira data_inicio da Forja no consumidor.
     data_inicio: backlog ? null : dataInicioDaTask(task),
+    // Dados do cliente lidos da descrição (só os que estiverem preenchidos).
+    dados: dadosDaDescricao(task),
     // metadados úteis pro consumidor (não necessariamente colunas)
     _source: {
       list_id: CLICKUP.listaMestre.listId,

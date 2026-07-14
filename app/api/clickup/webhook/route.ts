@@ -41,24 +41,26 @@ export async function POST(request: Request) {
   if (result.action === 'upsert' && result.cria) {
     const supabase = getSupabaseAdmin();
     const c = result.cria;
-    const { data: up, error } = await supabase.from('cria').upsert(
-      {
-        clickup_task_id: c.clickup_task_id,
-        nome_cliente: c.nome_cliente,
-        clickup_squad: c.clickup_squad,
-        clickup_semana: c.clickup_semana,
-        status: c.status,
-        sincronizado_em: new Date().toISOString(),
-      },
-      { onConflict: 'clickup_task_id' },
-    ).select('id').maybeSingle();
+    const patch: Record<string, unknown> = {
+      clickup_task_id: c.clickup_task_id,
+      nome_cliente: c.nome_cliente,
+      clickup_squad: c.clickup_squad,
+      clickup_semana: c.clickup_semana,
+      status: c.status,
+      sincronizado_em: new Date().toISOString(),
+    };
+    for (const k of ['email', 'telefone_whatsapp', 'area_atuacao', 'closer'] as const) {
+      if (c.dados?.[k]) patch[k] = c.dados[k];
+    }
+    const { data: up, error } = await supabase.from('cria').upsert(patch, { onConflict: 'clickup_task_id' }).select('id').maybeSingle();
     if (error) {
       return NextResponse.json({ ok: false, reason: error.message }, { status: 500 });
     }
-    // "Data inicial" do ClickUp → data de início da Forja (cascateia as fases).
     const criaId = (up as { id: string } | null)?.id;
-    if (c.data_inicio && criaId) {
-      await supabase.rpc('definir_inicio_forja_sync', { p_cria_id: criaId, p_data: c.data_inicio });
+    if (criaId) {
+      // "Data inicial" → início da Forja (cascateia); "Semana" → fase atual.
+      if (c.data_inicio) await supabase.rpc('definir_inicio_forja_sync', { p_cria_id: criaId, p_data: c.data_inicio });
+      if (c.clickup_semana) await supabase.rpc('definir_fase_forja_sync', { p_cria_id: criaId, p_semana: c.clickup_semana });
     }
   }
 
