@@ -1,7 +1,7 @@
 // Testes do mapeamento ClickUp → cria. Rodar: `node --test integracao/clickup/`
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mapTaskToCria, isSquad08, getSemana, dataInicioDaTask } from './sync-crias.js';
+import { mapTaskToCria, isSquad08, getSemana, dataInicioDaTask, dadosDaDescricao } from './sync-crias.js';
 import { CLICKUP } from './config.js';
 
 const SQUAD = CLICKUP.fields.squad.id;
@@ -70,6 +70,19 @@ test('dataInicioDaTask: start_date (ms) → AAAA-MM-DD em BRT; vazio → null', 
   assert.equal(dataInicioDaTask({ start_date: '1781852400000' }), '2026-06-19');
   assert.equal(dataInicioDaTask({ start_date: null }), null);
   assert.equal(dataInicioDaTask({}), null);
+});
+
+test('dadosDaDescricao extrai só o que está preenchido (Briefing Inicial)', () => {
+  const desc = 'Nome do Cliente:  IGOR\nE-mail: \nTelefone / WhatsApp: +55 86 99931 5471\nÁrea de Atuação: \nCloser: \n';
+  const d = dadosDaDescricao({ text_content: desc });
+  assert.equal(d.telefone_whatsapp, '+55 86 99931 5471');
+  assert.equal(d.email, null);
+  assert.equal(d.area_atuacao, null);
+  assert.equal(d.closer, null);
+  const d2 = dadosDaDescricao({ text_content: 'E-mail: joao@x.com\nÁrea de Atuação: Previdenciário\nCloser: Luiz' });
+  assert.equal(d2.email, 'joao@x.com');
+  assert.equal(d2.area_atuacao, 'Previdenciário');
+  assert.equal(d2.closer, 'Luiz');
 });
 
 test('isSquad08 filtra corretamente', () => {

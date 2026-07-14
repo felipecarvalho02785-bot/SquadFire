@@ -20,8 +20,12 @@ export function ImportarDiagnostico({ criaId }: { criaId: string }) {
           body: JSON.stringify({ criaId }),
         });
         const d = await r.json();
-        if (d.ok) { setOk(true); setMsg(`Puxado do ClickUp${d.resumido ? ' · resumido pela Faísca' : ''} ✓`); router.refresh(); }
-        else { setOk(false); setMsg(d.error ?? 'não deu para puxar'); }
+        if (d.ok) {
+          const partes: string[] = [];
+          if (d.diagnostico) partes.push(`diagnóstico${d.resumido ? ' resumido' : ''}`);
+          if (d.dados) partes.push('dados + fase');
+          setOk(true); setMsg(`Puxado do ClickUp: ${partes.join(' + ') || 'ok'} ✓`); router.refresh();
+        } else { setOk(false); setMsg(d.error ?? 'não deu para puxar'); }
       } catch {
         setOk(false); setMsg('falha de conexão');
       }
