@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
+import { sincronizarTodosGoogle } from '@/lib/google/calendar';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 // Motor de recorrência: gera as Lenhas de Rotina do dia (por papel).
 // GET = Vercel Cron (injeta o Bearer). Protegido por CRON_SECRET.
@@ -27,5 +29,10 @@ export async function GET(request: Request) {
   const { data: risco, error: erroRisco } = await supabase.rpc('recalcular_em_risco');
   if (!erroRisco) criasEmRisco = risco ?? 0;
 
-  return NextResponse.json({ ok: true, lenhas_criadas: data ?? 0, crias_reavaliadas: criasEmRisco });
+  // Auto-sync da agenda pro Google de todo mundo conectado (mesma janela do cron,
+  // pra não gastar um slot de cron do plano Hobby). Best-effort.
+  let google: { membros: number; eventos: number } | null = null;
+  try { google = await sincronizarTodosGoogle(); } catch { /* não derruba o cron */ }
+
+  return NextResponse.json({ ok: true, lenhas_criadas: data ?? 0, crias_reavaliadas: criasEmRisco, google });
 }

@@ -13,7 +13,7 @@ export function SyncGoogleBtn() {
     try {
       const res = await fetch('/api/google/sync', { method: 'POST' });
       const data = await res.json();
-      if (res.ok && data.ok) { setOk(true); setMsg(`${data.total} prazo(s) no seu Google ✓`); }
+      if (res.ok && data.ok) { setOk(true); setMsg(`${data.total} evento(s) no seu Google ✓`); }
       else { setOk(false); setMsg(data.error ?? 'não deu para sincronizar'); }
     } catch {
       setOk(false); setMsg('falha de conexão');
@@ -25,7 +25,7 @@ export function SyncGoogleBtn() {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
       <button type="button" className="btn" onClick={sincronizar} disabled={loading}>
-        {loading ? 'Enviando…' : 'Enviar prazos pro Google'}
+        {loading ? 'Sincronizando…' : 'Sincronizar com o Google'}
       </button>
       {msg && <span className="s" style={{ color: ok ? 'var(--ember-hi)' : 'var(--risk)' }}>{msg}</span>}
     </span>
