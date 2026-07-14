@@ -19,6 +19,7 @@ type PrefsDados = {
   forja?: { auto: boolean; manual: boolean; travado: boolean };
   sla?: number;
   twofa?: boolean;
+  retencao?: string;
 };
 const DEFAULTS = {
   notif: { sla: true, roda: true, briefing: true, mencoes: false },
@@ -27,6 +28,7 @@ const DEFAULTS = {
   forja: { auto: true, manual: true, travado: true },
   sla: 7,
   twofa: false,
+  retencao: '12',
 };
 
 function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label?: string }) {
@@ -130,6 +132,7 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs, click
   const [forja, setForja] = useState(P.forja ?? DEFAULTS.forja);
   const [sla, setSla] = useState(P.sla ?? DEFAULTS.sla);
   const [twofa, setTwofa] = useState(P.twofa ?? DEFAULTS.twofa);
+  const [retencao, setRetencao] = useState(P.retencao ?? DEFAULTS.retencao);
   // Conta — controlados pra poder gravar
   const [contaNome, setContaNome] = useState(membro?.nome ?? 'Felipe Carvalho');
   const [contaPapel, setContaPapel] = useState<Papel>(membro?.papel_primario ?? 'gestor_contas');
@@ -156,6 +159,7 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs, click
           if (p.forja) setForja(p.forja);
           if (typeof p.sla === 'number') setSla(p.sla);
           if (typeof p.twofa === 'boolean') setTwofa(p.twofa);
+          if (typeof p.retencao === 'string') setRetencao(p.retencao);
         }
       }
     } catch {
@@ -180,7 +184,7 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs, click
 
   function salvar() {
     setErro(null);
-    const dados = { notif, canais, ia, forja, sla, twofa };
+    const dados = { notif, canais, ia, forja, sla, twofa, retencao };
     // cache local imediato (e única fonte no modo demo)
     try { localStorage.setItem('sf-prefs', JSON.stringify(dados)); } catch { /* ignora */ }
 
@@ -275,8 +279,8 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs, click
           {/* Faísca & IA */}
           <div className="card setcard">
             <div className="sc-h"><span className="ic"><Svg>{ic.ia}</Svg></span><span className="t">Faísca &amp; IA</span><span className="s">Google Gemini</span></div>
-            <div className="setrow"><div className="rmain"><div className="t">Modelo de ingestão</div><div className="s">Áudio, PDF e imagem (transcrição/extração).</div></div><select className="selin" defaultValue="flash"><option value="flash">Gemini 2.0 Flash</option><option value="pro">Gemini 1.5 Pro</option></select></div>
-            <div className="setrow"><div className="rmain"><div className="t">Modelo de raciocínio</div><div className="s">Chat, briefing e plano de gargalos — tudo no Gemini (tier gratuito).</div></div><select className="selin" defaultValue="flash"><option value="flash">Gemini 2.0 Flash</option><option value="pro">Gemini 1.5 Pro</option></select></div>
+            <div className="setrow"><div className="rmain"><div className="t">Modelo de ingestão</div><div className="s">Áudio, PDF e imagem (transcrição/extração).</div></div><select className="selin" defaultValue="flash" disabled title="Definido pela plataforma (variável GEMINI_MODEL)"><option value="flash">Gemini 2.0 Flash</option><option value="pro">Gemini 1.5 Pro</option></select></div>
+            <div className="setrow"><div className="rmain"><div className="t">Modelo de raciocínio</div><div className="s">Chat, briefing e plano de gargalos — tudo no Gemini (tier gratuito).</div></div><select className="selin" defaultValue="flash" disabled title="Definido pela plataforma (variável GEMINI_MODEL)"><option value="flash">Gemini 2.0 Flash</option><option value="pro">Gemini 1.5 Pro</option></select></div>
             <div className="setrow"><div className="rmain"><div className="t">Voz da Faísca</div><div className="s">Responder por voz além do texto (TTS).</div></div><Toggle on={ia.voz} onChange={(v) => setIa({ ...ia, voz: v })} /></div>
             <div className="setrow"><div className="rmain"><div className="t">Cross-check em itens críticos</div><div className="s">Revalida a saída em itens sensíveis (ex.: extração do contrato).</div></div><Toggle on={ia.cross} onChange={(v) => setIa({ ...ia, cross: v })} /></div>
             <div className="setrow"><div className="rmain"><div className="t">Cache de contexto</div><div className="s">Reaproveita regras da marca e templates — reduz custo/latência.</div></div><Toggle on={ia.cache} onChange={(v) => setIa({ ...ia, cache: v })} /></div>
@@ -346,7 +350,7 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs, click
             <div className="sc-h"><span className="ic"><Svg>{ic.seg}</Svg></span><span className="t">Segurança &amp; LGPD</span></div>
             <div className="setrow"><div className="rmain"><div className="t">Autenticação em 2 fatores</div><div className="s">Além do Google SSO.</div></div><Toggle on={twofa} onChange={setTwofa} /></div>
             <div className="setrow"><div className="rmain"><div className="t">Sessões ativas</div><div className="s">Sai da sua conta nos outros aparelhos (mantém este).</div></div><button className="btn" onClick={encerrarOutras}>Encerrar outras</button></div>
-            <div className="setrow"><div className="rmain"><div className="t">Retenção de dados</div><div className="s">Contratos e briefings enviados às APIs de IA.</div></div><select className="selin" defaultValue="12"><option value="6">6 meses</option><option value="12">12 meses</option><option value="24">24 meses</option></select></div>
+            <div className="setrow"><div className="rmain"><div className="t">Retenção de dados</div><div className="s">Contratos e briefings enviados às APIs de IA.</div></div><select className="selin" value={retencao} onChange={(e) => setRetencao(e.target.value)}><option value="6">6 meses</option><option value="12">12 meses</option><option value="24">24 meses</option></select></div>
             <div className="setrow"><div className="rmain"><div className="t">Consentimento LGPD registrado</div><div className="s">Base legal para tratar dados das Crias.</div></div><span className="stbadge on">Ativo</span></div>
             <div className="setrow"><div className="rmain"><div className="t">Meus dados</div></div><div style={{ display: 'flex', gap: 8 }}><button className="btn" onClick={exportarDados} disabled={exportando}>{exportando ? 'Exportando…' : 'Exportar'}</button><button className="btn" style={{ color: 'var(--risk)', borderColor: 'rgba(255,58,68,0.4)' }} onClick={excluirConta}>Excluir conta</button></div></div>
           </div>

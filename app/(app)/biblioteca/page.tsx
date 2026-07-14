@@ -1,10 +1,9 @@
 import { Topbar } from '@/components/Topbar';
+import { BibliotecaLista, type ItemBiblioteca } from '@/components/BibliotecaLista';
 
 export const dynamic = 'force-dynamic';
 
-interface Item { titulo: string; cria: string; tipo: 'Roteiro' | 'Criativo'; data: string }
-
-const ITENS: Item[] = [
+const ITENS: ItemBiblioteca[] = [
   { titulo: 'Roteiro VSL · Previdenciário', cria: 'M. Oliveira Advogados', tipo: 'Roteiro', data: 'esta semana' },
   { titulo: 'Carrossel · 5 erros no INSS', cria: 'Mendes Advocacia', tipo: 'Criativo', data: 'ontem' },
   { titulo: 'Roteiro Reels · Autoridade', cria: 'Letícia Stein', tipo: 'Roteiro', data: 'há 3 dias' },
@@ -26,24 +25,7 @@ export default function BibliotecaPage() {
           </div>
         </div>
 
-        <div className="tkfilter">
-          <button className="on">Todos</button>
-          <button>Roteiros</button>
-          <button>Criativos</button>
-        </div>
-
-        <div className="grid cols-3">
-          {ITENS.map((it, i) => (
-            <div className="card" key={i}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span className={`ttag ${it.tipo === 'Roteiro' ? 'forja' : 'rotina'}`}>{it.tipo}</span>
-                <span className="s" style={{ color: 'var(--faint)' }}>{it.data}</span>
-              </div>
-              <div className="t" style={{ marginTop: 10, fontSize: 14 }}>{it.titulo}</div>
-              <div className="s" style={{ color: 'var(--muted)', marginTop: 4 }}>{it.cria}</div>
-            </div>
-          ))}
-        </div>
+        <BibliotecaLista itens={ITENS} />
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { Topbar } from '@/components/Topbar';
-import { AreaChart, Donut, DonutLegend, Bars, HBars } from '@/components/charts';
+import { Donut, DonutLegend, Bars, HBars } from '@/components/charts';
+import { CovilTendencia } from '@/components/CovilTendencia';
 import { getCovilDashboard } from '@/lib/data/covil';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
@@ -48,17 +49,9 @@ export default async function CovilPage({ searchParams }: { searchParams: Promis
   const nomeHero = membro?.nome?.split(' ')[0] ?? role.persona;
   const retrato = membro ? portraitDe(membro.nome) : role.portrait;
 
-  const switcher = (
-    <div className="range">
-      <button type="button">7 dias</button>
-      <button type="button" className="on">15 dias</button>
-      <button type="button">30 dias</button>
-    </div>
-  );
-
   return (
     <div className="main">
-      <Topbar title="Covil" sub="visão de gestão" right={switcher} />
+      <Topbar title="Covil" sub="visão de gestão" />
       <div className="content">
         {/* Hero por papel */}
         <section className="hero">
@@ -82,10 +75,7 @@ export default async function CovilPage({ searchParams }: { searchParams: Promis
 
         {/* Row 1 — entregas (área) + saúde (rosca) */}
         <div className="grid g-2">
-          <div className="card">
-            <div className="c-h"><span className="t">Entregas por semana</span><span className="s">Lenhas de Forja concluídas · 12 semanas</span></div>
-            <AreaChart data={dash.entregas} />
-          </div>
+          <CovilTendencia entregas={dash.entregas} />
           <div className="card">
             <div className="c-h"><span className="t">Saúde das Forjas</span><span className="s">agora</span></div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
