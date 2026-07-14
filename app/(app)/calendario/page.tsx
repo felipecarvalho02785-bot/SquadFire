@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
 import { CalendarioMes } from '@/components/CalendarioMes';
+import { SyncGoogleBtn } from '@/components/SyncGoogleBtn';
 import { getForjasTimeline, getRituaisDoMes, type SlaStatus } from '@/lib/data/agenda';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
@@ -63,7 +64,12 @@ export default async function CalendarioPage() {
 
   return (
     <div className="main">
-      <Topbar title="Calendário" sub="fases da Forja + SLA" action={<span className={`badge ${googleConectado ? 'ok' : 'dim'}`}>Google Agenda · {googleConectado ? 'conectado' : 'a conectar'}</span>} />
+      <Topbar title="Calendário" sub="fases da Forja + SLA" action={
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+          {googleConectado && <SyncGoogleBtn />}
+          <span className={`badge ${googleConectado ? 'ok' : 'dim'}`}>Google Agenda · {googleConectado ? 'conectado' : 'a conectar'}</span>
+        </span>
+      } />
       <div className="content">
         <div className="pagehead">
           <div>
