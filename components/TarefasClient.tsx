@@ -47,7 +47,7 @@ export function TarefasClient({ rows: initial, membros, meuId }: { rows: TaskRow
   const [filtro, setFiltro] = useState<Filtro>('todas');
   const [erro, setErro] = useState<string | null>(null);
   const [reassign, setReassign] = useState<string | null>(null);
-  const [, startToggle] = useTransition();
+  const [toggling, startToggle] = useTransition();
   const [criando, startCriar] = useTransition();
 
   // formulário de nova tarefa
@@ -59,15 +59,17 @@ export function TarefasClient({ rows: initial, membros, meuId }: { rows: TaskRow
   // re-sincroniza quando o servidor revalida (após criar/refresh)
   useEffect(() => setRows(initial), [initial]);
 
+  // 'Concluídas' mostra as done; todos os outros filtros mostram só as abertas
+  // (antes 'concluidas' nunca casava — o servidor só trazia não-concluídas).
   const filtradas = useMemo(() => {
     return rows.filter((r) => {
       switch (filtro) {
-        case 'forja': return r.tipo === 'forja';
-        case 'rotina': return r.tipo === 'rotina';
-        case 'avulsa': return r.tipo === 'avulsa';
+        case 'forja': return r.tipo === 'forja' && !r.done;
+        case 'rotina': return r.tipo === 'rotina' && !r.done;
+        case 'avulsa': return r.tipo === 'avulsa' && !r.done;
         case 'atrasadas': return r.dueKind === 'crit' && !r.done;
         case 'concluidas': return r.done;
-        default: return true;
+        default: return !r.done;
       }
     });
   }, [rows, filtro]);
@@ -185,6 +187,7 @@ export function TarefasClient({ rows: initial, membros, meuId }: { rows: TaskRow
                   type="button"
                   className={`chk${t.done ? ' done' : ''}`}
                   onClick={() => toggle(t.id)}
+                  disabled={toggling}
                   aria-pressed={t.done}
                   aria-label={t.done ? 'Reabrir tarefa' : 'Concluir tarefa'}
                 >

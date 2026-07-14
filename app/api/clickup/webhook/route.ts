@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       clickup_task_id: c.clickup_task_id,
       nome_cliente: c.nome_cliente,
       clickup_squad: c.clickup_squad,
-      clickup_semana: c.clickup_semana,
+      clickup_semana: c.clickup_semana == null ? null : Math.min(7, Math.max(1, c.clickup_semana)),
       status: c.status,
       sincronizado_em: new Date().toISOString(),
     };
@@ -81,8 +81,13 @@ async function importarComentario(taskId: string, c: ComentarioCU): Promise<{ ok
   if (!c.texto) return { ok: true, status: 200, reason: 'comentário vazio' };
 
   if (c.id) {
-    const { data: existente } = await supabase.from('comentario').select('id').eq('clickup_comment_id', c.id).maybeSingle();
-    if (existente) return { ok: true, status: 200, reason: 'já importado (anti-eco)' };
+    // Anti-eco: comentário nosso já importado OU eco de um briefing que enviamos
+    // (o id fica em briefing.clickup_comment_id) — nos dois casos, ignora.
+    const [{ data: existente }, { data: exBrief }] = await Promise.all([
+      supabase.from('comentario').select('id').eq('clickup_comment_id', c.id).maybeSingle(),
+      supabase.from('briefing').select('id').eq('clickup_comment_id', c.id).maybeSingle(),
+    ]);
+    if (existente || exBrief) return { ok: true, status: 200, reason: 'já importado (anti-eco)' };
   }
 
   const { data: cria } = await supabase.from('cria').select('id').eq('clickup_task_id', taskId).maybeSingle();

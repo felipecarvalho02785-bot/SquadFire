@@ -14,14 +14,20 @@ export async function enviarWhatsapp(destino: string, texto: string): Promise<{ 
   const inst = process.env.EVOLUTION_INSTANCE;
   if (!base || !key || !inst) return { ok: false, error: 'WhatsApp (Evolution API) não configurado' };
 
-  const number = destino.includes('@') ? destino : destino.replace(/\D/g, '');
+  let number = destino.includes('@') ? destino : destino.replace(/\D/g, '');
   if (!number) return { ok: false, error: 'destino sem número válido' };
+  // Sem DDI (número BR de 10–11 dígitos: DDD + número) → assume Brasil (55),
+  // senão a Evolution manda pro destinatário errado.
+  if (!destino.includes('@') && (number.length === 10 || number.length === 11)) number = `55${number}`;
 
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10000);
   try {
     const res = await fetch(`${base.replace(/\/$/, '')}/message/sendText/${inst}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', apikey: key },
       body: JSON.stringify({ number, text: texto }),
+      signal: ctrl.signal,
     });
     if (!res.ok) {
       const corpo = await res.text().catch(() => '');
@@ -29,6 +35,9 @@ export async function enviarWhatsapp(destino: string, texto: string): Promise<{ 
     }
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: String((e as Error).message ?? e) };
+    if ((e as Error)?.name === 'AbortError') return { ok: false, error: 'WhatsApp demorou demais para responder' };
+    return { ok: false, error: 'não consegui falar com o WhatsApp agora' };
+  } finally {
+    clearTimeout(timer);
   }
 }

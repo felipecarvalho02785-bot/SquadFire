@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { iniciais } from '@/lib/format';
-import { salvarConta, salvarPreferencias } from '@/lib/actions';
+import { salvarConta, salvarPreferencias, exportarMeusDados } from '@/lib/actions';
 
 type Papel = 'gestor_contas' | 'gestor_projetos' | 'gestor_trafego';
 const PAPEL_LABEL: Record<Papel, string> = { gestor_contas: 'Contas', gestor_projetos: 'Projetos', gestor_trafego: 'Tráfego' };
@@ -29,8 +29,8 @@ const DEFAULTS = {
   twofa: false,
 };
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
-  return <button type="button" className={`switch${on ? ' on' : ''}`} aria-pressed={on} onClick={() => onChange(!on)} />;
+function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label?: string }) {
+  return <button type="button" className={`switch${on ? ' on' : ''}`} role="switch" aria-checked={on} aria-label={label ?? (on ? 'Ligado' : 'Desligado')} onClick={() => onChange(!on)} />;
 }
 
 function Seg({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { key: string; label: string; icon?: React.ReactNode }[] }) {
@@ -67,6 +67,36 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs, click
   async function desconectarGoogle() {
     await fetch('/api/google/disconnect', { method: 'POST' });
     router.refresh();
+  }
+
+  // Meus dados (LGPD): baixa um JSON com o perfil + prefs + Lenhas/comentários/briefings.
+  const [exportando, setExportando] = useState(false);
+  async function exportarDados() {
+    setExportando(true);
+    try {
+      const r = await exportarMeusDados();
+      if (r.ok && r.json) {
+        const url = URL.createObjectURL(new Blob([r.json], { type: 'application/json' }));
+        const a = document.createElement('a');
+        a.href = url; a.download = 'meus-dados-squadfire.json'; a.click();
+        URL.revokeObjectURL(url);
+      } else { alert(r.error ?? 'não deu para exportar'); }
+    } finally { setExportando(false); }
+  }
+
+  // Encerra a sessão nos OUTROS aparelhos (mantém este). Via Supabase Auth.
+  async function encerrarOutras() {
+    if (!confirm('Sair da sua conta em todos os outros aparelhos?')) return;
+    try {
+      const { getSupabaseBrowser } = await import('@/lib/supabase/client');
+      const { error } = await getSupabaseBrowser().auth.signOut({ scope: 'others' });
+      alert(error ? 'não deu para encerrar as outras sessões' : 'Sessões dos outros aparelhos encerradas.');
+    } catch { alert('não deu para encerrar as outras sessões'); }
+  }
+
+  // Exclusão de conta: acesso é por allowlist do SSO → é ato de admin. Orienta.
+  function excluirConta() {
+    alert('Para excluir sua conta e seus dados, fale com um admin da squad — o acesso é por allowlist do SSO. Você pode exportar seus dados aqui antes.');
   }
 
   // ClickUp — ativar o tempo real (registra o webhook + guarda o secret no banco)
@@ -278,7 +308,7 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs, click
                   </button>
                 )
               ) : (
-                <button className="btn">{i.ok ? 'Gerenciar' : 'Conectar'}</button>
+                <button className="btn" disabled title="Em breve">{i.ok ? 'Gerenciar' : 'Conectar'}</button>
               )}
             </div>
           ))}
@@ -294,7 +324,7 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs, click
               <span className="avatar" style={{ width: 34, height: 34 }}>{iniciais(m.nome)}</span>
               <div className="rmain"><div className="t">{m.nome} {m.is_admin && <span className="badge admin" style={{ marginLeft: 4 }}>Admin</span>}</div><div className="s">{m.email}</div></div>
               <span className="badge ember">{PAPEL_LABEL[m.papel_primario]}</span>
-              <button className="btn">Editar papéis</button>
+              <button className="btn" disabled title="Gestão de papéis é feita por um admin (via allowlist)">Editar papéis</button>
             </div>
           ))}
         </div>
@@ -315,10 +345,10 @@ export function ForjariaClient({ membro, integracoes, team, google, prefs, click
           <div className="card setcard">
             <div className="sc-h"><span className="ic"><Svg>{ic.seg}</Svg></span><span className="t">Segurança &amp; LGPD</span></div>
             <div className="setrow"><div className="rmain"><div className="t">Autenticação em 2 fatores</div><div className="s">Além do Google SSO.</div></div><Toggle on={twofa} onChange={setTwofa} /></div>
-            <div className="setrow"><div className="rmain"><div className="t">Sessões ativas</div><div className="s">2 dispositivos conectados.</div></div><button className="btn">Encerrar outras</button></div>
+            <div className="setrow"><div className="rmain"><div className="t">Sessões ativas</div><div className="s">Sai da sua conta nos outros aparelhos (mantém este).</div></div><button className="btn" onClick={encerrarOutras}>Encerrar outras</button></div>
             <div className="setrow"><div className="rmain"><div className="t">Retenção de dados</div><div className="s">Contratos e briefings enviados às APIs de IA.</div></div><select className="selin" defaultValue="12"><option value="6">6 meses</option><option value="12">12 meses</option><option value="24">24 meses</option></select></div>
             <div className="setrow"><div className="rmain"><div className="t">Consentimento LGPD registrado</div><div className="s">Base legal para tratar dados das Crias.</div></div><span className="stbadge on">Ativo</span></div>
-            <div className="setrow"><div className="rmain"><div className="t">Meus dados</div></div><div style={{ display: 'flex', gap: 8 }}><button className="btn">Exportar</button><button className="btn" style={{ color: 'var(--risk)', borderColor: 'rgba(255,58,68,0.4)' }}>Excluir conta</button></div></div>
+            <div className="setrow"><div className="rmain"><div className="t">Meus dados</div></div><div style={{ display: 'flex', gap: 8 }}><button className="btn" onClick={exportarDados} disabled={exportando}>{exportando ? 'Exportando…' : 'Exportar'}</button><button className="btn" style={{ color: 'var(--risk)', borderColor: 'rgba(255,58,68,0.4)' }} onClick={excluirConta}>Excluir conta</button></div></div>
           </div>
         </div>
       </div>

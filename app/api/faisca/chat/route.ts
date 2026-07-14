@@ -42,6 +42,15 @@ export async function POST(request: Request) {
     .map((m) => ({ role: m.role, content: m.content.trim() }))
     .slice(-12);
   while (messages.length && messages[0].role !== 'user') messages = messages.slice(1);
+  // Coalesce turnos consecutivos do mesmo papel — o Gemini espera alternância
+  // user/model; dois 'user' seguidos podem gerar 400.
+  const coal: Turno[] = [];
+  for (const m of messages) {
+    const ult = coal[coal.length - 1];
+    if (ult && ult.role === m.role) ult.content += `\n\n${m.content}`;
+    else coal.push({ ...m });
+  }
+  messages = coal;
   if (!messages.length) return NextResponse.json({ error: 'mensagem vazia' }, { status: 400 });
 
   if (!iaGeminiConfigurada()) {

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, type FunctionDeclaration, type Part } from '@google/generative-ai';
+import { GoogleGenerativeAI, type FunctionDeclaration, type Part, type FunctionCall } from '@google/generative-ai';
 
 // Gemini é o ÚNICO provedor de IA (tier gratuito, sem depender de crédito pago):
 // ingestão (áudio→texto), chat da Faísca e estruturação de briefing.
@@ -12,9 +12,18 @@ export function iaGeminiConfigurada(): boolean {
   return !!chave();
 }
 
-// Reexecuta a chamada quando o Gemini devolve limite de uso (429 /
-// RESOURCE_EXHAUSTED) ou erro transitório (5xx), com backoff curto. Absorve os
-// picos do tier gratuito sem jogar erro na cara do usuário.
+// Retryable? Decide pelo STATUS estruturado do erro do SDK (não pela mensagem —
+// a mensagem quase sempre cita "generateContent", cujo "rate" fazia a regex
+// antiga retentar até erros permanentes 400/safety). Fallback por termos precisos.
+function ehRetryable(e: unknown): boolean {
+  const status = (e as { status?: number })?.status;
+  if (typeof status === 'number') return [429, 500, 502, 503, 504].includes(status);
+  const raw = (e instanceof Error ? e.message : String(e)).toLowerCase();
+  return /\b429\b|\b50[0234]\b|resource_exhausted|quota|rate limit|overloaded|unavailable|internal error/.test(raw);
+}
+
+// Reexecuta a chamada em limite de uso (429) ou erro transitório (5xx), com
+// backoff + jitter REAL (evita retries sincronizados sob quota compartilhada).
 async function comRetry<T>(fn: () => Promise<T>, tentativas = 3): Promise<T> {
   let ultimo: unknown;
   for (let i = 0; i < tentativas; i++) {
@@ -22,10 +31,8 @@ async function comRetry<T>(fn: () => Promise<T>, tentativas = 3): Promise<T> {
       return await fn();
     } catch (e) {
       ultimo = e;
-      const raw = (e instanceof Error ? e.message : String(e)).toLowerCase();
-      const retryable = /429|quota|rate|resource_exhausted|exhaust|overload|unavailable|503|500|internal/.test(raw);
-      if (!retryable || i === tentativas - 1) break;
-      await new Promise((r) => setTimeout(r, 1200 * (i + 1) + Math.floor(500 * (i + 1))));
+      if (!ehRetryable(e) || i === tentativas - 1) break;
+      await new Promise((r) => setTimeout(r, 1200 * (i + 1) + Math.floor(Math.random() * 700)));
     }
   }
   throw ultimo;
@@ -33,6 +40,21 @@ async function comRetry<T>(fn: () => Promise<T>, tentativas = 3): Promise<T> {
 
 export function transcricaoConfigurada(): boolean {
   return iaGeminiConfigurada();
+}
+
+// Converte um valor monetário (número ou string BR/en-US) em número. Decide o
+// separador decimal pelo ÚLTIMO separador — antes "1,234.56" virava NaN porque
+// só a 1ª vírgula era trocada.
+function parseNumeroBR(v: unknown): number | null {
+  if (typeof v === 'number') return isFinite(v) && v > 0 ? v : null;
+  let s = String(v ?? '').replace(/[^\d.,]/g, '');
+  if (!s) return null;
+  const ultVirg = s.lastIndexOf(',');
+  const ultPonto = s.lastIndexOf('.');
+  if (ultVirg > ultPonto) s = s.replace(/\./g, '').replace(',', '.'); // BR: 1.234,56
+  else s = s.replace(/,/g, ''); // en-US: 1,234.56
+  const n = Number(s);
+  return isFinite(n) && n > 0 ? n : null;
 }
 
 // ── briefing: tipos + parsing + system prompt (compartilhados) ──────────────
@@ -119,9 +141,7 @@ export async function extrairContratoGemini(pdf: Buffer): Promise<{ valor: numbe
     const a = raw.indexOf('{'); const b = raw.lastIndexOf('}');
     if (a >= 0 && b > a) { try { obj = JSON.parse(raw.slice(a, b + 1)); } catch { /* deixa vazio */ } }
   }
-  const bruto = obj.valor_mensal;
-  const num = typeof bruto === 'number' ? bruto : bruto ? Number(String(bruto).replace(/[^\d.,]/g, '').replace(/\.(?=\d{3})/g, '').replace(',', '.')) : NaN;
-  const valor = isFinite(num) && num > 0 ? num : null;
+  const valor = parseNumeroBR(obj.valor_mensal);
   const di = obj.data_inicio;
   const dataInicio = typeof di === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(di) ? di : null;
   return { valor, dataInicio, resumo: String(obj.resumo ?? '').trim() };
@@ -199,15 +219,18 @@ export async function conversarFaiscaComFerramentas(
   const chat = model.startChat({ history });
 
   let result = await comRetry(() => chat.sendMessage(ultima));
+  let agiu = false;
   // Laço de ferramentas (teto de 4 rodadas por segurança).
   for (let i = 0; i < 4; i++) {
-    const calls = result.response.functionCalls?.() ?? [];
+    let calls: FunctionCall[] = [];
+    try { calls = result.response.functionCalls?.() ?? []; } catch { calls = []; } // pode lançar em SAFETY/RECITATION
     if (!calls.length) break;
     const respostas: Part[] = [];
     for (const c of calls) {
       let saida: unknown;
       try {
         saida = await executar(c.name, (c.args ?? {}) as Record<string, unknown>);
+        if ((saida as { ok?: boolean })?.ok !== false) agiu = true;
       } catch (e) {
         saida = { ok: false, erro: (e as Error).message ?? 'falhou' };
       }
@@ -215,7 +238,12 @@ export async function conversarFaiscaComFerramentas(
     }
     result = await comRetry(() => chat.sendMessage(respostas));
   }
-  return result.response.text().trim();
+  let texto = '';
+  try { texto = result.response.text().trim(); } catch { texto = ''; }
+  // Se a IA AGIU mas parou num functionCall sem texto, não minta dizendo "não
+  // consegui" (a Lenha pode já ter sido criada) — confirma que a ação foi feita.
+  if (!texto && agiu) texto = 'Feito! ✅';
+  return texto;
 }
 
 // ── estruturação do briefing (6 campos, JSON) ───────────────────────────────
@@ -227,7 +255,9 @@ export async function estruturarBriefingGemini(
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODEL,
     systemInstruction: sistemaBriefing(contexto),
-    generationConfig: { responseMimeType: 'application/json' },
+    // maxOutputTokens folgado pra o JSON dos 6 campos não truncar (MAX_TOKENS
+    // não lança no SDK, então um corte silencioso quebraria o JSON.parse).
+    generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 4096 },
   });
   const result = await comRetry(() => model.generateContent(`Transcrição do áudio do briefing:\n\n${transcricao}`));
   return parseCampos(result.response.text());

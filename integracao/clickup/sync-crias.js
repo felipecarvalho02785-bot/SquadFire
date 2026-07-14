@@ -51,7 +51,8 @@ function mapStatus(task) {
   const raw = (task.status?.status || '').toLowerCase();
   if (raw.includes('churn') || raw.includes('cancel'))
     return { status: 'encerrada', motivo: 'churn', backlog: false };
-  if (raw.includes('final') || raw.includes('conclu'))
+  // 'finaliz' (não 'final') pra não casar um status solto com "final" no meio.
+  if (raw.includes('finaliz') || raw.includes('conclu'))
     return { status: 'encerrada', motivo: 'finalizada', backlog: false };
   if (raw.includes('paus') || raw.includes('hold') || raw.includes('espera'))
     return { status: 'pausada', motivo: null, backlog: false };
@@ -122,11 +123,30 @@ export function mapTaskToCria(task) {
   };
 }
 
-// Puxa a lista-mestre, filtra Squad 08 e devolve os objetos `cria`.
+// "Avanço" de uma Cria pra desempate na dedup: não-backlog vence backlog; entre
+// iguais, maior semana; e ter data_inicio desempata.
+export function rankCria(c) {
+  return (c.backlog ? 0 : 1000) + (c.clickup_semana ?? c.fase ?? 0) * 10 + (c.data_inicio ? 1 : 0);
+}
+
+// Dedup por cliente: o mesmo escritório pode ter task no backlog E na execução.
+// Sem isso viram 2 Crias (o nome não é chave única). Fica a mais avançada.
+export function dedupCrias(crias) {
+  const porNome = new Map();
+  for (const c of crias) {
+    const chave = (c.nome_cliente || '').trim().toLowerCase();
+    if (!chave) continue;
+    const atual = porNome.get(chave);
+    if (!atual || rankCria(c) > rankCria(atual)) porNome.set(chave, c);
+  }
+  return [...porNome.values()];
+}
+
+// Puxa a lista-mestre, filtra Squad 08 e devolve os objetos `cria` (deduplicados).
 export async function syncCrias({ includeClosed = true } = {}) {
   const tasks = await getTasksListaMestre({ includeClosed });
   const squad08 = tasks.filter(isSquad08);
-  const crias = squad08.map(mapTaskToCria);
+  const crias = dedupCrias(squad08.map(mapTaskToCria));
   return {
     total_tasks: tasks.length,
     squad08_count: squad08.length,

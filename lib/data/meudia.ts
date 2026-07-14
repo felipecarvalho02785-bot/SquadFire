@@ -2,6 +2,7 @@ import { getSupabaseServer } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { faseLabel, iniciais } from '@/lib/format';
 import { statusGoogle, listarEventos } from '@/lib/google/calendar';
+import { hojeBRT, limitesDoDiaBRT } from '@/lib/datas';
 import type { Cria, Lenha, Papel } from '@/lib/types/database';
 
 export interface RotinaResumo {
@@ -32,7 +33,7 @@ export async function getMeuDia(membroId: string, papel: Papel): Promise<MeuDia>
 
   // Rotinas só entram no "hoje" se forem do dia (data_referencia = hoje) — assim
   // rituais antigos não concluídos não acumulam. Forja/avulsa aparecem sempre.
-  const hojeStr = new Date().toISOString().slice(0, 10);
+  const hojeStr = hojeBRT();
   const doDia = ((lenhas as Lenha[]) ?? []).filter((l) => l.tipo !== 'rotina' || l.data_referencia === hojeStr);
 
   const { data: rp } = await supabase
@@ -114,6 +115,7 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
   const supabase = await getSupabaseServer();
   const base = await getMeuDia(membro.id, membro.papel_primario);
   const hoje = new Date();
+  const hojeStr = hojeBRT();
   const inicioSemana = new Date(hoje);
   inicioSemana.setDate(hoje.getDate() - 7);
 
@@ -137,7 +139,9 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
   const briefings = minhasAtivas.filter((c) => !briefadas.has(c.id)).length;
 
   const lenhas: LenhaRow[] = base.lenhas.map((l) => {
-    const atrasada = l.prazo ? new Date(l.prazo) < hoje && l.status !== 'concluida' : false;
+    // Atrasada só se o prazo é ESTRITAMENTE antes de hoje (BRT). Prazo = hoje
+    // não é atraso (antes pintava vermelho ~3h cedo, contradizendo o sino).
+    const atrasada = l.prazo ? l.prazo < hojeStr && l.status !== 'concluida' : false;
     const tipoLabel = l.tipo === 'forja' ? 'Forja' : l.tipo === 'rotina' ? 'Rotina' : 'Do dia';
     return {
       id: l.id,
@@ -168,9 +172,10 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
   const agenda: AgendaItem[] = [];
   const g = await statusGoogle(membro.id);
   if (g.conectado) {
-    const ini = new Date(hoje); ini.setHours(0, 0, 0, 0);
-    const fim = new Date(hoje); fim.setHours(23, 59, 59, 999);
-    for (const ev of await listarEventos(membro.id, ini.toISOString(), fim.toISOString())) {
+    // Janela = o dia de hoje em Brasília (não o dia UTC do servidor, senão os
+    // eventos da noite vazam pro "amanhã" e somem da lista).
+    const { ini, fim } = limitesDoDiaBRT();
+    for (const ev of await listarEventos(membro.id, ini, fim)) {
       const t = ev.titulo.toLowerCase();
       const kind: AgendaItem['kind'] = /roda de fogo/.test(t) ? 'roda' : /daily|weekly|alinhamento|squad|interna/.test(t) ? 'interna' : 'cliente';
       // Horário no fuso de Brasília (o servidor da Vercel roda em UTC — sem isso

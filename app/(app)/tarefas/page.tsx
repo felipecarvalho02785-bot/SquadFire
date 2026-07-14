@@ -4,6 +4,7 @@ import { getSupabaseServer } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
 import { iniciais } from '@/lib/format';
+import { hojeBRT, diasDesdeBRT } from '@/lib/datas';
 import type { Lenha, Membro } from '@/lib/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -25,9 +26,7 @@ const DEMO: TaskRow[] = [
 
 function fmtPrazo(prazo: string | null, overdue: boolean): { due: string; dueKind: TaskRow['dueKind'] } {
   if (!prazo) return { due: '—', dueKind: '' };
-  const hoje = new Date();
-  const d = new Date(prazo + 'T00:00:00');
-  const dias = Math.round((d.getTime() - new Date(hoje.toDateString()).getTime()) / 86400000);
+  const dias = -diasDesdeBRT(prazo); // dias até o prazo (positivo = futuro), em BRT
   if (dias === 0) return { due: 'hoje', dueKind: 'warn' };
   if (dias < 0) return { due: `${Math.abs(dias)}d atr`, dueKind: 'crit' };
   return { due: `${dias}d`, dueKind: overdue ? 'crit' : '' };
@@ -38,14 +37,14 @@ async function getDados(): Promise<{ rows: TaskRow[]; kpis: { abertas: number; r
     return { rows: DEMO, kpis: { abertas: 3, risco: 1, concluidas: 12, hoje: 2 }, membros: DEMO_MEMBROS, meuId: 'm1' };
   }
   const supabase = await getSupabaseServer();
-  const hojeIso = new Date().toISOString();
-  const hojeData = new Date().toISOString().slice(0, 10);
+  const hojeData = hojeBRT();
   const inicioSemana = new Date();
   inicioSemana.setDate(inicioSemana.getDate() - 7);
 
-  const [{ data: abertasData }, { count: concl }, { data: membrosData }, membroAtual] = await Promise.all([
+  const [{ data: abertasData }, { count: concl }, { data: concluidasData }, { data: membrosData }, membroAtual] = await Promise.all([
     supabase.from('lenha').select('*').neq('status', 'concluida').order('prazo', { ascending: true, nullsFirst: false }).limit(300),
     supabase.from('lenha').select('*', { count: 'exact', head: true }).eq('status', 'concluida').gte('concluida_em', inicioSemana.toISOString()),
+    supabase.from('lenha').select('*').eq('status', 'concluida').gte('concluida_em', inicioSemana.toISOString()).order('concluida_em', { ascending: false }).limit(100),
     supabase.from('membro').select('id, nome').eq('ativo', true).order('nome'),
     getCurrentMembro(),
   ]);
@@ -55,7 +54,7 @@ async function getDados(): Promise<{ rows: TaskRow[]; kpis: { abertas: number; r
 
   const abertas = (abertasData as Lenha[]) ?? [];
   const rows: TaskRow[] = abertas.map((l) => {
-    const overdue = l.prazo ? new Date(l.prazo) < new Date(hojeIso) : false;
+    const overdue = l.prazo ? l.prazo < hojeData : false;
     const { due, dueKind } = fmtPrazo(l.prazo, overdue);
     const nome = l.responsavel_id ? nomePor.get(l.responsavel_id) ?? '' : '';
     const sub = l.tipo === 'forja' ? 'Lenha de Forja' : l.tipo === 'rotina' ? 'Lenha de Rotina' : 'Tarefa do dia';
@@ -72,11 +71,27 @@ async function getDados(): Promise<{ rows: TaskRow[]; kpis: { abertas: number; r
     };
   });
 
+  // Concluídas da semana (pro filtro "Concluídas" ter o que mostrar).
+  const concluidasRows: TaskRow[] = ((concluidasData as Lenha[]) ?? []).map((l) => {
+    const nome = l.responsavel_id ? nomePor.get(l.responsavel_id) ?? '' : '';
+    return {
+      id: l.id,
+      titulo: l.titulo,
+      sub: l.tipo === 'forja' ? 'Lenha de Forja' : l.tipo === 'rotina' ? 'Lenha de Rotina' : 'Tarefa do dia',
+      tipo: (l.tipo as TaskRow['tipo']) ?? 'avulsa',
+      who: nome ? iniciais(nome) : '',
+      whoNome: nome,
+      due: 'feito',
+      dueKind: '',
+      done: true,
+    };
+  });
+
   return {
-    rows,
+    rows: [...rows, ...concluidasRows],
     kpis: {
       abertas: abertas.length,
-      risco: abertas.filter((l) => l.prazo && new Date(l.prazo) < new Date(hojeIso)).length,
+      risco: abertas.filter((l) => l.prazo && l.prazo < hojeData).length,
       concluidas: concl ?? 0,
       hoje: abertas.filter((l) => l.tipo === 'avulsa' || l.data_referencia === hojeData).length,
     },

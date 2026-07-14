@@ -1523,3 +1523,192 @@ alter table cria
 
 comment on column cria.clickup_puxado_em is
   'Última vez que a Cria foi puxada do ClickUp (dados + fase + diagnóstico). Controle do lote.';
+
+-- ┌── supabase/migrations/0025_conta_papel_whitelist.sql
+-- SquadFire · 0025 — Anti-escalada em atualizar_minha_conta
+-- ─────────────────────────────────────────────────────────────
+-- Bug de segurança (auditoria): atualizar_minha_conta aceitava QUALQUER papel.
+-- Como trocar o papel_primário dispara trg_membro_sync_papel (que insere a
+-- linha em membro_papel), um Tráfego podia se auto-conceder gestor_contas /
+-- gestor_projetos — ganhando poderes de RLS que a matriz de papéis nega.
+-- Correção: papel primário só entre os já atribuídos ao membro.
+
+create or replace function public.atualizar_minha_conta(p_nome text, p_papel papel)
+returns void
+language plpgsql
+security definer set search_path = public, app, pg_temp
+as $$
+declare
+  v_id uuid := app.current_membro_id();
+begin
+  if v_id is null then
+    raise exception 'membro não identificado' using errcode = '42501';
+  end if;
+  if coalesce(btrim(p_nome), '') = '' then
+    raise exception 'nome não pode ser vazio';
+  end if;
+
+  if not exists (
+    select 1 from membro_papel mp
+    where mp.membro_id = v_id and mp.papel = p_papel
+  ) then
+    raise exception 'você não tem o papel % atribuído — peça a um admin', p_papel
+      using errcode = '42501';
+  end if;
+
+  update membro
+     set nome = btrim(p_nome),
+         papel_primario = p_papel
+   where id = v_id;
+end;
+$$;
+
+comment on function public.atualizar_minha_conta(text, papel) is
+  'Membro edita o próprio nome e papel primário — restrito a papéis já atribuídos (anti-escalada). A tabela membro é admin-only na RLS.';
+
+revoke all on function public.atualizar_minha_conta(text, papel) from public;
+grant execute on function public.atualizar_minha_conta(text, papel) to authenticated;
+
+-- ┌── supabase/migrations/0026_fase_forja_sync_so_avanca.sql
+-- SquadFire · 0026 — definir_fase_forja_sync só AVANÇA (nunca retrocede)
+-- ─────────────────────────────────────────────────────────────
+-- Bug (auditoria): 0023 reescrevia as 7 fases INCONDICIONALMENTE — o cron da
+-- manhã revertia o "Avançar Fase" manual todo dia. Aqui a Semana do ClickUp
+-- só é aplicada quando de fato avança a Forja (e reabre concluída se voltar <7).
+
+create or replace function public.definir_fase_forja_sync(p_cria_id uuid, p_semana int)
+returns void
+language plpgsql
+security definer set search_path = public, app, pg_temp
+as $$
+declare
+  v_forja       uuid;
+  v_concluida   boolean;
+  v_fase_atual  uuid;
+  v_ordem_atual int := 0;
+  v_sem         int := least(greatest(p_semana, 1), 7);
+begin
+  if p_semana is null or p_semana < 1 then return; end if;
+
+  select id, coalesce(concluida, false), fase_atual_id
+    into v_forja, v_concluida, v_fase_atual
+    from forja where cria_id = p_cria_id;
+  if v_forja is null then return; end if;
+
+  if v_fase_atual is not null then
+    select coalesce(ordem, 0) into v_ordem_atual
+      from fase_da_forja where id = v_fase_atual;
+    v_ordem_atual := coalesce(v_ordem_atual, 0);
+  end if;
+
+  if v_concluida then
+    if v_sem >= 7 then return; end if;
+  else
+    if v_sem <= v_ordem_atual then return; end if;
+  end if;
+
+  update fase_da_forja
+     set status = (case
+                     when ordem < v_sem then 'concluida'
+                     when ordem = v_sem then 'em_andamento'
+                     else 'pendente'
+                   end)::status_fase
+   where forja_id = v_forja;
+
+  update forja
+     set fase_atual_id = (select id from fase_da_forja where forja_id = v_forja and ordem = v_sem),
+         concluida = false
+   where id = v_forja;
+end;
+$$;
+
+comment on function public.definir_fase_forja_sync(uuid, int) is
+  'Caminho do sync ClickUp: aplica a Semana (1..7) só quando AVANÇA a Forja (nunca retrocede; reabre concluída se ClickUp voltar a <7). Só service_role.';
+
+revoke all on function public.definir_fase_forja_sync(uuid, int) from public;
+grant execute on function public.definir_fase_forja_sync(uuid, int) to service_role;
+
+-- ┌── supabase/migrations/0027_em_risco_fuso_brasilia.sql
+-- SquadFire · 0027 — em_risco no fuso de Brasília (SLA não vira 3h cedo)
+-- ─────────────────────────────────────────────────────────────
+-- recalcular_em_risco comparava now()::date (sessão UTC no Supabase), marcando
+-- em_risco ~3h cedo à noite. Passa a usar a data de Brasília, como o resto do app.
+
+create or replace function app.recalcular_em_risco()
+returns int
+language plpgsql
+security definer set search_path = public, pg_temp
+as $$
+declare v_afetadas int;
+begin
+  with risco as (
+    select distinct f.cria_id
+    from forja f
+    join fase_da_forja fdf on fdf.forja_id = f.id
+    where fdf.status <> 'concluida'
+      and fdf.data_prevista_fim is not null
+      and (now() at time zone 'America/Sao_Paulo')::date > fdf.data_prevista_fim
+  )
+  update cria c
+     set em_risco = (c.id in (select cria_id from risco))
+   where c.em_risco is distinct from (c.id in (select cria_id from risco));
+  get diagnostics v_afetadas = row_count;
+  return v_afetadas;
+end;
+$$;
+
+comment on function app.recalcular_em_risco() is
+  'Recalcula cria.em_risco por SLA de fase vencida, no fuso America/Sao_Paulo (idempotente; limpa quem saiu do risco).';
+
+-- ┌── supabase/migrations/0028_clickup_puxa_tentativas.sql
+-- SquadFire · 0028 — Contador de tentativas do "Puxar todos"
+-- ─────────────────────────────────────────────────────────────
+-- O lote só marca clickup_puxado_em no sucesso; conta as falhas pra convergir
+-- (após 3, a Cria sai do lote — o botão por-Cria segue disponível pra retry).
+alter table cria
+  add column if not exists clickup_puxa_tentativas int not null default 0;
+
+comment on column cria.clickup_puxa_tentativas is
+  'Tentativas malsucedidas de puxar do ClickUp no lote. Sucesso marca clickup_puxado_em; após 3 falhas o lote desiste (converge).';
+
+-- ┌── supabase/migrations/0029_comentario_clickup_unico.sql
+-- SquadFire · 0029 — UNIQUE em comentario.clickup_comment_id
+-- ─────────────────────────────────────────────────────────────
+-- Deduplica o que já existir e impede novas duplicatas do sync (índice parcial).
+delete from comentario c
+  using comentario d
+ where c.clickup_comment_id is not null
+   and c.clickup_comment_id = d.clickup_comment_id
+   and c.ctid > d.ctid;
+
+create unique index if not exists uq_comentario_clickup_comment_id
+  on comentario (clickup_comment_id)
+  where clickup_comment_id is not null;
+
+-- ┌── supabase/migrations/0030_guarda_coluna_allowlist.sql
+-- SquadFire · 0030 — Guard de coluna da Cria vira ALLOWLIST
+-- ─────────────────────────────────────────────────────────────
+-- Denylist (0011) deixava colunas novas de fora → Tráfego editava. Vira
+-- allowlist: compara a linha inteira e só libera investimento_midia.
+create or replace function app.guarda_coluna_cria()
+returns trigger
+language plpgsql
+as $$
+declare v_check cria;
+begin
+  if app.jwt_email() is null or app.is_admin() or app.has_papel('gestor_contas') then
+    return new;
+  end if;
+
+  if app.has_papel('gestor_trafego') then
+    v_check := new;
+    v_check.investimento_midia := old.investimento_midia;
+    v_check.updated_at        := old.updated_at;
+    if v_check is distinct from old then
+      raise exception 'Tráfego só pode editar investimento_midia da Cria';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;

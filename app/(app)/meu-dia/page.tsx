@@ -7,11 +7,12 @@ import { getMeuDiaDashboard } from '@/lib/data/meudia';
 import { getAlertas } from '@/lib/data/alertas';
 import { garantirRituaisHoje } from '@/lib/data/agenda';
 import { isSupabaseConfigured } from '@/lib/env';
+import { horaBRT } from '@/lib/datas';
 
 export const dynamic = 'force-dynamic';
 
 function saudacao(): string {
-  const h = new Date().getHours();
+  const h = horaBRT();
   return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
 }
 

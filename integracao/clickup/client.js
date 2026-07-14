@@ -16,20 +16,35 @@ async function cuFetch(path, { method = 'GET', query, body } = {}) {
     }
   }
 
-  const res = await fetch(url, {
-    method,
-    headers: {
-      Authorization: getClickUpToken(),
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  // Timeout por chamada + retry com backoff (respeita Retry-After) em 429/5xx —
+  // antes um único 429 derrubava o sync inteiro e um upstream lento travava a rota.
+  for (let i = 0; ; i++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
+    let res;
+    try {
+      res = await fetch(url, {
+        method,
+        headers: { Authorization: getClickUpToken(), 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined,
+        signal: ctrl.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`ClickUp ${method} ${path} → ${res.status} ${res.statusText} ${text}`.trim());
+    if ((res.status === 429 || res.status >= 500) && i < 3) {
+      const ra = Number(res.headers.get('retry-after'));
+      const espera = Number.isFinite(ra) && ra > 0 ? ra * 1000 : 500 * (i + 1) + Math.floor(Math.random() * 400);
+      await new Promise((r) => setTimeout(r, Math.min(espera, 8000)));
+      continue;
+    }
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`ClickUp ${method} ${path} → ${res.status} ${res.statusText} ${text}`.trim());
+    }
+    return res.json();
   }
-  return res.json();
 }
 
 // Puxa TODAS as tasks da lista-mestre (paginado; inclui custom fields).
@@ -95,11 +110,13 @@ export async function getTaskComments(taskId) {
   return cuFetch(`/task/${taskId}/comment`);
 }
 
-// Baixa um anexo do ClickUp pela URL. Tenta com o token; se recusar, tenta sem
-// header (a URL pode já vir acessível). Devolve um Buffer.
+// Baixa um anexo do ClickUp pela URL. Anexos ficam no S3 e vêm com URL
+// pré-assinada (url_w_query) — o S3 RECUSA (403) se mandarmos o header
+// Authorization junto. Por isso tentamos primeiro SEM header (presigned); só se
+// falhar caímos pro token (caso seja um endpoint da API que exige auth).
 export async function baixarAnexoUrl(url) {
-  let res = await fetch(url, { headers: { Authorization: getClickUpToken() } });
-  if (!res.ok) res = await fetch(url);
+  let res = await fetch(url);
+  if (!res.ok) res = await fetch(url, { headers: { Authorization: getClickUpToken() } });
   if (!res.ok) throw new Error(`download do anexo falhou → ${res.status}`);
   return Buffer.from(await res.arrayBuffer());
 }

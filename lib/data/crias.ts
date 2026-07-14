@@ -164,7 +164,7 @@ export async function getCriaDetalhe(id: string): Promise<CriaDetalhe | null> {
   // URL assinada (buckets privados) — válida por 1h, gerada ao exibir.
   async function assinar(bucket: string, path: string | null | undefined): Promise<string | null> {
     if (!path) return null;
-    const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
+    const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 21600); // 6h (a página pode ficar aberta)
     return data?.signedUrl ?? null;
   }
 

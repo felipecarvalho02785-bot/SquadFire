@@ -1,5 +1,6 @@
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
+import { hojeBRT } from '@/lib/datas';
 import type { Papel } from '@/lib/types/database';
 
 export interface AlertaItem {
@@ -25,7 +26,7 @@ export async function getAlertas(membro: { id: string; nome: string; papel_prima
   if (!isSupabaseConfigured || !membro) return VAZIO;
   const supabase = await getSupabaseServer();
   const hoje = new Date();
-  const hojeStr = hoje.toISOString().slice(0, 10);
+  const hojeStr = hojeBRT();
   const inicioSemana = new Date(hoje);
   inicioSemana.setDate(hoje.getDate() - 7);
 

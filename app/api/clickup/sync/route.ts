@@ -18,9 +18,10 @@ export async function POST(request: Request) {
 }
 
 async function runSync(request: Request) {
+  // Falha FECHADA: sem CRON_SECRET, a rota fica trancada (não roda sync público).
   const secret = process.env.CRON_SECRET;
   const auth = request.headers.get('authorization');
-  if (secret && auth !== `Bearer ${secret}`) {
+  if (!secret || auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'não autorizado' }, { status: 401 });
   }
 
@@ -47,7 +48,7 @@ async function runSync(request: Request) {
       clickup_task_id: c.clickup_task_id,
       nome_cliente: c.nome_cliente,
       clickup_squad: c.clickup_squad,
-      clickup_semana: c.clickup_semana,
+      clickup_semana: c.clickup_semana == null ? null : Math.min(7, Math.max(1, c.clickup_semana)),
       status: c.status,
       sincronizado_em: agora,
     };

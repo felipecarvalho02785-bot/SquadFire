@@ -20,19 +20,30 @@ export async function POST() {
   if (!process.env.CLICKUP_API_TOKEN) return NextResponse.json({ ok: false, error: 'ClickUp não configurado' }, { status: 400 });
 
   const admin = getSupabaseAdmin();
-  const base = () => admin.from('cria').select('id', { count: 'exact' }).eq('status', 'ativa').not('clickup_task_id', 'is', null).is('clickup_puxado_em', null);
+  // Pendentes = ativas com task no ClickUp, ainda não puxadas e com menos de 3
+  // tentativas falhas (senão o lote nunca convergiria se uma falhasse sempre).
+  const base = () => admin.from('cria').select('id', { count: 'exact' }).eq('status', 'ativa').not('clickup_task_id', 'is', null).is('clickup_puxado_em', null).lt('clickup_puxa_tentativas', 3);
 
-  const { count: total } = await base().limit(0);
   const { data: pend } = await base().order('nome_cliente').limit(LOTE);
   const ids = ((pend as { id: string }[]) ?? []).map((p) => p.id);
 
   let atualizados = 0;
   for (const id of ids) {
-    try { const r = await puxarCriaDoClickup(id); if (r.ok) atualizados += 1; } catch { /* segue */ }
-    await admin.from('cria').update({ clickup_puxado_em: new Date().toISOString() }).eq('id', id);
-    // Gestor de Contas = quem puxou, pras Crias que ainda não têm gestor.
-    await admin.from('cria').update({ gestor_contas_id: membro.id }).eq('id', id).is('gestor_contas_id', null);
+    let ok = false;
+    try { const r = await puxarCriaDoClickup(id); ok = r.ok; if (ok) atualizados += 1; } catch { /* segue */ }
+    if (ok) {
+      await admin.from('cria').update({ clickup_puxado_em: new Date().toISOString() }).eq('id', id);
+      // Gestor de Contas = quem puxou, pras Crias que ainda não têm gestor.
+      await admin.from('cria').update({ gestor_contas_id: membro.id }).eq('id', id).is('gestor_contas_id', null);
+    } else {
+      // Falhou: conta a tentativa (após 3, sai do lote — sem marcar sucesso falso).
+      const { data: cur } = await admin.from('cria').select('clickup_puxa_tentativas').eq('id', id).maybeSingle();
+      const t = ((cur as { clickup_puxa_tentativas: number } | null)?.clickup_puxa_tentativas ?? 0) + 1;
+      await admin.from('cria').update({ clickup_puxa_tentativas: t }).eq('id', id);
+    }
   }
 
-  return NextResponse.json({ ok: true, processados: ids.length, atualizados, restantes: Math.max(0, (total ?? 0) - ids.length) });
+  // Recontagem real dos pendentes (sucessos saíram; falhas <3 ainda contam).
+  const { count: restantes } = await base().limit(0);
+  return NextResponse.json({ ok: true, processados: ids.length, atualizados, restantes: restantes ?? 0 });
 }
