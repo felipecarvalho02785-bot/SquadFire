@@ -48,7 +48,7 @@ async function runSync(request: Request) {
       clickup_task_id: c.clickup_task_id,
       nome_cliente: c.nome_cliente,
       clickup_squad: c.clickup_squad,
-      clickup_semana: c.clickup_semana,
+      clickup_semana: c.clickup_semana == null ? null : Math.min(7, Math.max(1, c.clickup_semana)),
       status: c.status,
       sincronizado_em: agora,
     };

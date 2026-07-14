@@ -55,16 +55,23 @@ export interface GEvento { id: string; titulo: string; inicio: string | null; al
 export async function listarEventos(membroId: string, timeMinISO: string, timeMaxISO: string): Promise<GEvento[]> {
   const token = await accessTokenValido(membroId);
   if (!token) return [];
-  const p = new URLSearchParams({ timeMin: timeMinISO, timeMax: timeMaxISO, singleEvents: 'true', orderBy: 'startTime', maxResults: '50' });
-  const res = await gfetch(`${CAL}?${p.toString()}`, { headers: { authorization: `Bearer ${token}` } });
-  if (!res.ok) return [];
-  const j = (await res.json()) as { items?: { id: string; summary?: string; start?: { dateTime?: string; date?: string } }[] };
-  return (j.items ?? []).map((e) => ({
-    id: e.id,
-    titulo: e.summary ?? '(sem título)',
-    inicio: e.start?.dateTime ?? e.start?.date ?? null,
-    allDay: !e.start?.dateTime,
-  }));
+  const eventos: GEvento[] = [];
+  let pageToken: string | undefined;
+  // Pagina (250/página, teto de 5 páginas) — antes maxResults=50 escondia
+  // eventos além do 50º. Em erro, devolve o que já juntou (não finge vazio).
+  for (let i = 0; i < 5; i++) {
+    const p = new URLSearchParams({ timeMin: timeMinISO, timeMax: timeMaxISO, singleEvents: 'true', orderBy: 'startTime', maxResults: '250' });
+    if (pageToken) p.set('pageToken', pageToken);
+    const res = await gfetch(`${CAL}?${p.toString()}`, { headers: { authorization: `Bearer ${token}` } });
+    if (!res.ok) break;
+    const j = (await res.json()) as { items?: { id: string; summary?: string; start?: { dateTime?: string; date?: string } }[]; nextPageToken?: string };
+    for (const e of j.items ?? []) {
+      eventos.push({ id: e.id, titulo: e.summary ?? '(sem título)', inicio: e.start?.dateTime ?? e.start?.date ?? null, allDay: !e.start?.dateTime });
+    }
+    if (!j.nextPageToken) break;
+    pageToken = j.nextPageToken;
+  }
+  return eventos;
 }
 
 const CAL_EVENT = (id: string) => `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(id)}`;
@@ -125,7 +132,10 @@ function rruleDoRitual(tipo: string, cfg: Record<string, unknown>): string | nul
       const ds = (Array.isArray(cfg.dias) ? (cfg.dias as string[]) : []).map((x) => DOW_RRULE[x]).filter(Boolean);
       return ds.length ? `RRULE:FREQ=WEEKLY;BYDAY=${ds.join(',')}` : null;
     }
-    case 'mensal': return cfg.dia_mes ? `RRULE:FREQ=MONTHLY;BYMONTHDAY=${Number(cfg.dia_mes)}` : null;
+    case 'mensal': {
+      const dm = Number(cfg.dia_mes); // valida 1–31 (senão BYMONTHDAY=NaN → 400 do Google)
+      return Number.isInteger(dm) && dm >= 1 && dm <= 31 ? `RRULE:FREQ=MONTHLY;BYMONTHDAY=${dm}` : null;
+    }
     default: return null;
   }
 }

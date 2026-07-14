@@ -14,8 +14,11 @@ export async function enviarWhatsapp(destino: string, texto: string): Promise<{ 
   const inst = process.env.EVOLUTION_INSTANCE;
   if (!base || !key || !inst) return { ok: false, error: 'WhatsApp (Evolution API) não configurado' };
 
-  const number = destino.includes('@') ? destino : destino.replace(/\D/g, '');
+  let number = destino.includes('@') ? destino : destino.replace(/\D/g, '');
   if (!number) return { ok: false, error: 'destino sem número válido' };
+  // Sem DDI (número BR de 10–11 dígitos: DDD + número) → assume Brasil (55),
+  // senão a Evolution manda pro destinatário errado.
+  if (!destino.includes('@') && (number.length === 10 || number.length === 11)) number = `55${number}`;
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 10000);

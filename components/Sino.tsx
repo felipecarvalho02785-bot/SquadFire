@@ -14,11 +14,13 @@ export function Sino() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/alertas')
+    const ctrl = new AbortController();
+    fetch('/api/alertas', { signal: ctrl.signal })
       .then((r) => r.json())
       .then((d) => setItens(Array.isArray(d.itens) ? d.itens : []))
       .catch(() => {})
       .finally(() => setCarregou(true));
+    return () => ctrl.abort(); // cancela se desmontar (evita setState duplicado)
   }, []);
 
   useEffect(() => {

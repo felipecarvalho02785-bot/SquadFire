@@ -29,8 +29,8 @@ const DEFAULTS = {
   twofa: false,
 };
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
-  return <button type="button" className={`switch${on ? ' on' : ''}`} aria-pressed={on} onClick={() => onChange(!on)} />;
+function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label?: string }) {
+  return <button type="button" className={`switch${on ? ' on' : ''}`} role="switch" aria-checked={on} aria-label={label ?? (on ? 'Ligado' : 'Desligado')} onClick={() => onChange(!on)} />;
 }
 
 function Seg({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { key: string; label: string; icon?: React.ReactNode }[] }) {

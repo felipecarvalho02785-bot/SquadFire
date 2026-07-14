@@ -100,7 +100,7 @@ export function FaiscaDrawer() {
 
   return (
     <div className={`fdrawer-ov${open ? ' open' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}>
-      <aside className="fdrawer" role="dialog" aria-label="Faísca" aria-hidden={!open}>
+      <aside className="fdrawer" role="dialog" aria-label="Faísca" aria-hidden={!open} inert={!open}>
         <div className="fd-head">
           <span className="ic">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">

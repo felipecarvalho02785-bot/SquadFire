@@ -42,6 +42,21 @@ export function transcricaoConfigurada(): boolean {
   return iaGeminiConfigurada();
 }
 
+// Converte um valor monetário (número ou string BR/en-US) em número. Decide o
+// separador decimal pelo ÚLTIMO separador — antes "1,234.56" virava NaN porque
+// só a 1ª vírgula era trocada.
+function parseNumeroBR(v: unknown): number | null {
+  if (typeof v === 'number') return isFinite(v) && v > 0 ? v : null;
+  let s = String(v ?? '').replace(/[^\d.,]/g, '');
+  if (!s) return null;
+  const ultVirg = s.lastIndexOf(',');
+  const ultPonto = s.lastIndexOf('.');
+  if (ultVirg > ultPonto) s = s.replace(/\./g, '').replace(',', '.'); // BR: 1.234,56
+  else s = s.replace(/,/g, ''); // en-US: 1,234.56
+  const n = Number(s);
+  return isFinite(n) && n > 0 ? n : null;
+}
+
 // ── briefing: tipos + parsing + system prompt (compartilhados) ──────────────
 export interface BriefingCampos {
   c1_o_que_aconteceu: string;
@@ -126,9 +141,7 @@ export async function extrairContratoGemini(pdf: Buffer): Promise<{ valor: numbe
     const a = raw.indexOf('{'); const b = raw.lastIndexOf('}');
     if (a >= 0 && b > a) { try { obj = JSON.parse(raw.slice(a, b + 1)); } catch { /* deixa vazio */ } }
   }
-  const bruto = obj.valor_mensal;
-  const num = typeof bruto === 'number' ? bruto : bruto ? Number(String(bruto).replace(/[^\d.,]/g, '').replace(/\.(?=\d{3})/g, '').replace(',', '.')) : NaN;
-  const valor = isFinite(num) && num > 0 ? num : null;
+  const valor = parseNumeroBR(obj.valor_mensal);
   const di = obj.data_inicio;
   const dataInicio = typeof di === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(di) ? di : null;
   return { valor, dataInicio, resumo: String(obj.resumo ?? '').trim() };
@@ -242,7 +255,9 @@ export async function estruturarBriefingGemini(
   const model = genAI.getGenerativeModel({
     model: GEMINI_MODEL,
     systemInstruction: sistemaBriefing(contexto),
-    generationConfig: { responseMimeType: 'application/json' },
+    // maxOutputTokens folgado pra o JSON dos 6 campos não truncar (MAX_TOKENS
+    // não lança no SDK, então um corte silencioso quebraria o JSON.parse).
+    generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 4096 },
   });
   const result = await comRetry(() => model.generateContent(`Transcrição do áudio do briefing:\n\n${transcricao}`));
   return parseCampos(result.response.text());

@@ -136,6 +136,14 @@ export async function avisarCriaWhatsapp(criaId: string, texto: string): Promise
   if (!membro) return { ok: false, error: 'membro não identificado' };
 
   const supabase = await getSupabaseServer();
+  // Gate de papel: só Contas/Projetos/Admin disparam WhatsApp (Tráfego não) —
+  // antes qualquer membro que enxergasse a Cria conseguia disparar.
+  const { data: mp } = await supabase.from('membro_papel').select('papel').eq('membro_id', membro.id);
+  const papeis = new Set<string>([membro.papel_primario, ...(((mp as { papel: string }[]) ?? []).map((r) => r.papel))]);
+  if (!(membro.is_admin || papeis.has('gestor_contas') || papeis.has('gestor_projetos'))) {
+    return { ok: false, error: 'sem permissão para disparar WhatsApp' };
+  }
+
   const { data: cria } = await supabase.from('cria').select('telefone_whatsapp').eq('id', criaId).maybeSingle();
   const destino = (cria as { telefone_whatsapp: string | null } | null)?.telefone_whatsapp;
   if (!destino) return { ok: false, error: 'esta Cria não tem WhatsApp cadastrado' };
@@ -143,7 +151,10 @@ export async function avisarCriaWhatsapp(criaId: string, texto: string): Promise
   const r = await enviarWhatsapp(destino, t);
   if (!r.ok) return { ok: false, error: r.error ?? 'não deu para enviar' };
 
-  await supabase.from('comentario').insert({ cria_id: criaId, autor_id: membro.id, corpo: `📲 [WhatsApp] ${t}` });
+  // Registra o rastro (a mensagem já foi enviada); se o insert falhar, loga —
+  // antes o erro era engolido, deixando um envio sem rastro.
+  const { error: insErr } = await supabase.from('comentario').insert({ cria_id: criaId, autor_id: membro.id, corpo: `📲 [WhatsApp] ${t}` });
+  if (insErr) console.error('[avisarCriaWhatsapp] registro do comentário', insErr);
   revalidatePath('/crias/[id]', 'page');
   return { ok: true };
 }
