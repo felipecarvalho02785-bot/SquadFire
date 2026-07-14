@@ -30,6 +30,8 @@ export async function POST() {
   for (const id of ids) {
     try { const r = await puxarCriaDoClickup(id); if (r.ok) atualizados += 1; } catch { /* segue */ }
     await admin.from('cria').update({ clickup_puxado_em: new Date().toISOString() }).eq('id', id);
+    // Gestor de Contas = quem puxou, pras Crias que ainda não têm gestor.
+    await admin.from('cria').update({ gestor_contas_id: membro.id }).eq('id', id).is('gestor_contas_id', null);
   }
 
   return NextResponse.json({ ok: true, processados: ids.length, atualizados, restantes: Math.max(0, (total ?? 0) - ids.length) });

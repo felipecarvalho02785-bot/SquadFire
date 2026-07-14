@@ -147,6 +147,30 @@ export async function avisarCriaWhatsapp(criaId: string, texto: string): Promise
   return { ok: true };
 }
 
+// Editar um campo de texto da Cria (e-mail, área, closer). Whitelist de
+// colunas. RLS: Contas/Admin (o trigger de coluna barra Tráfego nesses campos).
+export async function atualizarCampoCria(criaId: string, campo: 'email' | 'area_atuacao' | 'closer', valor: string): Promise<ActionResult> {
+  const permitidos = ['email', 'area_atuacao', 'closer'];
+  if (!permitidos.includes(campo)) return { ok: false, error: 'campo inválido' };
+  const v = valor.trim() || null;
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.from('cria').update({ [campo]: v }).eq('id', criaId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/crias/[id]', 'page');
+  revalidatePath('/crias');
+  return { ok: true };
+}
+
+// Definir o Gestor de Contas da Cria (ou limpar). RLS: Contas/Admin.
+export async function definirGestorContas(criaId: string, membroId: string | null): Promise<ActionResult> {
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.from('cria').update({ gestor_contas_id: membroId || null }).eq('id', criaId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/crias/[id]', 'page');
+  revalidatePath('/crias');
+  return { ok: true };
+}
+
 // Editar o investimento em mídia da Cria (verba de campanha). RLS: Contas,
 // Tráfego ou Admin. Valor null = "a definir".
 export async function atualizarInvestimento(criaId: string, valor: number | null): Promise<ActionResult> {
