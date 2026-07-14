@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   if (result.action === 'upsert' && result.cria) {
     const supabase = getSupabaseAdmin();
     const c = result.cria;
-    const { error } = await supabase.from('cria').upsert(
+    const { data: up, error } = await supabase.from('cria').upsert(
       {
         clickup_task_id: c.clickup_task_id,
         nome_cliente: c.nome_cliente,
@@ -51,9 +51,14 @@ export async function POST(request: Request) {
         sincronizado_em: new Date().toISOString(),
       },
       { onConflict: 'clickup_task_id' },
-    );
+    ).select('id').maybeSingle();
     if (error) {
       return NextResponse.json({ ok: false, reason: error.message }, { status: 500 });
+    }
+    // "Data inicial" do ClickUp → data de início da Forja (cascateia as fases).
+    const criaId = (up as { id: string } | null)?.id;
+    if (c.data_inicio && criaId) {
+      await supabase.rpc('definir_inicio_forja_sync', { p_cria_id: criaId, p_data: c.data_inicio });
     }
   }
 

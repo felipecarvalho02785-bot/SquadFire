@@ -61,6 +61,15 @@ function mapStatus(task) {
   return { status: 'ativa', motivo: null, backlog: false };
 }
 
+// "Data inicial" = start_date nativo da task (quando ocorreu a reunião/início).
+// Converte o timestamp (ms) pra AAAA-MM-DD no fuso de Brasília.
+export function dataInicioDaTask(task) {
+  const ms = task.start_date ? Number(task.start_date) : null;
+  if (!ms || !Number.isFinite(ms)) return null;
+  // en-CA formata como AAAA-MM-DD; timeZone garante a data-calendário certa.
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms));
+}
+
 // ── mapeamento ClickUp → cria ────────────────────────────────
 export function mapTaskToCria(task) {
   const squad = getSquad(task);
@@ -75,6 +84,8 @@ export function mapTaskToCria(task) {
     fase: backlog ? null : semana,
     status, // enum status_cria: ativa | pausada | encerrada
     backlog,
+    // Data inicial (start_date) → vira data_inicio da Forja no consumidor.
+    data_inicio: backlog ? null : dataInicioDaTask(task),
     // metadados úteis pro consumidor (não necessariamente colunas)
     _source: {
       list_id: CLICKUP.listaMestre.listId,

@@ -89,4 +89,19 @@ export async function listWebhooks() {
   return cuFetch(`/team/${teamId}/webhook`);
 }
 
+// Comentários de uma task (inclui anexos nos blocos). Usado pra puxar o PDF do
+// Diagnóstico 360 que o time anexou no comentário da task do cliente.
+export async function getTaskComments(taskId) {
+  return cuFetch(`/task/${taskId}/comment`);
+}
+
+// Baixa um anexo do ClickUp pela URL. Tenta com o token; se recusar, tenta sem
+// header (a URL pode já vir acessível). Devolve um Buffer.
+export async function baixarAnexoUrl(url) {
+  let res = await fetch(url, { headers: { Authorization: getClickUpToken() } });
+  if (!res.ok) res = await fetch(url);
+  if (!res.ok) throw new Error(`download do anexo falhou → ${res.status}`);
+  return Buffer.from(await res.arrayBuffer());
+}
+
 export { cuFetch };

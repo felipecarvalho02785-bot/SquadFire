@@ -1,7 +1,7 @@
 // Testes do mapeamento ClickUp → cria. Rodar: `node --test integracao/clickup/`
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mapTaskToCria, isSquad08, getSemana } from './sync-crias.js';
+import { mapTaskToCria, isSquad08, getSemana, dataInicioDaTask } from './sync-crias.js';
 import { CLICKUP } from './config.js';
 
 const SQUAD = CLICKUP.fields.squad.id;
@@ -64,6 +64,12 @@ test('Semana (orderindex) → fase 1..7; backlog sem fase', () => {
   const bk = mapTaskToCria(task('bk', 'Backlog', undefined));
   assert.equal(bk.fase, null);
   assert.equal(bk.backlog, true);
+});
+
+test('dataInicioDaTask: start_date (ms) → AAAA-MM-DD em BRT; vazio → null', () => {
+  assert.equal(dataInicioDaTask({ start_date: '1781852400000' }), '2026-06-19');
+  assert.equal(dataInicioDaTask({ start_date: null }), null);
+  assert.equal(dataInicioDaTask({}), null);
 });
 
 test('isSquad08 filtra corretamente', () => {
