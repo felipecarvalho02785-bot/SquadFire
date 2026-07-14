@@ -1,5 +1,6 @@
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
+import { hojeBRT, diasDesdeBRT } from '@/lib/datas';
 
 // Materializa as Lenhas de Rotina de hoje (idempotente) — pra os rituais
 // aparecerem como tarefas de verdade mesmo antes do cron diário rodar.
@@ -29,11 +30,6 @@ export interface ForjaTimeline {
 }
 
 const DIA = 86400000;
-function diasDesde(iso: string): number {
-  const d = new Date(iso + (iso.length <= 10 ? 'T00:00:00' : '')).getTime();
-  const hoje = new Date(new Date().toDateString()).getTime();
-  return Math.floor((hoje - d) / DIA);
-}
 
 type FaseRow = { id: string; ordem: number; data_prevista_fim: string | null; status: string; fase: { nome: string } | null };
 type ForjaRow = { id: string; data_inicio: string | null; fase_atual_id: string | null; concluida: boolean; cria: { id: string; nome_cliente: string; status: string } | null; fases: FaseRow[] };
@@ -57,16 +53,16 @@ function montar(f: ForjaRow): ForjaTimeline | null {
     return { criaId: cria.id, nome: cria.nome_cliente, dataInicio: null, diaAtual: null, faseAtualOrdem, faseAtualNome, faseEsperadaOrdem: null, prazoFaseAtual: null, sla: 'sem_inicio' };
   }
 
-  const dias = diasDesde(f.data_inicio);
+  const dias = diasDesdeBRT(f.data_inicio);
   const diaAtual = Math.max(1, dias + 1);
 
   // Fase ESPERADA hoje = 1ª fase cujo prazo (data_prevista_fim) ainda não passou.
   // Assim respeita a duração real de cada etapa. Sem prazos computados, cai pra
-  // aproximação de 7 dias/fase.
-  const hoje = new Date(new Date().toDateString()).getTime();
+  // aproximação de 7 dias/fase. Compara datas civis (BRT) — não instantes UTC.
+  const hojeStr = hojeBRT();
   let faseEsperadaOrdem = 7;
   if (fases.some((x) => x.data_prevista_fim)) {
-    const proxima = fases.find((x) => x.data_prevista_fim && new Date(x.data_prevista_fim + 'T23:59:59').getTime() >= hoje);
+    const proxima = fases.find((x) => x.data_prevista_fim && x.data_prevista_fim >= hojeStr);
     faseEsperadaOrdem = proxima?.ordem ?? 7;
   } else {
     faseEsperadaOrdem = Math.min(7, Math.max(1, Math.ceil(diaAtual / 7)));

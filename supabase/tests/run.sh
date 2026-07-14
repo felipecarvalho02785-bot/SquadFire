@@ -128,7 +128,8 @@ begin
   ) then raise exception 'Daily não gerada pro admin'; end if;
 
   -- em_risco por SLA: fase vencida marca; concluir limpa
-  update fase_da_forja set data_prevista_fim = current_date - 1, status='pendente'
+  -- (-2 dias: margem folgada, robusta à diferença de fuso UTC×BRT do recalc)
+  update fase_da_forja set data_prevista_fim = current_date - 2, status='pendente'
     where id = (select id from fase_da_forja where ordem=3 and forja_id=(select id from forja limit 1));
   perform app.recalcular_em_risco();
   if not (select em_risco from cria where clickup_task_id='CU-T1') then

@@ -1627,3 +1627,60 @@ comment on function public.definir_fase_forja_sync(uuid, int) is
 
 revoke all on function public.definir_fase_forja_sync(uuid, int) from public;
 grant execute on function public.definir_fase_forja_sync(uuid, int) to service_role;
+
+-- ┌── supabase/migrations/0027_em_risco_fuso_brasilia.sql
+-- SquadFire · 0027 — em_risco no fuso de Brasília (SLA não vira 3h cedo)
+-- ─────────────────────────────────────────────────────────────
+-- recalcular_em_risco comparava now()::date (sessão UTC no Supabase), marcando
+-- em_risco ~3h cedo à noite. Passa a usar a data de Brasília, como o resto do app.
+
+create or replace function app.recalcular_em_risco()
+returns int
+language plpgsql
+security definer set search_path = public, pg_temp
+as $$
+declare v_afetadas int;
+begin
+  with risco as (
+    select distinct f.cria_id
+    from forja f
+    join fase_da_forja fdf on fdf.forja_id = f.id
+    where fdf.status <> 'concluida'
+      and fdf.data_prevista_fim is not null
+      and (now() at time zone 'America/Sao_Paulo')::date > fdf.data_prevista_fim
+  )
+  update cria c
+     set em_risco = (c.id in (select cria_id from risco))
+   where c.em_risco is distinct from (c.id in (select cria_id from risco));
+  get diagnostics v_afetadas = row_count;
+  return v_afetadas;
+end;
+$$;
+
+comment on function app.recalcular_em_risco() is
+  'Recalcula cria.em_risco por SLA de fase vencida, no fuso America/Sao_Paulo (idempotente; limpa quem saiu do risco).';
+
+-- ┌── supabase/migrations/0028_clickup_puxa_tentativas.sql
+-- SquadFire · 0028 — Contador de tentativas do "Puxar todos"
+-- ─────────────────────────────────────────────────────────────
+-- O lote só marca clickup_puxado_em no sucesso; conta as falhas pra convergir
+-- (após 3, a Cria sai do lote — o botão por-Cria segue disponível pra retry).
+alter table cria
+  add column if not exists clickup_puxa_tentativas int not null default 0;
+
+comment on column cria.clickup_puxa_tentativas is
+  'Tentativas malsucedidas de puxar do ClickUp no lote. Sucesso marca clickup_puxado_em; após 3 falhas o lote desiste (converge).';
+
+-- ┌── supabase/migrations/0029_comentario_clickup_unico.sql
+-- SquadFire · 0029 — UNIQUE em comentario.clickup_comment_id
+-- ─────────────────────────────────────────────────────────────
+-- Deduplica o que já existir e impede novas duplicatas do sync (índice parcial).
+delete from comentario c
+  using comentario d
+ where c.clickup_comment_id is not null
+   and c.clickup_comment_id = d.clickup_comment_id
+   and c.ctid > d.ctid;
+
+create unique index if not exists uq_comentario_clickup_comment_id
+  on comentario (clickup_comment_id)
+  where clickup_comment_id is not null;

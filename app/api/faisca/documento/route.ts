@@ -44,8 +44,13 @@ export async function POST(request: Request) {
     const { data: file, error } = await admin.storage.from(bucket).download(path);
     if (error || !file) throw error ?? new Error('arquivo não encontrado');
     buffer = Buffer.from(await file.arrayBuffer());
+    // Guarda de tamanho: PDF grande estoura os 60s da função.
+    if (buffer.length > 15 * 1024 * 1024) {
+      return NextResponse.json({ ok: false, error: 'PDF muito grande (máx. ~15 MB) pra Faísca ler agora.' }, { status: 413 });
+    }
   } catch (e) {
-    return NextResponse.json({ ok: false, error: `não consegui abrir o PDF: ${String(e)}` }, { status: 502 });
+    console.error('[faisca/documento] download', e);
+    return NextResponse.json({ ok: false, error: 'não consegui abrir o PDF agora' }, { status: 502 });
   }
 
   try {

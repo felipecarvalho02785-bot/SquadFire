@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 
   // Auto-sync da agenda pro Google de todo mundo conectado (mesma janela do cron,
   // pra não gastar um slot de cron do plano Hobby). Best-effort.
-  let google: { membros: number; eventos: number } | null = null;
+  let google: { membros: number; eventos: number; parciais: number } | null = null;
   try { google = await sincronizarTodosGoogle(); } catch { /* não derruba o cron */ }
 
   return NextResponse.json({ ok: true, lenhas_criadas: data ?? 0, crias_reavaliadas: criasEmRisco, google });

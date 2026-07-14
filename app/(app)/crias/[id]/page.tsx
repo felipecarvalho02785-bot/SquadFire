@@ -16,6 +16,7 @@ import { EditGestorContas } from '@/components/EditGestorContas';
 import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
 import { getBrigada } from '@/lib/data/brigada';
 import { iniciais } from '@/lib/format';
+import { diasDesdeBRT } from '@/lib/datas';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,9 +40,9 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
   const ordemAtual = faseAtual?.ordem ?? 0;
   const concluidas = fases.filter((f) => f.status === 'concluida').length;
 
-  // Dia da Forja (1..49) a partir do início
+  // Dia da Forja (1..49) a partir do início — contado no fuso de Brasília.
   const diaForja = forja?.data_inicio
-    ? Math.min(49, Math.max(1, Math.floor((Date.now() - new Date(forja.data_inicio).getTime()) / 86400000) + 1))
+    ? Math.min(49, Math.max(1, diasDesdeBRT(forja.data_inicio) + 1))
     : null;
 
   // Lenhas da fase corrente (checklist da Visão geral)
@@ -142,7 +143,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
             <div className="cmt" key={c.id}>
               <span className="av avatar" style={{ width: 32, height: 32, fontSize: 11 }}>{iniciais(c.autor_nome)}</span>
               <div>
-                <div className="cn">{c.autor_nome}{c.origem === 'clickup' && <span className="badge" style={{ marginLeft: 6, color: 'var(--plasma)', background: 'var(--plasma-soft)' }}>ClickUp</span>}<small>{new Date(c.created_at).toLocaleString('pt-BR')}</small></div>
+                <div className="cn">{c.autor_nome}{c.origem === 'clickup' && <span className="badge" style={{ marginLeft: 6, color: 'var(--plasma)', background: 'var(--plasma-soft)' }}>ClickUp</span>}<small>{new Date(c.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</small></div>
                 <div className="ct" style={{ whiteSpace: 'pre-wrap' }}>{c.corpo}</div>
               </div>
             </div>

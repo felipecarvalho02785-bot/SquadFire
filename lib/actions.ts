@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
 import { enviarWhatsapp } from '@/lib/whatsapp/evolution';
+import { hojeBRT } from '@/lib/datas';
 import type { Papel, PrioridadeLenha } from '@/lib/types/database';
 
 export type ActionResult = { ok: boolean; error?: string };
@@ -83,7 +84,7 @@ export async function criarTarefa(input: {
     prazo: input.prazo || null,
     responsavel_id: input.responsavelId || membro.id,
     prioridade: input.prioridade ?? 'media',
-    data_referencia: new Date().toISOString().slice(0, 10),
+    data_referencia: hojeBRT(),
   });
   if (error) return { ok: false, error: error.message };
   revalidatePath('/tarefas');
@@ -239,6 +240,29 @@ export async function salvarPreferencias(dados: Record<string, unknown>): Promis
   if (error) return { ok: false, error: error.message };
   revalidatePath('/forjaria');
   return { ok: true };
+}
+
+// Exporta os dados do próprio membro (LGPD/portabilidade): perfil, preferências,
+// e as Lenhas/Comentários/Briefings de sua autoria. Só o próprio membro (RLS).
+export async function exportarMeusDados(): Promise<{ ok: boolean; json?: string; error?: string }> {
+  const membro = await getCurrentMembro();
+  if (!membro) return { ok: false, error: 'membro não identificado' };
+  const supabase = await getSupabaseServer();
+  const [pref, lenhas, comentarios, briefings] = await Promise.all([
+    supabase.from('preferencia').select('dados, updated_at').eq('membro_id', membro.id).maybeSingle(),
+    supabase.from('lenha').select('*').eq('responsavel_id', membro.id),
+    supabase.from('comentario').select('*').eq('autor_id', membro.id),
+    supabase.from('briefing').select('*').eq('autor_id', membro.id),
+  ]);
+  const dump = {
+    exportado_em: new Date().toISOString(),
+    membro: { id: membro.id, nome: membro.nome, email: membro.email, papel_primario: membro.papel_primario, is_admin: membro.is_admin },
+    preferencias: (pref.data as { dados: unknown } | null)?.dados ?? null,
+    lenhas: lenhas.data ?? [],
+    comentarios: comentarios.data ?? [],
+    briefings: briefings.data ?? [],
+  };
+  return { ok: true, json: JSON.stringify(dump, null, 2) };
 }
 
 // Editar a própria Conta (nome + papel primário) via RPC SECURITY DEFINER

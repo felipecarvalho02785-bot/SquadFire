@@ -6,6 +6,7 @@ import { getForjasTimeline, getRituaisDoMes, type SlaStatus } from '@/lib/data/a
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
 import { listarEventos, statusGoogle } from '@/lib/google/calendar';
+import { partesDataBRT } from '@/lib/datas';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,12 +16,10 @@ const SLA_KIND: Record<SlaStatus, string> = { atrasada: 'crit', no_prazo: 'good'
 function nomeCurto(n: string) { return n.length > 22 ? n.slice(0, 20) + '…' : n; }
 
 export default async function CalendarioPage() {
-  const now = new Date();
-  const [timeline, rituais] = await Promise.all([getForjasTimeline(), getRituaisDoMes(now.getFullYear(), now.getMonth())]);
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const today = now.getDate();
-  const mesLabel = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  // Mês/dia "de hoje" no fuso de Brasília (o servidor roda em UTC).
+  const { ano: year, mes: month, dia: today } = partesDataBRT(new Date());
+  const [timeline, rituais] = await Promise.all([getForjasTimeline(), getRituaisDoMes(year, month)]);
+  const mesLabel = new Date(year, month, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
   const atrasadas = timeline.filter((t) => t.sla === 'atrasada').length;
   const ativas = timeline.filter((t) => t.sla !== 'concluida').length;
@@ -29,9 +28,10 @@ export default async function CalendarioPage() {
   const eventos: Record<number, { label: string; kind: string; hora?: string }[]> = {};
   for (const t of timeline) {
     if (!t.prazoFaseAtual) continue;
-    const d = new Date(t.prazoFaseAtual + 'T00:00:00');
-    if (d.getFullYear() === year && d.getMonth() === month) {
-      (eventos[d.getDate()] ??= []).push({ label: `Fase ${t.faseAtualOrdem} · ${nomeCurto(t.nome)}`, kind: t.sla === 'atrasada' ? 'fase-crit' : 'fase' });
+    // prazoFaseAtual é 'AAAA-MM-DD' (data civil) — pontua no dia dela mesma.
+    const [yy, mm, dd] = t.prazoFaseAtual.split('-').map(Number);
+    if (yy === year && mm - 1 === month) {
+      (eventos[dd] ??= []).push({ label: `Fase ${t.faseAtualOrdem} · ${nomeCurto(t.nome)}`, kind: t.sla === 'atrasada' ? 'fase-crit' : 'fase' });
     }
   }
 
@@ -52,10 +52,18 @@ export default async function CalendarioPage() {
         const fim = new Date(year, month + 1, 0, 23, 59).toISOString();
         for (const ev of await listarEventos(membro.id, ini, fim)) {
           if (!ev.inicio) continue;
-          const d = new Date(ev.inicio);
-          if (d.getFullYear() === year && d.getMonth() === month) {
-            const hora = ev.allDay ? undefined : d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
-            (eventos[d.getDate()] ??= []).push({ label: nomeCurto(ev.titulo), kind: 'gcal', hora });
+          // Evento de dia inteiro traz data civil; evento com hora é um instante
+          // → converte pro dia/mês de Brasília (senão o da noite cai no dia errado).
+          let ano: number, mes: number, dia: number;
+          if (ev.allDay) {
+            const [yy, mm, dd] = ev.inicio.slice(0, 10).split('-').map(Number);
+            ano = yy; mes = mm - 1; dia = dd;
+          } else {
+            ({ ano, mes, dia } = partesDataBRT(new Date(ev.inicio)));
+          }
+          if (ano === year && mes === month) {
+            const hora = ev.allDay ? undefined : new Date(ev.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+            (eventos[dia] ??= []).push({ label: nomeCurto(ev.titulo), kind: 'gcal', hora });
           }
         }
       }

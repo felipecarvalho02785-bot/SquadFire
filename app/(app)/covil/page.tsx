@@ -3,6 +3,7 @@ import { AreaChart, Donut, DonutLegend, Bars, HBars } from '@/components/charts'
 import { getCovilDashboard } from '@/lib/data/covil';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
+import { horaBRT } from '@/lib/datas';
 import type { Papel } from '@/lib/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +18,7 @@ const ROLES: { key: RoleKey; papel: Papel; tab: string; eyebrow: string; persona
 ];
 
 function saudacao(): string {
-  const h = new Date().getHours();
+  const h = horaBRT();
   return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
 }
 

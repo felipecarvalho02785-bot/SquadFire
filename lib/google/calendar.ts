@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { renovarToken, type TokenResp } from '@/lib/google/oauth';
+import { hojeBRT } from '@/lib/datas';
 
 const CAL = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 
@@ -65,6 +66,26 @@ export async function listarEventos(membroId: string, timeMinISO: string, timeMa
 
 const CAL_EVENT = (id: string) => `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(id)}`;
 
+// fetch pro Google com timeout (evita rota travada num upstream lento) e retry
+// com backoff+jitter em 429/5xx transitório (antes qualquer 429 era fatal).
+async function gfetch(url: string, init: RequestInit, tentativas = 3): Promise<Response> {
+  for (let i = 0; ; i++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 10000);
+    let res: Response;
+    try {
+      res = await fetch(url, { ...init, signal: ctrl.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+    if ((res.status === 429 || res.status >= 500) && i < tentativas - 1) {
+      await new Promise((r) => setTimeout(r, 400 * (i + 1) + Math.floor(300 * Math.random())));
+      continue;
+    }
+    return res;
+  }
+}
+
 function proximoDia(dia: string): string {
   const d = new Date(dia + 'T00:00:00Z');
   d.setUTCDate(d.getUTCDate() + 1);
@@ -77,7 +98,7 @@ async function upsertEventoDia(membroId: string, eventId: string | null, ev: { t
   const token = await accessTokenValido(membroId);
   if (!token) return { ok: false, error: 'Google Agenda não conectado (ou precisa reconectar).' };
   const body = { summary: ev.titulo, description: ev.descricao ?? '', start: { date: ev.dia }, end: { date: proximoDia(ev.dia) } };
-  const res = await fetch(eventId ? CAL_EVENT(eventId) : CAL, {
+  const res = await gfetch(eventId ? CAL_EVENT(eventId) : CAL, {
     method: eventId ? 'PATCH' : 'POST',
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
     body: JSON.stringify(body),
@@ -113,7 +134,7 @@ async function upsertEventoRecorrente(membroId: string, eventId: string | null, 
   if (!token) return { ok: false, error: 'Google Agenda não conectado (ou precisa reconectar).' };
   const base = { summary: ev.titulo, description: ev.descricao ?? '', recurrence: [ev.rrule] };
   const body = eventId ? base : { ...base, start: { date: ev.dia }, end: { date: proximoDia(ev.dia) } };
-  const res = await fetch(eventId ? CAL_EVENT(eventId) : CAL, {
+  const res = await gfetch(eventId ? CAL_EVENT(eventId) : CAL, {
     method: eventId ? 'PATCH' : 'POST',
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
     body: JSON.stringify(body),
@@ -132,9 +153,10 @@ type RotinaSync = { id: string; titulo: string; recorrencia_tipo: string; recorr
 // Empurra a agenda do CRM pro Google Agenda do membro: prazos das fases (linha
 // do tempo de cada Cria ativa, de hoje pra frente) + rituais recorrentes.
 // Idempotente via google_evento_sync: re-rodar ATUALIZA em vez de duplicar.
-export async function sincronizarAgendaGoogle(membroId: string): Promise<{ ok: boolean; total: number; error?: string }> {
+export async function sincronizarAgendaGoogle(membroId: string): Promise<{ ok: boolean; total: number; erros?: number; error?: string }> {
   const admin = getSupabaseAdmin();
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = hojeBRT();
+  const erros: string[] = [];
 
   const { data: mapData } = await admin.from('google_evento_sync').select('ref_tipo, ref_id, google_event_id').eq('membro_id', membroId);
   const mapa = new Map(((mapData as { ref_tipo: string; ref_id: string; google_event_id: string }[]) ?? []).map((m) => [`${m.ref_tipo}:${m.ref_id}`, m.google_event_id]));
@@ -162,7 +184,7 @@ export async function sincronizarAgendaGoogle(membroId: string): Promise<{ ok: b
       descricao: `${r.fase?.nome ?? 'Fase'} — Estruturação (SquadFire)`,
       dia: r.data_prevista_fim,
     });
-    if (!res.ok) return { ok: false, total, error: res.error };
+    if (!res.ok) { erros.push(res.error ?? 'falha'); continue; } // não aborta os demais
     if (res.id) await gravar('fase', r.id, res.id);
   }
 
@@ -177,24 +199,32 @@ export async function sincronizarAgendaGoogle(membroId: string): Promise<{ ok: b
       rrule,
       dia: hoje,
     });
-    if (!res.ok) return { ok: false, total, error: res.error };
+    if (!res.ok) { erros.push(res.error ?? 'falha'); continue; } // não aborta os demais
     if (res.id) await gravar('ritual', r.id, res.id);
   }
 
-  return { ok: true, total };
+  // Sucesso se algo sincronizou ou não houve erro; falha total só quando nada
+  // entrou e todas as tentativas falharam (ex.: token inválido / reconectar).
+  const ok = total > 0 || erros.length === 0;
+  return { ok, total, erros: erros.length, error: erros.length ? `${erros.length} evento(s) falharam: ${erros[0]}` : undefined };
 }
 
 // Sincroniza a agenda de TODOS os membros que conectaram o Google (pro cron
 // diário). Best-effort por membro — a falha de um não derruba os outros.
-export async function sincronizarTodosGoogle(): Promise<{ membros: number; eventos: number }> {
+export async function sincronizarTodosGoogle(): Promise<{ membros: number; eventos: number; parciais: number }> {
   const admin = getSupabaseAdmin();
   const { data } = await admin.from('integracao_google').select('membro_id');
   const ids = ((data as { membro_id: string }[]) ?? []).map((m) => m.membro_id);
-  let eventos = 0;
+  // Orçamento de tempo: a função tem teto de 60s no plano Hobby. Sincroniza
+  // quantos membros couberem e para; o resto entra no próximo cron (idempotente).
+  const limite = Date.now() + 40_000;
+  let eventos = 0, feitos = 0;
   for (const id of ids) {
-    try { const r = await sincronizarAgendaGoogle(id); if (r.ok) eventos += r.total; } catch { /* segue */ }
+    if (Date.now() > limite) break;
+    try { const r = await sincronizarAgendaGoogle(id); eventos += r.total; } catch { /* segue */ }
+    feitos += 1;
   }
-  return { membros: ids.length, eventos };
+  return { membros: ids.length, eventos, parciais: Math.max(0, ids.length - feitos) };
 }
 
 // Cria um evento (ex.: agendar a Roda de Fogo). Retorna o link do evento.

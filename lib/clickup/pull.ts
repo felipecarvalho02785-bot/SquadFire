@@ -97,8 +97,13 @@ export async function puxarCriaDoClickup(criaId: string): Promise<PullResult> {
     if (texto.length < 3 || soAnexo(texto)) continue;
     const id = co.id != null ? String(co.id) : null;
     if (id) {
-      const { data: ex } = await admin.from('comentario').select('id').eq('clickup_comment_id', id).maybeSingle();
-      if (ex) continue;
+      // Anti-eco: pula se já virou comentário nosso OU se é o eco de um briefing
+      // que NÓS enviamos ao ClickUp (o id fica em briefing.clickup_comment_id).
+      const [{ data: exC }, { data: exB }] = await Promise.all([
+        admin.from('comentario').select('id').eq('clickup_comment_id', id).maybeSingle(),
+        admin.from('briefing').select('id').eq('clickup_comment_id', id).maybeSingle(),
+      ]);
+      if (exC || exB) continue;
     }
     const autor = await resolverAutor(admin, co.user?.email);
     if (!autor.id) continue;

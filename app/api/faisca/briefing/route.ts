@@ -3,6 +3,7 @@ import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
 import { estruturarBriefingGemini, iaGeminiConfigurada, transcreverAudio, transcricaoConfigurada } from '@/lib/ia/gemini';
 import { pushBriefing } from '@/integracao/clickup/push-briefing.js';
+import { hojeBRT } from '@/lib/datas';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -62,9 +63,15 @@ export async function POST(request: Request) {
       const { data: file, error } = await admin.storage.from('briefings').download(audioPath);
       if (error || !file) throw error ?? new Error('áudio não encontrado');
       const buffer = Buffer.from(await file.arrayBuffer());
+      // Guarda de tamanho: áudio muito longo estoura os 60s da função (504) e o
+      // usuário perde o trabalho. Limita e orienta a gravar em blocos.
+      if (buffer.length > 15 * 1024 * 1024) {
+        return NextResponse.json({ error: 'áudio muito grande (máx. ~15 MB). Grave a Roda em blocos menores.' }, { status: 413 });
+      }
       transcricao = await transcreverAudio(buffer, file.type || 'audio/webm');
     } catch (e) {
-      return NextResponse.json({ error: `falha na transcrição: ${String(e)}` }, { status: 502 });
+      console.error('[faisca/briefing] transcrição', e);
+      return NextResponse.json({ error: 'não consegui transcrever o áudio agora' }, { status: 502 });
     }
   }
 
@@ -79,11 +86,12 @@ export async function POST(request: Request) {
     };
     campos = await estruturarBriefingGemini(transcricao, ctx);
   } catch (e) {
-    return NextResponse.json({ error: `falha na estruturação: ${String(e)}` }, { status: 502 });
+    console.error('[faisca/briefing] estruturação', e);
+    return NextResponse.json({ error: 'a Faísca não conseguiu estruturar o briefing agora' }, { status: 502 });
   }
 
   // 3) gravar a briefing (a publicação no ClickUp é um passo à parte)
-  const semana = new Date().toISOString().slice(0, 10);
+  const semana = hojeBRT();
   const { data: inserida, error: insErr } = await supabase
     .from('briefing')
     .insert({
