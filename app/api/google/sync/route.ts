@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentMembro } from '@/lib/auth';
-import { sincronizarFasesGoogle, statusGoogle } from '@/lib/google/calendar';
+import { sincronizarAgendaGoogle, statusGoogle } from '@/lib/google/calendar';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -15,6 +15,6 @@ export async function POST() {
   const st = await statusGoogle(membro.id);
   if (!st.conectado) return NextResponse.json({ ok: false, error: 'Google Agenda não conectado' }, { status: 400 });
 
-  const r = await sincronizarFasesGoogle(membro.id);
+  const r = await sincronizarAgendaGoogle(membro.id);
   return NextResponse.json(r, { status: r.ok ? 200 : 502 });
 }

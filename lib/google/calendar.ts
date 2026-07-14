@@ -90,41 +90,111 @@ async function upsertEventoDia(membroId: string, eventId: string | null, ev: { t
   return { ok: true, id: j.id };
 }
 
-type FaseSync = { id: string; ordem: number; data_prevista_fim: string | null; fase: { nome: string } | null; forja: { cria: { nome_cliente: string; status: string } | null } | null };
+const DOW_RRULE: Record<string, string> = { dom: 'SU', seg: 'MO', ter: 'TU', qua: 'WE', qui: 'TH', sex: 'FR', sab: 'SA' };
 
-// Empurra os prazos das fases (linha do tempo de cada Cria ativa) pro Google
-// Agenda do membro, de hoje pra frente. Idempotente via google_evento_sync:
-// re-rodar ATUALIZA os eventos em vez de duplicar.
-export async function sincronizarFasesGoogle(membroId: string): Promise<{ ok: boolean; total: number; error?: string }> {
+// Traduz a recorrência do ritual (CRM) para uma RRULE do Google.
+function rruleDoRitual(tipo: string, cfg: Record<string, unknown>): string | null {
+  switch (tipo) {
+    case 'diaria': return 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'; // dias úteis
+    case 'semanal': { const d = DOW_RRULE[String(cfg.dia)]; return d ? `RRULE:FREQ=WEEKLY;BYDAY=${d}` : null; }
+    case 'dias_da_semana': {
+      const ds = (Array.isArray(cfg.dias) ? (cfg.dias as string[]) : []).map((x) => DOW_RRULE[x]).filter(Boolean);
+      return ds.length ? `RRULE:FREQ=WEEKLY;BYDAY=${ds.join(',')}` : null;
+    }
+    case 'mensal': return cfg.dia_mes ? `RRULE:FREQ=MONTHLY;BYMONTHDAY=${Number(cfg.dia_mes)}` : null;
+    default: return null;
+  }
+}
+
+// Cria/atualiza um evento RECORRENTE de dia inteiro. No update (PATCH) NÃO
+// mexe no start/end — assim, se você ajustou o horário no Google, ele fica.
+async function upsertEventoRecorrente(membroId: string, eventId: string | null, ev: { titulo: string; descricao?: string; rrule: string; dia: string }): Promise<{ ok: boolean; id?: string; error?: string }> {
+  const token = await accessTokenValido(membroId);
+  if (!token) return { ok: false, error: 'Google Agenda não conectado (ou precisa reconectar).' };
+  const base = { summary: ev.titulo, description: ev.descricao ?? '', recurrence: [ev.rrule] };
+  const body = eventId ? base : { ...base, start: { date: ev.dia }, end: { date: proximoDia(ev.dia) } };
+  const res = await fetch(eventId ? CAL_EVENT(eventId) : CAL, {
+    method: eventId ? 'PATCH' : 'POST',
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    if (eventId && res.status === 404) return upsertEventoRecorrente(membroId, null, ev);
+    return { ok: false, error: `Google recusou (${res.status})` };
+  }
+  const j = (await res.json()) as { id?: string };
+  return { ok: true, id: j.id };
+}
+
+type FaseSync = { id: string; ordem: number; data_prevista_fim: string | null; fase: { nome: string } | null; forja: { cria: { nome_cliente: string; status: string } | null } | null };
+type RotinaSync = { id: string; titulo: string; recorrencia_tipo: string; recorrencia_config: Record<string, unknown> };
+
+// Empurra a agenda do CRM pro Google Agenda do membro: prazos das fases (linha
+// do tempo de cada Cria ativa, de hoje pra frente) + rituais recorrentes.
+// Idempotente via google_evento_sync: re-rodar ATUALIZA em vez de duplicar.
+export async function sincronizarAgendaGoogle(membroId: string): Promise<{ ok: boolean; total: number; error?: string }> {
   const admin = getSupabaseAdmin();
   const hoje = new Date().toISOString().slice(0, 10);
-  const { data } = await admin
+
+  const { data: mapData } = await admin.from('google_evento_sync').select('ref_tipo, ref_id, google_event_id').eq('membro_id', membroId);
+  const mapa = new Map(((mapData as { ref_tipo: string; ref_id: string; google_event_id: string }[]) ?? []).map((m) => [`${m.ref_tipo}:${m.ref_id}`, m.google_event_id]));
+  let total = 0;
+
+  async function gravar(tipo: string, ref: string, eventId: string) {
+    await admin.from('google_evento_sync').upsert(
+      { membro_id: membroId, ref_tipo: tipo, ref_id: ref, google_event_id: eventId, atualizado_em: new Date().toISOString() },
+      { onConflict: 'membro_id,ref_tipo,ref_id' },
+    );
+    total += 1;
+  }
+
+  // 1) Prazos das fases (eventos de dia único)
+  const { data: fasesData } = await admin
     .from('fase_da_forja')
     .select('id, ordem, data_prevista_fim, fase:fase_id(nome), forja:forja_id(cria:cria_id(nome_cliente, status))')
     .not('data_prevista_fim', 'is', null)
     .gte('data_prevista_fim', hoje);
-  const rows = (data as unknown as FaseSync[]) ?? [];
-
-  const { data: mapData } = await admin.from('google_evento_sync').select('ref_id, google_event_id').eq('membro_id', membroId).eq('ref_tipo', 'fase');
-  const mapa = new Map(((mapData as { ref_id: string; google_event_id: string }[]) ?? []).map((m) => [m.ref_id, m.google_event_id]));
-
-  let total = 0;
-  for (const r of rows) {
+  for (const r of (fasesData as unknown as FaseSync[]) ?? []) {
     const cria = r.forja?.cria;
     if (!cria || cria.status !== 'ativa' || !r.data_prevista_fim) continue;
-    const titulo = `Prazo Fase ${r.ordem} · ${cria.nome_cliente}`;
-    const descricao = `${r.fase?.nome ?? 'Fase'} — Estruturação (SquadFire)`;
-    const res = await upsertEventoDia(membroId, mapa.get(r.id) ?? null, { titulo, descricao, dia: r.data_prevista_fim });
+    const res = await upsertEventoDia(membroId, mapa.get(`fase:${r.id}`) ?? null, {
+      titulo: `Prazo Fase ${r.ordem} · ${cria.nome_cliente}`,
+      descricao: `${r.fase?.nome ?? 'Fase'} — Estruturação (SquadFire)`,
+      dia: r.data_prevista_fim,
+    });
     if (!res.ok) return { ok: false, total, error: res.error };
-    if (res.id) {
-      await admin.from('google_evento_sync').upsert(
-        { membro_id: membroId, ref_tipo: 'fase', ref_id: r.id, google_event_id: res.id, atualizado_em: new Date().toISOString() },
-        { onConflict: 'membro_id,ref_tipo,ref_id' },
-      );
-      total += 1;
-    }
+    if (res.id) await gravar('fase', r.id, res.id);
   }
+
+  // 2) Rituais recorrentes (eventos com RRULE)
+  const { data: rotData } = await admin.from('rotina').select('id, titulo, recorrencia_tipo, recorrencia_config').eq('ativo', true);
+  for (const r of (rotData as RotinaSync[]) ?? []) {
+    const rrule = rruleDoRitual(r.recorrencia_tipo, r.recorrencia_config ?? {});
+    if (!rrule) continue;
+    const res = await upsertEventoRecorrente(membroId, mapa.get(`ritual:${r.id}`) ?? null, {
+      titulo: `Ritual · ${r.titulo}`,
+      descricao: 'Rotina recorrente (SquadFire)',
+      rrule,
+      dia: hoje,
+    });
+    if (!res.ok) return { ok: false, total, error: res.error };
+    if (res.id) await gravar('ritual', r.id, res.id);
+  }
+
   return { ok: true, total };
+}
+
+// Sincroniza a agenda de TODOS os membros que conectaram o Google (pro cron
+// diário). Best-effort por membro — a falha de um não derruba os outros.
+export async function sincronizarTodosGoogle(): Promise<{ membros: number; eventos: number }> {
+  const admin = getSupabaseAdmin();
+  const { data } = await admin.from('integracao_google').select('membro_id');
+  const ids = ((data as { membro_id: string }[]) ?? []).map((m) => m.membro_id);
+  let eventos = 0;
+  for (const id of ids) {
+    try { const r = await sincronizarAgendaGoogle(id); if (r.ok) eventos += r.total; } catch { /* segue */ }
+  }
+  return { membros: ids.length, eventos };
 }
 
 // Cria um evento (ex.: agendar a Roda de Fogo). Retorna o link do evento.
