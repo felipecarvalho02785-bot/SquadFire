@@ -202,6 +202,7 @@ export interface ComentarioView {
   corpo: string;
   created_at: string;
   autor_nome: string;
+  origem: string;
 }
 
 export async function getComentarios(criaId: string): Promise<ComentarioView[]> {
@@ -209,12 +210,12 @@ export async function getComentarios(criaId: string): Promise<ComentarioView[]> 
   const supabase = await getSupabaseServer();
   const { data } = await supabase
     .from('comentario')
-    .select('id, corpo, created_at, autor:autor_id(nome)')
+    .select('id, corpo, created_at, origem, autor:autor_id(nome)')
     .eq('cria_id', criaId)
     .order('created_at', { ascending: false })
-    .limit(50);
-  return ((data as unknown as { id: string; corpo: string; created_at: string; autor: { nome: string } | null }[]) ?? []).map(
-    (c) => ({ id: c.id, corpo: c.corpo, created_at: c.created_at, autor_nome: c.autor?.nome ?? '—' }),
+    .limit(80);
+  return ((data as unknown as { id: string; corpo: string; created_at: string; origem: string | null; autor: { nome: string } | null }[]) ?? []).map(
+    (c) => ({ id: c.id, corpo: c.corpo, created_at: c.created_at, autor_nome: c.autor?.nome ?? '—', origem: c.origem ?? 'crm' }),
   );
 }
 

@@ -22,8 +22,9 @@ export function ImportarDiagnostico({ criaId }: { criaId: string }) {
         const d = await r.json();
         if (d.ok) {
           const partes: string[] = [];
-          if (d.diagnostico) partes.push(`diagnóstico${d.resumido ? ' resumido' : ''}`);
           if (d.dados) partes.push('dados + fase');
+          if (d.comentarios) partes.push(`${d.comentarios} comentário(s)`);
+          if (d.diagnostico) partes.push('diagnóstico');
           setOk(true); setMsg(`Puxado do ClickUp: ${partes.join(' + ') || 'ok'} ✓`); router.refresh();
         } else { setOk(false); setMsg(d.error ?? 'não deu para puxar'); }
       } catch {

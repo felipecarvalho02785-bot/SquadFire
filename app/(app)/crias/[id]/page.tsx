@@ -138,8 +138,8 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
             <div className="cmt" key={c.id}>
               <span className="av avatar" style={{ width: 32, height: 32, fontSize: 11 }}>{iniciais(c.autor_nome)}</span>
               <div>
-                <div className="cn">{c.autor_nome}<small>{new Date(c.created_at).toLocaleString('pt-BR')}</small></div>
-                <div className="ct">{c.corpo}</div>
+                <div className="cn">{c.autor_nome}{c.origem === 'clickup' && <span className="badge" style={{ marginLeft: 6, color: 'var(--plasma)', background: 'var(--plasma-soft)' }}>ClickUp</span>}<small>{new Date(c.created_at).toLocaleString('pt-BR')}</small></div>
+                <div className="ct" style={{ whiteSpace: 'pre-wrap' }}>{c.corpo}</div>
               </div>
             </div>
           ))
