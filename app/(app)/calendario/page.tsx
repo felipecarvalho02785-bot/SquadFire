@@ -42,11 +42,13 @@ export default async function CalendarioPage() {
 
   // Overlay do Google Agenda (se o membro conectou).
   let googleConectado = false;
+  let googleReconectar = false;
   if (isSupabaseConfigured) {
     const membro = await getCurrentMembro();
     if (membro) {
       const st = await statusGoogle(membro.id);
       googleConectado = st.conectado;
+      googleReconectar = st.precisaReconectar;
       if (st.conectado) {
         const ini = new Date(year, month, 1).toISOString();
         const fim = new Date(year, month + 1, 0, 23, 59).toISOString();
@@ -74,8 +76,10 @@ export default async function CalendarioPage() {
     <div className="main">
       <Topbar title="Calendário" sub="fases da Forja + SLA" action={
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-          {googleConectado && <SyncGoogleBtn />}
-          <span className={`badge ${googleConectado ? 'ok' : 'dim'}`}>Google Agenda · {googleConectado ? 'conectado' : 'a conectar'}</span>
+          {googleConectado && !googleReconectar && <SyncGoogleBtn />}
+          {googleReconectar
+            ? <a className="badge" style={{ color: 'var(--warn)', background: 'color-mix(in srgb, var(--warn) 15%, transparent)' }} href="/api/google/connect">Google Agenda · reconectar</a>
+            : <span className={`badge ${googleConectado ? 'ok' : 'dim'}`}>Google Agenda · {googleConectado ? 'conectado' : 'a conectar'}</span>}
         </span>
       } />
       <div className="content">

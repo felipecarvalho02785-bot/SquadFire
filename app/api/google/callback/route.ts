@@ -17,8 +17,10 @@ export async function GET(request: Request) {
   const state = url.searchParams.get('state');
   const erro = url.searchParams.get('error');
   if (erro || !code) return NextResponse.redirect(`${origin}/forjaria?google=erro`);
-  // state = id do membro que iniciou (defesa contra troca de conta no meio)
-  if (state && state !== membro.id) return NextResponse.redirect(`${origin}/forjaria?google=erro`);
+  // state = id do membro que iniciou. EXIGE presença + igualdade: antes, sem
+  // state a checagem era pulada (o && curto-circuitava), abrindo brecha pra
+  // vincular a conta Google de um atacante à sessão da vítima.
+  if (!state || state !== membro.id) return NextResponse.redirect(`${origin}/forjaria?google=erro`);
 
   try {
     const tok = await trocarCodigo(code);

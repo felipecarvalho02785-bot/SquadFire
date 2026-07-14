@@ -239,6 +239,13 @@ do $$ declare r int; begin
   exception when others then
     if sqlerrm not like '%investimento_midia%' then raise; end if;  -- ok, guard barrou
   end;
+  -- M3 (0030): allowlist barra também COLUNAS NOVAS (ex.: diagnostico_resumo)
+  begin
+    update cria set diagnostico_resumo='hack' where clickup_task_id='CU-RLS';
+    raise exception 'trafego mudou diagnostico_resumo (deveria ser barrado)';
+  exception when others then
+    if sqlerrm not like '%investimento_midia%' then raise; end if;  -- ok, allowlist barrou
+  end;
 end $$;
 rollback;
 SQL

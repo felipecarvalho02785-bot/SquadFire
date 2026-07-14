@@ -41,9 +41,10 @@ async function getDados(): Promise<{ rows: TaskRow[]; kpis: { abertas: number; r
   const inicioSemana = new Date();
   inicioSemana.setDate(inicioSemana.getDate() - 7);
 
-  const [{ data: abertasData }, { count: concl }, { data: membrosData }, membroAtual] = await Promise.all([
+  const [{ data: abertasData }, { count: concl }, { data: concluidasData }, { data: membrosData }, membroAtual] = await Promise.all([
     supabase.from('lenha').select('*').neq('status', 'concluida').order('prazo', { ascending: true, nullsFirst: false }).limit(300),
     supabase.from('lenha').select('*', { count: 'exact', head: true }).eq('status', 'concluida').gte('concluida_em', inicioSemana.toISOString()),
+    supabase.from('lenha').select('*').eq('status', 'concluida').gte('concluida_em', inicioSemana.toISOString()).order('concluida_em', { ascending: false }).limit(100),
     supabase.from('membro').select('id, nome').eq('ativo', true).order('nome'),
     getCurrentMembro(),
   ]);
@@ -70,8 +71,24 @@ async function getDados(): Promise<{ rows: TaskRow[]; kpis: { abertas: number; r
     };
   });
 
+  // Concluídas da semana (pro filtro "Concluídas" ter o que mostrar).
+  const concluidasRows: TaskRow[] = ((concluidasData as Lenha[]) ?? []).map((l) => {
+    const nome = l.responsavel_id ? nomePor.get(l.responsavel_id) ?? '' : '';
+    return {
+      id: l.id,
+      titulo: l.titulo,
+      sub: l.tipo === 'forja' ? 'Lenha de Forja' : l.tipo === 'rotina' ? 'Lenha de Rotina' : 'Tarefa do dia',
+      tipo: (l.tipo as TaskRow['tipo']) ?? 'avulsa',
+      who: nome ? iniciais(nome) : '',
+      whoNome: nome,
+      due: 'feito',
+      dueKind: '',
+      done: true,
+    };
+  });
+
   return {
-    rows,
+    rows: [...rows, ...concluidasRows],
     kpis: {
       abertas: abertas.length,
       risco: abertas.filter((l) => l.prazo && l.prazo < hojeData).length,

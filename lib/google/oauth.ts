@@ -7,6 +7,15 @@ const AUTH = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN = 'https://oauth2.googleapis.com/token';
 const USERINFO = 'https://www.googleapis.com/oauth2/v2/userinfo';
 
+// fetch com timeout — um endpoint OAuth travado não pode prender a rota até o
+// teto da plataforma (nem paralisar o cron que renova tokens).
+async function fetchTO(url: string, init: RequestInit, ms = 10000): Promise<Response> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try { return await fetch(url, { ...init, signal: ctrl.signal }); }
+  finally { clearTimeout(timer); }
+}
+
 // calendar.events = ler/criar eventos; openid+email = identificar a conta.
 export const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/calendar.events',
@@ -44,7 +53,7 @@ export interface TokenResp {
 }
 
 export async function trocarCodigo(code: string): Promise<TokenResp> {
-  const res = await fetch(TOKEN, {
+  const res = await fetchTO(TOKEN, {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -60,7 +69,7 @@ export async function trocarCodigo(code: string): Promise<TokenResp> {
 }
 
 export async function renovarToken(refreshToken: string): Promise<TokenResp> {
-  const res = await fetch(TOKEN, {
+  const res = await fetchTO(TOKEN, {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -76,7 +85,7 @@ export async function renovarToken(refreshToken: string): Promise<TokenResp> {
 
 export async function emailDaConta(accessToken: string): Promise<string | null> {
   try {
-    const res = await fetch(USERINFO, { headers: { authorization: `Bearer ${accessToken}` } });
+    const res = await fetchTO(USERINFO, { headers: { authorization: `Bearer ${accessToken}` } });
     if (!res.ok) return null;
     const j = (await res.json()) as { email?: string };
     return j.email ?? null;

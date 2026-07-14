@@ -1684,3 +1684,31 @@ delete from comentario c
 create unique index if not exists uq_comentario_clickup_comment_id
   on comentario (clickup_comment_id)
   where clickup_comment_id is not null;
+
+-- ┌── supabase/migrations/0030_guarda_coluna_allowlist.sql
+-- SquadFire · 0030 — Guard de coluna da Cria vira ALLOWLIST
+-- ─────────────────────────────────────────────────────────────
+-- Denylist (0011) deixava colunas novas de fora → Tráfego editava. Vira
+-- allowlist: compara a linha inteira e só libera investimento_midia.
+create or replace function app.guarda_coluna_cria()
+returns trigger
+language plpgsql
+as $$
+declare v_check cria;
+begin
+  if app.jwt_email() is null or app.is_admin() or app.has_papel('gestor_contas') then
+    return new;
+  end if;
+
+  if app.has_papel('gestor_trafego') then
+    v_check := new;
+    v_check.investimento_midia := old.investimento_midia;
+    v_check.updated_at        := old.updated_at;
+    if v_check is distinct from old then
+      raise exception 'Tráfego só pode editar investimento_midia da Cria';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;

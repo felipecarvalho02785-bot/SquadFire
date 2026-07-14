@@ -16,14 +16,17 @@ export async function salvarTokens(membroId: string, t: TokenResp, email: string
   await admin.from('integracao_google').upsert(patch, { onConflict: 'membro_id' });
 }
 
-export async function statusGoogle(membroId: string): Promise<{ conectado: boolean; email: string | null }> {
-  if (!isSupabaseConfigured) return { conectado: false, email: null };
+export async function statusGoogle(membroId: string): Promise<{ conectado: boolean; email: string | null; precisaReconectar: boolean }> {
+  if (!isSupabaseConfigured) return { conectado: false, email: null, precisaReconectar: false };
   try {
     const admin = getSupabaseAdmin();
-    const { data } = await admin.from('integracao_google').select('email').eq('membro_id', membroId).maybeSingle();
-    return { conectado: !!data, email: (data as { email: string | null } | null)?.email ?? null };
+    const { data } = await admin.from('integracao_google').select('email, refresh_token').eq('membro_id', membroId).maybeSingle();
+    const row = data as { email: string | null; refresh_token: string | null } | null;
+    // "conectado" = existe linha; mas sem refresh_token não dá pra renovar o
+    // acesso → sinaliza reconectar (senão a agenda fica vazia sem explicação).
+    return { conectado: !!row, email: row?.email ?? null, precisaReconectar: !!row && !row.refresh_token };
   } catch {
-    return { conectado: false, email: null };
+    return { conectado: false, email: null, precisaReconectar: false };
   }
 }
 
@@ -53,7 +56,7 @@ export async function listarEventos(membroId: string, timeMinISO: string, timeMa
   const token = await accessTokenValido(membroId);
   if (!token) return [];
   const p = new URLSearchParams({ timeMin: timeMinISO, timeMax: timeMaxISO, singleEvents: 'true', orderBy: 'startTime', maxResults: '50' });
-  const res = await fetch(`${CAL}?${p.toString()}`, { headers: { authorization: `Bearer ${token}` } });
+  const res = await gfetch(`${CAL}?${p.toString()}`, { headers: { authorization: `Bearer ${token}` } });
   if (!res.ok) return [];
   const j = (await res.json()) as { items?: { id: string; summary?: string; start?: { dateTime?: string; date?: string } }[] };
   return (j.items ?? []).map((e) => ({
@@ -160,6 +163,7 @@ export async function sincronizarAgendaGoogle(membroId: string): Promise<{ ok: b
 
   const { data: mapData } = await admin.from('google_evento_sync').select('ref_tipo, ref_id, google_event_id').eq('membro_id', membroId);
   const mapa = new Map(((mapData as { ref_tipo: string; ref_id: string; google_event_id: string }[]) ?? []).map((m) => [`${m.ref_tipo}:${m.ref_id}`, m.google_event_id]));
+  const desejados = new Set<string>(); // refs que DEVEM existir nesta sync
   let total = 0;
 
   async function gravar(tipo: string, ref: string, eventId: string) {
@@ -179,6 +183,7 @@ export async function sincronizarAgendaGoogle(membroId: string): Promise<{ ok: b
   for (const r of (fasesData as unknown as FaseSync[]) ?? []) {
     const cria = r.forja?.cria;
     if (!cria || cria.status !== 'ativa' || !r.data_prevista_fim) continue;
+    desejados.add(`fase:${r.id}`);
     const res = await upsertEventoDia(membroId, mapa.get(`fase:${r.id}`) ?? null, {
       titulo: `Prazo Fase ${r.ordem} · ${cria.nome_cliente}`,
       descricao: `${r.fase?.nome ?? 'Fase'} — Estruturação (SquadFire)`,
@@ -193,6 +198,7 @@ export async function sincronizarAgendaGoogle(membroId: string): Promise<{ ok: b
   for (const r of (rotData as RotinaSync[]) ?? []) {
     const rrule = rruleDoRitual(r.recorrencia_tipo, r.recorrencia_config ?? {});
     if (!rrule) continue;
+    desejados.add(`ritual:${r.id}`);
     const res = await upsertEventoRecorrente(membroId, mapa.get(`ritual:${r.id}`) ?? null, {
       titulo: `Ritual · ${r.titulo}`,
       descricao: 'Rotina recorrente (SquadFire)',
@@ -201,6 +207,22 @@ export async function sincronizarAgendaGoogle(membroId: string): Promise<{ ok: b
     });
     if (!res.ok) { erros.push(res.error ?? 'falha'); continue; } // não aborta os demais
     if (res.id) await gravar('ritual', r.id, res.id);
+  }
+
+  // 3) Apaga órfãos: eventos mapeados que não são mais desejados (fase que
+  // passou, Cria inativa, rotina desativada). Sem isso, viram fantasmas eternos
+  // na agenda. Só apaga se a sync não teve erro (senão poderia apagar por engano
+  // um evento cuja origem só falhou de ler agora).
+  if (!erros.length) {
+    for (const [chave, eventId] of mapa) {
+      if (desejados.has(chave)) continue;
+      const [tipo, ref] = chave.split(':');
+      try {
+        const token = await accessTokenValido(membroId);
+        if (token) await gfetch(CAL_EVENT(eventId), { method: 'DELETE', headers: { authorization: `Bearer ${token}` } });
+      } catch { /* segue: remove o vínculo mesmo se o Google já não tiver o evento */ }
+      await admin.from('google_evento_sync').delete().eq('membro_id', membroId).eq('ref_tipo', tipo).eq('ref_id', ref);
+    }
   }
 
   // Sucesso se algo sincronizou ou não houve erro; falha total só quando nada

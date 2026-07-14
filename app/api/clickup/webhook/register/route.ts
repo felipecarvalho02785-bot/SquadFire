@@ -15,7 +15,7 @@ async function autorizado(request: Request): Promise<boolean> {
   const membro = await getCurrentMembro();
   if (membro?.is_admin) return true;
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true; // sem segredo configurado (dev)
+  if (!secret) return false; // falha fechada: sem segredo, só admin logado passa
   return request.headers.get('authorization') === `Bearer ${secret}`;
 }
 

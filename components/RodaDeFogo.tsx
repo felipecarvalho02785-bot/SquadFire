@@ -60,6 +60,7 @@ export function RodaDeFogo({ criaId, nome, area, faseOrdem, faseNome, gestorCont
   const [dur, setDur] = useState(30);
   const [agLink, setAgLink] = useState<string | null>(null);
   const [agErro, setAgErro] = useState<string | null>(null);
+  const [dataHoje, setDataHoje] = useState(''); // set no cliente (evita hidratação)
   const [agendando, startAgendar] = useTransition();
 
   const recRef = useRef<MediaRecorder | null>(null);
@@ -78,6 +79,19 @@ export function RodaDeFogo({ criaId, nome, area, faseOrdem, faseNome, gestorCont
     const pad = (n: number) => String(n).padStart(2, '0');
     setQuando(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
   }, []);
+
+  // Data de hoje (no navegador) + carrega o rascunho salvo desta Cria.
+  useEffect(() => {
+    setDataHoje(new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }));
+    try {
+      const raw = localStorage.getItem(`sf-roda-${criaId}`);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (typeof d.nota === 'string') setNota(d.nota);
+        if (Array.isArray(d.pauta)) setPauta(d.pauta);
+      }
+    } catch { /* sem rascunho */ }
+  }, [criaId]);
 
   function agendarNoGoogle() {
     setAgErro(null); setAgLink(null);
@@ -198,7 +212,6 @@ export function RodaDeFogo({ criaId, nome, area, faseOrdem, faseNome, gestorCont
     });
   }
 
-  const dataHoje = new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
 
   return (
     <div className="main">
@@ -341,7 +354,10 @@ export function RodaDeFogo({ criaId, nome, area, faseOrdem, faseNome, gestorCont
 
         {/* footer */}
         <div className="roda-foot">
-          <button className="btn" onClick={() => { setMsg('Rascunho salvo localmente.'); }}>Salvar rascunho</button>
+          <button className="btn" onClick={() => {
+            try { localStorage.setItem(`sf-roda-${criaId}`, JSON.stringify({ nota, pauta })); setMsg('Rascunho salvo neste navegador.'); }
+            catch { setMsg('não consegui salvar o rascunho'); }
+          }}>Salvar rascunho</button>
           <button className="btn primary" onClick={encerrar} disabled={estado === 'processando' || estado === 'pronto'}>
             {estado === 'processando' ? 'Gerando…' : estado === 'pronto' ? 'Briefing gerado ✓' : 'Encerrar e gerar briefing'}
           </button>

@@ -10,9 +10,11 @@ export const maxDuration = 60;
 // GET = Vercel Cron (injeta o Bearer). Protegido por CRON_SECRET.
 // Idempotente: rodar de novo no mesmo dia não duplica.
 export async function GET(request: Request) {
+  // Falha FECHADA: sem CRON_SECRET configurado a rota fica trancada (antes ficava
+  // pública, permitindo disparar geração/recalc/sync e queimar quota).
   const secret = process.env.CRON_SECRET;
   const auth = request.headers.get('authorization');
-  if (secret && auth !== `Bearer ${secret}`) {
+  if (!secret || auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'não autorizado' }, { status: 401 });
   }
 
