@@ -1523,3 +1523,107 @@ alter table cria
 
 comment on column cria.clickup_puxado_em is
   'Última vez que a Cria foi puxada do ClickUp (dados + fase + diagnóstico). Controle do lote.';
+
+-- ┌── supabase/migrations/0025_conta_papel_whitelist.sql
+-- SquadFire · 0025 — Anti-escalada em atualizar_minha_conta
+-- ─────────────────────────────────────────────────────────────
+-- Bug de segurança (auditoria): atualizar_minha_conta aceitava QUALQUER papel.
+-- Como trocar o papel_primário dispara trg_membro_sync_papel (que insere a
+-- linha em membro_papel), um Tráfego podia se auto-conceder gestor_contas /
+-- gestor_projetos — ganhando poderes de RLS que a matriz de papéis nega.
+-- Correção: papel primário só entre os já atribuídos ao membro.
+
+create or replace function public.atualizar_minha_conta(p_nome text, p_papel papel)
+returns void
+language plpgsql
+security definer set search_path = public, app, pg_temp
+as $$
+declare
+  v_id uuid := app.current_membro_id();
+begin
+  if v_id is null then
+    raise exception 'membro não identificado' using errcode = '42501';
+  end if;
+  if coalesce(btrim(p_nome), '') = '' then
+    raise exception 'nome não pode ser vazio';
+  end if;
+
+  if not exists (
+    select 1 from membro_papel mp
+    where mp.membro_id = v_id and mp.papel = p_papel
+  ) then
+    raise exception 'você não tem o papel % atribuído — peça a um admin', p_papel
+      using errcode = '42501';
+  end if;
+
+  update membro
+     set nome = btrim(p_nome),
+         papel_primario = p_papel
+   where id = v_id;
+end;
+$$;
+
+comment on function public.atualizar_minha_conta(text, papel) is
+  'Membro edita o próprio nome e papel primário — restrito a papéis já atribuídos (anti-escalada). A tabela membro é admin-only na RLS.';
+
+revoke all on function public.atualizar_minha_conta(text, papel) from public;
+grant execute on function public.atualizar_minha_conta(text, papel) to authenticated;
+
+-- ┌── supabase/migrations/0026_fase_forja_sync_so_avanca.sql
+-- SquadFire · 0026 — definir_fase_forja_sync só AVANÇA (nunca retrocede)
+-- ─────────────────────────────────────────────────────────────
+-- Bug (auditoria): 0023 reescrevia as 7 fases INCONDICIONALMENTE — o cron da
+-- manhã revertia o "Avançar Fase" manual todo dia. Aqui a Semana do ClickUp
+-- só é aplicada quando de fato avança a Forja (e reabre concluída se voltar <7).
+
+create or replace function public.definir_fase_forja_sync(p_cria_id uuid, p_semana int)
+returns void
+language plpgsql
+security definer set search_path = public, app, pg_temp
+as $$
+declare
+  v_forja       uuid;
+  v_concluida   boolean;
+  v_fase_atual  uuid;
+  v_ordem_atual int := 0;
+  v_sem         int := least(greatest(p_semana, 1), 7);
+begin
+  if p_semana is null or p_semana < 1 then return; end if;
+
+  select id, coalesce(concluida, false), fase_atual_id
+    into v_forja, v_concluida, v_fase_atual
+    from forja where cria_id = p_cria_id;
+  if v_forja is null then return; end if;
+
+  if v_fase_atual is not null then
+    select coalesce(ordem, 0) into v_ordem_atual
+      from fase_da_forja where id = v_fase_atual;
+    v_ordem_atual := coalesce(v_ordem_atual, 0);
+  end if;
+
+  if v_concluida then
+    if v_sem >= 7 then return; end if;
+  else
+    if v_sem <= v_ordem_atual then return; end if;
+  end if;
+
+  update fase_da_forja
+     set status = (case
+                     when ordem < v_sem then 'concluida'
+                     when ordem = v_sem then 'em_andamento'
+                     else 'pendente'
+                   end)::status_fase
+   where forja_id = v_forja;
+
+  update forja
+     set fase_atual_id = (select id from fase_da_forja where forja_id = v_forja and ordem = v_sem),
+         concluida = false
+   where id = v_forja;
+end;
+$$;
+
+comment on function public.definir_fase_forja_sync(uuid, int) is
+  'Caminho do sync ClickUp: aplica a Semana (1..7) só quando AVANÇA a Forja (nunca retrocede; reabre concluída se ClickUp voltar a <7). Só service_role.';
+
+revoke all on function public.definir_fase_forja_sync(uuid, int) from public;
+grant execute on function public.definir_fase_forja_sync(uuid, int) to service_role;

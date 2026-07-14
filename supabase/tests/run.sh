@@ -141,6 +141,21 @@ begin
     raise exception 'em_risco não limpou após concluir a fase vencida';
   end if;
 
+  -- C4 (0026): definir_fase_forja_sync só AVANÇA (nunca retrocede)
+  insert into cria (nome_cliente, clickup_task_id, clickup_squad) values ('C4','CU-C4','Squad 08');
+  perform public.definir_fase_forja_sync((select id from cria where clickup_task_id='CU-C4'), 5);
+  if (select fdf.ordem from cria c join forja f on f.cria_id=c.id join fase_da_forja fdf on fdf.id=f.fase_atual_id where c.clickup_task_id='CU-C4') <> 5 then
+    raise exception 'C4: sync não avançou para a fase 5';
+  end if;
+  perform public.definir_fase_forja_sync((select id from cria where clickup_task_id='CU-C4'), 3);  -- tenta retroceder
+  if (select fdf.ordem from cria c join forja f on f.cria_id=c.id join fase_da_forja fdf on fdf.id=f.fase_atual_id where c.clickup_task_id='CU-C4') <> 5 then
+    raise exception 'C4: sync RETROCEDEU a fase (deveria proteger o avanço manual)';
+  end if;
+  perform public.definir_fase_forja_sync((select id from cria where clickup_task_id='CU-C4'), 6);
+  if (select fdf.ordem from cria c join forja f on f.cria_id=c.id join fase_da_forja fdf on fdf.id=f.fase_atual_id where c.clickup_task_id='CU-C4') <> 6 then
+    raise exception 'C4: sync não avançou de 5 para 6';
+  end if;
+
   raise notice '✓ triggers/regras OK';
 end $$;
 SQL
@@ -223,6 +238,32 @@ do $$ declare r int; begin
   exception when others then
     if sqlerrm not like '%investimento_midia%' then raise; end if;  -- ok, guard barrou
   end;
+end $$;
+rollback;
+SQL
+
+# C1 (0025): membro NÃO pode se auto-conceder papel via atualizar_minha_conta
+$PSQL <<'SQL'
+begin;
+set local role authenticated;
+select set_config('request.jwt.claims','{"email":"trafego@t.dev"}',true);
+do $$ begin
+  -- negativo: Tráfego tentando virar Contas → deve ser barrado
+  begin
+    perform public.atualizar_minha_conta('Trafego Hack','gestor_contas');
+    raise exception 'C1: trafego se auto-concedeu gestor_contas (escalada!)';
+  exception when others then
+    if sqlerrm like 'C1:%' then raise; end if;  -- só propaga o nosso; o 42501 é o esperado
+  end;
+  -- positivo: trocar o próprio nome mantendo o papel que já tem passa
+  perform public.atualizar_minha_conta('Trafego Novo','gestor_trafego');
+end $$;
+-- confirma que o papel NÃO foi concedido
+do $$ begin
+  if exists (
+    select 1 from membro_papel mp join membro m on m.id=mp.membro_id
+    where m.email='trafego@t.dev' and mp.papel='gestor_contas'
+  ) then raise exception 'C1: gestor_contas acabou concedido ao trafego'; end if;
 end $$;
 rollback;
 SQL

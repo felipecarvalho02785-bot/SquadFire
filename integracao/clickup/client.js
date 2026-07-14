@@ -95,11 +95,13 @@ export async function getTaskComments(taskId) {
   return cuFetch(`/task/${taskId}/comment`);
 }
 
-// Baixa um anexo do ClickUp pela URL. Tenta com o token; se recusar, tenta sem
-// header (a URL pode já vir acessível). Devolve um Buffer.
+// Baixa um anexo do ClickUp pela URL. Anexos ficam no S3 e vêm com URL
+// pré-assinada (url_w_query) — o S3 RECUSA (403) se mandarmos o header
+// Authorization junto. Por isso tentamos primeiro SEM header (presigned); só se
+// falhar caímos pro token (caso seja um endpoint da API que exige auth).
 export async function baixarAnexoUrl(url) {
-  let res = await fetch(url, { headers: { Authorization: getClickUpToken() } });
-  if (!res.ok) res = await fetch(url);
+  let res = await fetch(url);
+  if (!res.ok) res = await fetch(url, { headers: { Authorization: getClickUpToken() } });
   if (!res.ok) throw new Error(`download do anexo falhou → ${res.status}`);
   return Buffer.from(await res.arrayBuffer());
 }

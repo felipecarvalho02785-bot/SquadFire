@@ -9,7 +9,7 @@ import { extrairDadosClienteGemini, resumirDiagnosticoGemini, iaGeminiConfigurad
 // comentários no CRM) + PDF do diagnóstico. Tudo best-effort, nunca lança.
 
 type Anexo = { url: string; nome: string };
-type Bloco = { attachment?: { extension?: string; mimetype?: string; title?: string; url?: string } };
+type Bloco = { attachment?: { extension?: string; mimetype?: string; title?: string; url?: string; url_w_query?: string } };
 type ClickComment = { id?: string | number; comment?: Bloco[]; comment_text?: string; user?: { email?: string; username?: string } };
 
 export interface PullResult { ok: boolean; dados: boolean; diagnostico: boolean; comentarios: number; error?: string }
@@ -19,7 +19,9 @@ function acharDiagnostico(comments: ClickComment[]): Anexo | null {
   for (const cm of comments ?? []) {
     for (const b of cm.comment ?? []) {
       const a = b.attachment;
-      if (a?.url && (a.extension === 'pdf' || a.mimetype === 'application/pdf')) pdfs.push({ url: a.url, nome: a.title ?? 'diagnostico.pdf' });
+      // Prefere a URL pré-assinada (url_w_query) — baixa direto do S3 sem token.
+      const link = a?.url_w_query ?? a?.url;
+      if (a && link && (a.extension === 'pdf' || a.mimetype === 'application/pdf')) pdfs.push({ url: link, nome: a.title ?? 'diagnostico.pdf' });
     }
   }
   return pdfs.find((p) => /diagn|360/i.test(p.nome)) ?? pdfs[0] ?? null;

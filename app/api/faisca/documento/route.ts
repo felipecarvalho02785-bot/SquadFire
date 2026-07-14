@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentMembro } from '@/lib/auth';
-import { getSupabaseAdmin } from '@/lib/supabase/server';
+import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { extrairContratoGemini, resumirDiagnosticoGemini, iaGeminiConfigurada } from '@/lib/ia/gemini';
 
 export const dynamic = 'force-dynamic';
@@ -9,6 +9,9 @@ export const maxDuration = 60;
 
 // A Faísca lê o PDF vinculado (contrato ou diagnóstico) e extrai o essencial.
 // Body: { criaId, kind: 'contrato'|'diagnostico', path }
+// Autorização: a rota grava em contrato/cria via service_role (bypassa RLS),
+// então NÃO pode ficar aberta a qualquer membro. Exige Contas/Projetos/Admin,
+// e o `path` precisa ser da própria Cria (o storage é por bucket, não por path).
 export async function POST(request: Request) {
   const membro = await getCurrentMembro();
   if (!membro) return NextResponse.json({ ok: false, error: 'não autenticado' }, { status: 401 });
@@ -19,6 +22,19 @@ export async function POST(request: Request) {
   const { criaId, kind, path } = body;
   if (!criaId || !path || (kind !== 'contrato' && kind !== 'diagnostico')) {
     return NextResponse.json({ ok: false, error: 'parâmetros inválidos' }, { status: 400 });
+  }
+
+  // Gate de papel: Tráfego não dispara a leitura (a rota escreve contrato/cria).
+  const supabase = await getSupabaseServer();
+  const papeis = new Set<string>((membro.papel_primario ? [membro.papel_primario] : []) as string[]);
+  const { data: mp } = await supabase.from('membro_papel').select('papel').eq('membro_id', membro.id);
+  ((mp as { papel: string }[] | null) ?? []).forEach((r) => papeis.add(r.papel));
+  const autorizado = membro.is_admin || papeis.has('gestor_contas') || papeis.has('gestor_projetos');
+  if (!autorizado) return NextResponse.json({ ok: false, error: 'sem permissão para ler documentos desta Cria' }, { status: 403 });
+
+  // O arquivo precisa pertencer a esta Cria (evita ler/gravar arquivo de outra).
+  if (path.includes('..') || !path.startsWith(`${criaId}/`)) {
+    return NextResponse.json({ ok: false, error: 'arquivo não pertence a esta Cria' }, { status: 403 });
   }
 
   const admin = getSupabaseAdmin();
