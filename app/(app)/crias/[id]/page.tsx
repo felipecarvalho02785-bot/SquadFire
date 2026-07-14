@@ -11,7 +11,10 @@ import { GargalosPanel } from '@/components/GargalosPanel';
 import { UploadPdf } from '@/components/UploadPdf';
 import { ImportarDiagnostico } from '@/components/ImportarDiagnostico';
 import { AvisarWhatsapp } from '@/components/AvisarWhatsapp';
+import { EditCampoCria } from '@/components/EditCampoCria';
+import { EditGestorContas } from '@/components/EditGestorContas';
 import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
+import { getBrigada } from '@/lib/data/brigada';
 import { iniciais } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +31,8 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
   const { id } = await params;
   const det = await getCriaDetalhe(id);
   if (!det) notFound();
-  const comentarios = await getComentarios(id);
+  const [comentarios, brigada] = await Promise.all([getComentarios(id), getBrigada()]);
+  const membros = brigada.map((m) => ({ id: m.id, nome: m.nome }));
 
   const { cria, forja, fases, lenhas, gestor, gargalos, briefingsSemana, diagnostico, contrato, briefings } = det;
   const faseAtual = fases.find((f) => f.id === forja?.fase_atual_id) ?? fases.find((f) => f.status === 'em_andamento');
@@ -58,12 +62,12 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
       <div>
         <div className="c-h" style={{ marginBottom: 6 }}><span className="t">Dados</span></div>
         <div className="dl">
-          <div className="drow"><span>E-mail</span><b className="mono">{cria.email ?? '—'}</b></div>
-          <div className="drow"><span>Área</span><b>{cria.area_atuacao ?? '—'}</b></div>
+          <div className="drow"><span>E-mail</span><EditCampoCria criaId={cria.id} campo="email" valor={cria.email} tipo="email" placeholder="email@cliente.com" /></div>
+          <div className="drow"><span>Área</span><EditCampoCria criaId={cria.id} campo="area_atuacao" valor={cria.area_atuacao} placeholder="ex.: Direito Previdenciário" /></div>
           <div className="drow"><span>Produto</span><b>Estruturação</b></div>
           <div className="drow"><span>Investimento em mídia</span><EditInvestimento criaId={cria.id} valor={cria.investimento_midia} /></div>
-          <div className="drow"><span>Closer</span><b>{cria.closer ?? '—'}</b></div>
-          <div className="drow"><span>Gestor de Contas</span><b>{gestor?.nome ?? '—'}</b></div>
+          <div className="drow"><span>Closer</span><EditCampoCria criaId={cria.id} campo="closer" valor={cria.closer} placeholder="quem fechou" /></div>
+          <div className="drow"><span>Gestor de Contas</span><EditGestorContas criaId={cria.id} atual={cria.gestor_contas_id} membros={membros} /></div>
           {cria.clickup_semana != null && <div className="drow"><span>Semana (Squad)</span><b className="mono">S{cria.clickup_semana}</b></div>}
           <div className="drow">
             <span>Grupo (WhatsApp)</span>
