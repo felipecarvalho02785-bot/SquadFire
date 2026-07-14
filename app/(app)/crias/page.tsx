@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
 import { CriaSearch } from '@/components/CriaSearch';
+import { PuxarTodosBtn } from '@/components/PuxarTodosBtn';
 import { listCrias } from '@/lib/data/crias';
+import { getCurrentMembro } from '@/lib/auth';
+import { isSupabaseConfigured } from '@/lib/env';
 import { brl, faseLabel, saudeDaCria } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
@@ -10,6 +13,7 @@ export default async function CriasPage({ searchParams }: { searchParams: Promis
   const { q } = await searchParams;
   const termo = (q ?? '').trim().toLowerCase();
   const todas = await listCrias();
+  const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
   const crias = termo
     ? todas.filter((c) => c.nome_cliente.toLowerCase().includes(termo) || (c.area_atuacao ?? '').toLowerCase().includes(termo))
     : todas;
@@ -25,6 +29,7 @@ export default async function CriasPage({ searchParams }: { searchParams: Promis
             <div className="eye">Carteira · {todas.length} Crias{termo ? ` · ${crias.length} para "${q}"` : ''}</div>
             <h2>Crias</h2>
             <p>Squad 08 · espelho do ClickUp (Estruturação): {emForja} em execução + {backlog} no backlog. Clique numa Cria pra abrir a Forja.</p>
+            {membro?.is_admin && <PuxarTodosBtn />}
           </div>
         </div>
 
