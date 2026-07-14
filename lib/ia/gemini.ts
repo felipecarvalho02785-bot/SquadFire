@@ -127,6 +127,32 @@ export async function extrairContratoGemini(pdf: Buffer): Promise<{ valor: numbe
   return { valor, dataInicio, resumo: String(obj.resumo ?? '').trim() };
 }
 
+// Extrai dados do cliente de textos livres (descrição + comentários do ClickUp,
+// ex.: o relatório de onboarding). Devolve só o que achar; null quando não tem.
+export async function extrairDadosClienteGemini(texto: string): Promise<{ email: string | null; telefone: string | null; area_atuacao: string | null; closer: string | null }> {
+  const vazio = { email: null, telefone: null, area_atuacao: null, closer: null };
+  const t = (texto ?? '').trim();
+  if (!t) return vazio;
+  const genAI = new GoogleGenerativeAI(chave());
+  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL, generationConfig: { responseMimeType: 'application/json' } });
+  const prompt =
+    'Você recebe textos (descrição + comentários) sobre um cliente (escritório de advocacia) de uma agência de marketing. ' +
+    'Extraia e responda APENAS um JSON: {"email": string|null, "telefone": string|null (com DDD/DDI se houver), ' +
+    '"area_atuacao": string|null (nicho/área de atuação jurídica, ex.: "Direito Previdenciário"), "closer": string|null (nome do closer/vendedor)}. ' +
+    'Use null quando não encontrar. NÃO invente.\n\nTEXTO:\n' + t.slice(0, 12000);
+  const result = await comRetry(() => model.generateContent(prompt));
+  let obj: Record<string, unknown> = {};
+  try {
+    obj = JSON.parse(result.response.text());
+  } catch {
+    const raw = result.response.text();
+    const a = raw.indexOf('{'); const b = raw.lastIndexOf('}');
+    if (a >= 0 && b > a) { try { obj = JSON.parse(raw.slice(a, b + 1)); } catch { /* vazio */ } }
+  }
+  const str = (v: unknown) => { const s = String(v ?? '').trim(); return s && s.toLowerCase() !== 'null' && s.length > 1 ? s : null; };
+  return { email: str(obj.email), telefone: str(obj.telefone), area_atuacao: str(obj.area_atuacao), closer: str(obj.closer) };
+}
+
 // Lê o PDF do Diagnóstico 360 e devolve um resumo objetivo pra squad/IA.
 export async function resumirDiagnosticoGemini(pdf: Buffer): Promise<string> {
   const genAI = new GoogleGenerativeAI(chave());
