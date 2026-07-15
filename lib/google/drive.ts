@@ -148,6 +148,7 @@ export async function listarBibliotecaDrive(): Promise<DriveBiblioteca> {
         }
       }
       if (truncado || !j.nextPageToken) break;
+      if (p === 4) { truncado = true; break; } // teto de 5 páginas com mais por vir
       pageToken = j.nextPageToken;
     }
   }

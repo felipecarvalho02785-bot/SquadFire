@@ -60,7 +60,14 @@ export async function getBibliotecaItens(): Promise<BiblioItem[]> {
 // página rápida (só ~1 varredura por minuto paga o custo). Também é a fonte da
 // lista de IDs permitidos usada pelo proxy de imagem.
 export const getDriveBibliotecaCached = unstable_cache(
-  async (): Promise<DriveBiblioteca> => listarBibliotecaDrive(),
+  async (): Promise<DriveBiblioteca> => {
+    const r = await listarBibliotecaDrive();
+    // NÃO cachear resultado de ERRO (blip do Drive) por 60s — um único timeout
+    // esvaziaria a Biblioteca e o proxy de imagem por 1 minuto. Lançar pula o
+    // cache; o caller trata como "Drive indisponível" e a próxima req tenta de novo.
+    if (r.erro) throw new Error(r.erro);
+    return r;
+  },
   ['biblioteca-drive-v1'],
   { revalidate: 60, tags: ['biblioteca-drive'] },
 );

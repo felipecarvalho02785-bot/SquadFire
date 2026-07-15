@@ -44,32 +44,45 @@ async function accessTokenValido(membroId: string): Promise<string | null> {
   const expirado = !row.expiry || new Date(row.expiry).getTime() < Date.now();
   if (!expirado) return row.access_token;
   if (!row.refresh_token) return null; // sem refresh → precisa reconectar
-  const novo = await renovarToken(row.refresh_token);
-  await salvarTokens(membroId, novo, row.email);
-  return novo.access_token;
+  try {
+    const novo = await renovarToken(row.refresh_token);
+    await salvarTokens(membroId, novo, row.email);
+    return novo.access_token;
+  } catch {
+    // refresh recusado (invalid_grant após revogação/expiração) ou rede: trata
+    // como "precisa reconectar" em vez de derrubar quem chamou.
+    return null;
+  }
 }
 
 export interface GEvento { id: string; titulo: string; inicio: string | null; allDay: boolean }
 
 // Eventos do Google Agenda do membro num intervalo (para o Calendário).
 export async function listarEventos(membroId: string, timeMinISO: string, timeMaxISO: string): Promise<GEvento[]> {
-  const token = await accessTokenValido(membroId);
-  if (!token) return [];
   const eventos: GEvento[] = [];
-  let pageToken: string | undefined;
-  // Pagina (250/página, teto de 5 páginas) — antes maxResults=50 escondia
-  // eventos além do 50º. Em erro, devolve o que já juntou (não finge vazio).
-  for (let i = 0; i < 5; i++) {
-    const p = new URLSearchParams({ timeMin: timeMinISO, timeMax: timeMaxISO, singleEvents: 'true', orderBy: 'startTime', maxResults: '250' });
-    if (pageToken) p.set('pageToken', pageToken);
-    const res = await gfetch(`${CAL}?${p.toString()}`, { headers: { authorization: `Bearer ${token}` } });
-    if (!res.ok) break;
-    const j = (await res.json()) as { items?: { id: string; summary?: string; start?: { dateTime?: string; date?: string } }[]; nextPageToken?: string };
-    for (const e of j.items ?? []) {
-      eventos.push({ id: e.id, titulo: e.summary ?? '(sem título)', inicio: e.start?.dateTime ?? e.start?.date ?? null, allDay: !e.start?.dateTime });
+  // NUNCA lança: token inválido/expirado, timeout ou rede devolvem o que já
+  // juntou (ou vazio). Sem isso, a página do Calendário e a agenda do Meu Dia
+  // quebravam (500) quando o refresh do Google era recusado.
+  try {
+    const token = await accessTokenValido(membroId);
+    if (!token) return eventos;
+    let pageToken: string | undefined;
+    // Pagina (250/página, teto de 5 páginas) — antes maxResults=50 escondia
+    // eventos além do 50º.
+    for (let i = 0; i < 5; i++) {
+      const p = new URLSearchParams({ timeMin: timeMinISO, timeMax: timeMaxISO, singleEvents: 'true', orderBy: 'startTime', maxResults: '250' });
+      if (pageToken) p.set('pageToken', pageToken);
+      const res = await gfetch(`${CAL}?${p.toString()}`, { headers: { authorization: `Bearer ${token}` } });
+      if (!res.ok) break;
+      const j = (await res.json()) as { items?: { id: string; summary?: string; start?: { dateTime?: string; date?: string } }[]; nextPageToken?: string };
+      for (const e of j.items ?? []) {
+        eventos.push({ id: e.id, titulo: e.summary ?? '(sem título)', inicio: e.start?.dateTime ?? e.start?.date ?? null, allDay: !e.start?.dateTime });
+      }
+      if (!j.nextPageToken) break;
+      pageToken = j.nextPageToken;
     }
-    if (!j.nextPageToken) break;
-    pageToken = j.nextPageToken;
+  } catch {
+    /* devolve o parcial — não derruba a página */
   }
   return eventos;
 }

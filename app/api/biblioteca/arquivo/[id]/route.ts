@@ -17,7 +17,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!membro) return new NextResponse('não autorizado', { status: 401 });
 
   const { id } = await params;
-  const lib = await getDriveBibliotecaCached();
+  let lib;
+  try {
+    lib = await getDriveBibliotecaCached();
+  } catch {
+    return new NextResponse('biblioteca indisponível', { status: 503 });
+  }
   const item = lib.itens.find((i) => i.id === id);
   if (!item) return new NextResponse('arquivo fora da biblioteca', { status: 404 });
   if (!item.ehImagem) return new NextResponse('preview indisponível', { status: 415 });
