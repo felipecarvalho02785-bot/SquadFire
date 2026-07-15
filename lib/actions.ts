@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
 import { enviarWhatsapp } from '@/lib/whatsapp/evolution';
+import { recalcularRisco } from '@/lib/clickup/espelho';
 import { hojeBRT } from '@/lib/datas';
 import type { Papel, PrioridadeLenha } from '@/lib/types/database';
 
@@ -223,6 +224,9 @@ export async function iniciarForja(criaId: string, data: string): Promise<Action
   const supabase = await getSupabaseServer();
   const { error } = await supabase.rpc('iniciar_forja', { p_cria_id: criaId, p_data: data });
   if (error) return { ok: false, error: error.message };
+  // A cascata de prazos muda o SLA → recalcula o em_risco na hora (não espera o
+  // sync do ClickUp, que pode nem rodar hoje). recalcular_em_risco é service_role.
+  await recalcularRisco(getSupabaseAdmin());
   revalidatePath('/crias/[id]', 'page');
   revalidatePath('/crias');
   revalidatePath('/calendario');
@@ -235,7 +239,9 @@ export async function avancarFase(forjaId: string): Promise<ActionResult> {
   const supabase = await getSupabaseServer();
   const { error } = await supabase.rpc('avancar_fase', { p_forja_id: forjaId });
   if (error) return { ok: false, error: error.message };
+  await recalcularRisco(getSupabaseAdmin()); // avançar fase pode tirar do risco
   revalidatePath('/crias/[id]', 'page');
+  revalidatePath('/covil');
   return { ok: true };
 }
 
