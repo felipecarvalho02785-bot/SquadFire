@@ -23,6 +23,7 @@ export function FaiscaDrawer() {
   const [falar, setFalar] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const recRef = useRef<SpeechRec | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const abrir = () => setOpen(true);
@@ -57,6 +58,14 @@ export function FaiscaDrawer() {
   }
 
   useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, open, loading]);
+
+  // a11y: ao abrir, leva o foco pro campo de mensagem (dialog não deixava o foco
+  // "cair" dentro dele). Fecha via Esc/overlay já existiam.
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => inputRef.current?.focus(), 80); // após a transição
+    return () => clearTimeout(t);
+  }, [open]);
 
   async function enviar(texto: string) {
     const t = texto.trim();

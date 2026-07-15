@@ -29,10 +29,13 @@ export async function getSupabaseServer() {
 // Cliente com service_role (bypassa RLS) — SÓ server-side, para jobs/sync.
 // Nunca expor a service key ao browser.
 export function getSupabaseAdmin() {
-  if (!env.supabaseServiceKey) {
+  // Lê a service key direto de process.env (nunca do objeto `env` compartilhado
+  // com o cliente). Só resolve no server; no browser seria undefined.
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceKey) {
     throw new Error('SUPABASE_SERVICE_ROLE_KEY ausente — necessário para operações de sistema.');
   }
-  return createServerClient(env.supabaseUrl, env.supabaseServiceKey, {
+  return createServerClient(env.supabaseUrl, serviceKey, {
     cookies: { getAll: () => [], setAll: () => {} },
   });
 }

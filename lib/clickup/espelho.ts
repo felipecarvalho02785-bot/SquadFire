@@ -41,8 +41,16 @@ export async function aplicarCriaNoBanco(admin: Admin, c: CriaSync): Promise<{ o
   if (error) return { ok: false, error: error.message };
   const id = (up as { id: string } | null)?.id;
   if (id) {
-    if (c.data_inicio) await admin.rpc('definir_inicio_forja_sync', { p_cria_id: id, p_data: c.data_inicio });
-    if (c.clickup_semana) await admin.rpc('definir_fase_forja_sync', { p_cria_id: id, p_semana: c.clickup_semana });
+    // As RPCs de cascata não lançam (Supabase devolve {error}); logamos o erro
+    // em vez de engolir — senão prazos/fase deixavam de atualizar em silêncio.
+    if (c.data_inicio) {
+      const { error: e1 } = await admin.rpc('definir_inicio_forja_sync', { p_cria_id: id, p_data: c.data_inicio });
+      if (e1) console.error(`[espelho] cascata de início falhou (${c.nome_cliente}): ${e1.message}`);
+    }
+    if (c.clickup_semana) {
+      const { error: e2 } = await admin.rpc('definir_fase_forja_sync', { p_cria_id: id, p_semana: c.clickup_semana });
+      if (e2) console.error(`[espelho] cascata de fase falhou (${c.nome_cliente}): ${e2.message}`);
+    }
   }
   return { ok: true, id };
 }

@@ -119,7 +119,7 @@ export function Sidebar({
                 // prefetch completo renderizava TODAS as abas no servidor em segundo
                 // plano (custo no Hobby) e disparava o pull-on-view/escritas para
                 // abas que ninguém abriu — o sync agora só roda na navegação real.
-                <Link key={n.href} href={n.href} className={active ? 'active' : ''} title={n.label}>
+                <Link key={n.href} href={n.href} className={active ? 'active' : ''} title={n.label} onClick={() => document.documentElement.classList.remove('sf-nav-open')}>
 
                   <span className="ic">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">

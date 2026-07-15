@@ -16,6 +16,7 @@ export function iaGeminiConfigurada(): boolean {
 // a mensagem quase sempre cita "generateContent", cujo "rate" fazia a regex
 // antiga retentar até erros permanentes 400/safety). Fallback por termos precisos.
 function ehRetryable(e: unknown): boolean {
+  if ((e as { timeout?: boolean })?.timeout) return false; // timeout nosso: não insiste (bound de tempo)
   const status = (e as { status?: number })?.status;
   if (typeof status === 'number') return [429, 500, 502, 503, 504].includes(status);
   const raw = (e instanceof Error ? e.message : String(e)).toLowerCase();
@@ -24,11 +25,18 @@ function ehRetryable(e: unknown): boolean {
 
 // Reexecuta a chamada em limite de uso (429) ou erro transitório (5xx), com
 // backoff + jitter REAL (evita retries sincronizados sob quota compartilhada).
-async function comRetry<T>(fn: () => Promise<T>, tentativas = 3): Promise<T> {
+// timeoutMs limita CADA chamada — o SDK do Gemini não tem timeout próprio, então
+// uma chamada pendurada travaria a rota até o teto da função (504 sem graça).
+async function comRetry<T>(fn: () => Promise<T>, tentativas = 3, timeoutMs = 22000): Promise<T> {
   let ultimo: unknown;
   for (let i = 0; i < tentativas; i++) {
     try {
-      return await fn();
+      return await Promise.race([
+        fn(),
+        new Promise<T>((_, rej) =>
+          setTimeout(() => rej(Object.assign(new Error('A Faísca demorou demais para responder. Tente de novo.'), { timeout: true })), timeoutMs),
+        ),
+      ]);
     } catch (e) {
       ultimo = e;
       if (!ehRetryable(e) || i === tentativas - 1) break;
