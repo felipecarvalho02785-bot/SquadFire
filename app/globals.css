@@ -1045,3 +1045,35 @@ button.cal-cell:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(-
 @media (max-width: 900px) {
   .rail-toggle { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Drawer de navegação no mobile (panorama · A7)
+   No desktop o hambúrguer some e a Sidebar é a coluna fixa de sempre.
+   No mobile a Sidebar vira drawer off-canvas, aberto pelo hambúrguer do topbar.
+   ═══════════════════════════════════════════════════════════════ */
+.nav-toggle { display: none; }
+.nav-overlay { display: none; }
+@media (max-width: 900px) {
+  .nav-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; flex: 0 0 auto;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface); color: var(--text); cursor: pointer;
+  }
+  .nav-toggle svg { width: 20px; height: 20px; }
+  /* Sidebar off-canvas (fixed → sai do fluxo, não empilha mais acima do conteúdo) */
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 60;
+    width: min(280px, 84vw); height: 100dvh;
+    flex-direction: column; flex-wrap: nowrap;
+    transform: translateX(-100%); transition: transform 0.22s ease;
+    overflow-y: auto;
+  }
+  :root.sf-nav-open .sidebar { transform: translateX(0); box-shadow: 0 0 60px rgba(0, 0, 0, 0.55); }
+  :root.sf-nav-open .nav-overlay {
+    display: block; position: fixed; inset: 0; z-index: 55; background: rgba(0, 0, 0, 0.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar { transition: none; }
+}

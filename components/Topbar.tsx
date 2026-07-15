@@ -1,3 +1,5 @@
+import { NavToggle } from '@/components/NavToggle';
+
 export function Topbar({
   title,
   sub,
@@ -11,6 +13,7 @@ export function Topbar({
 }) {
   return (
     <div className="topbar">
+      <NavToggle />
       <h1>{title}</h1>
       {sub && <span className="sub">· {sub}</span>}
       <div style={{ flex: 1 }} />
