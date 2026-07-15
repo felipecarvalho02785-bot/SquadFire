@@ -17,6 +17,7 @@ import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
 import { getBrigada } from '@/lib/data/brigada';
 import { iniciais } from '@/lib/format';
 import { diasDesdeBRT } from '@/lib/datas';
+import { sincronizarCriaSeVelho } from '@/lib/clickup/espelho';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,10 @@ function fmtData(d: string | null): string {
 
 export default async function CriaDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  // Pull-on-view: reflete no CRM o que mudou nessa task do ClickUp (semana, fase,
+  // status, início) se o espelho dessa Cria estiver velho (> 1min). Throttled e
+  // resiliente — nunca derruba a página; recalcula o em_risco junto.
+  await sincronizarCriaSeVelho(id, { maxIdadeMs: 60_000 });
   const det = await getCriaDetalhe(id);
   if (!det) notFound();
   const [comentarios, brigada] = await Promise.all([getComentarios(id), getBrigada()]);
