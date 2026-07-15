@@ -1087,3 +1087,75 @@ button.cal-cell:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(-
   outline-offset: 1px;
   border-color: var(--plasma);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Carteira de Crias — linha-cartão com faixa de saúde + progresso da Forja
+   (substitui a tabela; mesma linguagem de vida do resto do app)
+   ═══════════════════════════════════════════════════════════════ */
+.cart-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.cart-sort { margin-left: auto; max-width: 190px; }
+
+.carteira { display: flex; flex-direction: column; gap: 10px; }
+
+.crow {
+  position: relative; display: flex; align-items: center; gap: 14px;
+  padding: 13px 16px 13px 20px;
+  background: linear-gradient(158deg,
+    color-mix(in srgb, var(--surface-2) 55%, transparent),
+    color-mix(in srgb, var(--surface) 30%, transparent));
+  border: 1px solid var(--border); border-radius: var(--radius);
+  text-decoration: none; color: inherit; overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.crow.k-good { --kc: var(--ember); }
+.crow.k-crit { --kc: var(--risk); }
+.crow.k-warn { --kc: var(--warn); }
+.crow.k-dim  { --kc: var(--faint); }
+.crow-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--kc); }
+.crow:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--kc) 45%, var(--border));
+  box-shadow: 0 16px 34px -20px rgba(0, 0, 0, 0.9), 0 0 0 1px color-mix(in srgb, var(--kc) 16%, transparent);
+}
+.crow:focus-visible { outline: 2px solid var(--plasma); outline-offset: 2px; }
+
+.crow-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.crow-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.crow-nome { font-family: var(--display); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.crow-fase {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em; color: var(--kc);
+  border: 1px solid color-mix(in srgb, var(--kc) 35%, transparent);
+  background: color-mix(in srgb, var(--kc) 10%, transparent);
+  padding: 1px 8px; border-radius: 999px; white-space: nowrap;
+}
+.crow-sub { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crow-prog { display: flex; gap: 3px; margin-top: 3px; max-width: 230px; }
+.cseg { flex: 1 1 0; height: 4px; border-radius: 2px; background: color-mix(in srgb, var(--border) 85%, transparent); }
+.cseg.on { background: var(--kc); }
+
+.crow-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: 0 0 auto; }
+.crow-inv { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.crow-chev { flex: 0 0 auto; color: var(--faint); font-size: 17px; transition: transform 0.16s ease, color 0.16s ease; }
+.crow:hover .crow-chev { color: var(--kc); transform: translateX(3px); }
+
+@media (max-width: 560px) {
+  .crow-right { align-items: flex-start; }
+  .crow-chev { display: none; }
+  .cart-sort { margin-left: 0; max-width: none; flex: 1 1 100%; }
+}
+
+/* Vida: reveal em cascata dos cartões, preenchimento do progresso e pulso na
+   faixa de quem está "Apagando" (chama atenção pro risco). Tudo gateado. */
+@media (prefers-reduced-motion: no-preference) {
+  .sf-reveal { animation: sf-reveal 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+  @keyframes sf-reveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .cseg.on { transform-box: fill-box; transform-origin: left; animation: sf-seg 0.5s ease-out both; animation-delay: calc(var(--s, 0) * 55ms + 160ms); }
+  @keyframes sf-seg { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .crow.k-crit .crow-stripe { animation: crow-pulse 1.9s ease-in-out infinite; }
+  @keyframes crow-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 9px 0 color-mix(in srgb, var(--risk) 55%, transparent); }
+    50% { opacity: 0.5; box-shadow: none; }
+  }
+}
+:root.no-anim .sf-reveal, :root.no-anim .cseg.on, :root.no-anim .crow.k-crit .crow-stripe { animation: none; }
