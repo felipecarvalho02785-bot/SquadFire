@@ -846,7 +846,10 @@ button.cal-cell:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(-
   --bg: #f4efe9; --bg-2: #ffffff; --surface: #ffffff; --surface-2: #f5efe9; --inset: #ece4db; --panel: #ffffff; --panel-2: #f5efe9;
   --border: #e6ddd2; --border-2: #d9ccbe; --line: #e6ddd2; --line-2: #d9ccbe; --grid: #e7ded4;
   --text: #211814; --ink: #211814; --ink-2: #4a3f38; --muted: #6e6157; --faint: #9c8e83;
-  --ember: #e1560b; --ember-hi: #ff8636; --ember-deep: #bf430a; --ember-soft: rgba(225, 86, 11, 0.12);
+  /* --ember-hi no claro é usado como TEXTO (selos "Em Chamas", badges, KPIs) —
+     #ff8636 dava contraste ~1.8:1 sobre fundo claro. Escurece pra ficar legível
+     (também deixa os gradientes um tom mais fundo, o que fica bem no claro). */
+  --ember: #e1560b; --ember-hi: #c2410c; --ember-deep: #bf430a; --ember-soft: rgba(225, 86, 11, 0.12);
   --plasma: #0c8ca6; --plasma-hi: #33b3cb; --plasma-soft: rgba(12, 140, 166, 0.12);
   --ok: #1a9e63; --warn: #b37d08; --risk: #d22b38;
 }
@@ -1027,3 +1030,18 @@ button.cal-cell:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(-
 .sino-dot.warn { background: var(--warn); }
 .sino-main .t { font-size: 13px; font-weight: 600; line-height: 1.3; }
 .sino-main .s { font-size: 11.5px; color: var(--muted); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Ajustes de responsividade (panorama de auditoria · M18 / B4)
+   ═══════════════════════════════════════════════════════════════ */
+/* Topbar não estoura no celular: quebra em linha e a busca encolhe em vez de
+   forçar scroll horizontal na página. */
+@media (max-width: 560px) {
+  .topbar { flex-wrap: wrap; row-gap: 8px; }
+  .topbar .tsearch, .topbar .cria-search, .tsearch, .cria-search { min-width: 0; flex: 1 1 140px; }
+}
+/* Botão "minimizar barra" (trilho) não faz nada no mobile (a media query anula o
+   modo trilho) — some pra não confundir. */
+@media (max-width: 900px) {
+  .rail-toggle { display: none; }
+}

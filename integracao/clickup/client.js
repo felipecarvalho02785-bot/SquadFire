@@ -29,9 +29,17 @@ async function cuFetch(path, { method = 'GET', query, body } = {}) {
         body: body ? JSON.stringify(body) : undefined,
         signal: ctrl.signal,
       });
-    } finally {
+    } catch (err) {
       clearTimeout(timer);
+      // Erro de rede/timeout (AbortError, ECONNRESET) — retenta como 429/5xx em
+      // vez de abortar o sync inteiro num blip transitório.
+      if (i < 3) {
+        await new Promise((r) => setTimeout(r, 500 * (i + 1) + Math.floor(Math.random() * 400)));
+        continue;
+      }
+      throw err;
     }
+    clearTimeout(timer);
 
     if ((res.status === 429 || res.status >= 500) && i < 3) {
       const ra = Number(res.headers.get('retry-after'));
@@ -115,8 +123,19 @@ export async function getTaskComments(taskId) {
 // Authorization junto. Por isso tentamos primeiro SEM header (presigned); só se
 // falhar caímos pro token (caso seja um endpoint da API que exige auth).
 export async function baixarAnexoUrl(url) {
-  let res = await fetch(url);
-  if (!res.ok) res = await fetch(url, { headers: { Authorization: getClickUpToken() } });
+  // Timeout por tentativa — um S3 lento não pode pendurar o lote "Puxar todos"
+  // (teto de 60s) num único arquivo.
+  const comTimeout = async (init) => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      return await fetch(url, { ...init, signal: ctrl.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+  let res = await comTimeout();
+  if (!res.ok) res = await comTimeout({ headers: { Authorization: getClickUpToken() } });
   if (!res.ok) throw new Error(`download do anexo falhou → ${res.status}`);
   return Buffer.from(await res.arrayBuffer());
 }

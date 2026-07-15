@@ -113,13 +113,13 @@ export function Sidebar({
             {g.itens.filter((n) => !n.admin || membro?.is_admin).map((n) => {
               const active = path === n.href || path.startsWith(n.href + '/');
               return (
-                // prefetch: força o prefetch COMPLETO (dados + esqueleto) das
-                // rotas dinâmicas. Sem isso, o Next só pré-carrega o loading.tsx
-                // e a 1ª visita ainda busca os dados no clique. Com prefetch +
-                // staleTimes (60s), o menu inteiro fica quente e o PRIMEIRO clique
-                // em qualquer aba abre na hora. As chamadas lentas (ex.: Google
-                // Agenda) ficam atrás de <Suspense>, então não travam o prefetch.
-                <Link key={n.href} href={n.href} prefetch className={active ? 'active' : ''} title={n.label}>
+                // prefetch DEFAULT (sem forçar): em rota dinâmica o Next pré-carrega
+                // só o loading.tsx — clique abre com esqueleto na hora, e o cache do
+                // roteador (staleTimes) deixa a RE-navegação instantânea. Forçar o
+                // prefetch completo renderizava TODAS as abas no servidor em segundo
+                // plano (custo no Hobby) e disparava o pull-on-view/escritas para
+                // abas que ninguém abriu — o sync agora só roda na navegação real.
+                <Link key={n.href} href={n.href} className={active ? 'active' : ''} title={n.label}>
 
                   <span className="ic">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">

@@ -61,7 +61,7 @@ export function FaiscaPageChat() {
                   borderRadius: 12,
                   whiteSpace: 'pre-wrap',
                   lineHeight: 1.5,
-                  background: m.role === 'user' ? 'color-mix(in srgb, var(--ember-hi, #f2760c) 16%, transparent)' : 'color-mix(in srgb, var(--fg, #fff) 6%, transparent)',
+                  background: m.role === 'user' ? 'color-mix(in srgb, var(--ember-hi, #f2760c) 16%, transparent)' : 'color-mix(in srgb, var(--text, #888) 8%, transparent)',
                 }}
               >
                 {m.content}
