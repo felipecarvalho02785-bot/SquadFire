@@ -5,6 +5,7 @@ import { AvancarFaseBtn } from '@/components/AvancarFaseBtn';
 import { ComentarioForm } from '@/components/ComentarioForm';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { CriaTabs, type TabDef } from '@/components/CriaTabs';
+import { Topbar } from '@/components/Topbar';
 import { EditInvestimento } from '@/components/EditInvestimento';
 import { EditInicioForja } from '@/components/EditInicioForja';
 import { GargalosPanel } from '@/components/GargalosPanel';
@@ -204,6 +205,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
 
   return (
     <div className="main">
+      <Topbar title={cria.nome_cliente} sub="Forja · Squad 08" />
       <div className="content grid detalhe-wrap">
         <Link className="back" href="/crias">‹ Voltar pra Crias</Link>
 

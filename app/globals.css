@@ -1159,3 +1159,29 @@ button.cal-cell:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(-
   }
 }
 :root.no-anim .sf-reveal, :root.no-anim .cseg.on, :root.no-anim .crow.k-crit .crow-stripe { animation: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Faísca de recompensa — brasas ao concluir Lenha / avançar fase
+   (100% decorativo; some sob reduced-motion / toggle no-anim)
+   ═══════════════════════════════════════════════════════════════ */
+.chk { position: relative; }
+.spark { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .spark { display: block; position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+  .spark::before {
+    content: ''; position: absolute; left: 50%; top: 50%; width: 22px; height: 22px;
+    margin: -11px 0 0 -11px; border-radius: 50%; border: 2px solid var(--ember);
+    animation: spark-ring 0.6s ease-out forwards;
+  }
+  @keyframes spark-ring { 0% { opacity: 0.85; transform: scale(0.35); } 100% { opacity: 0; transform: scale(1.5); } }
+  .spark i {
+    position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px;
+    border-radius: 50%; background: var(--ember-hi); box-shadow: 0 0 6px var(--ember);
+    animation: spark-fly 0.72s cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+  }
+  @keyframes spark-fly {
+    0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1); }
+    100% { opacity: 0; transform: rotate(var(--a)) translateY(-20px) scale(0.3); }
+  }
+}
+:root.no-anim .spark { display: none; }

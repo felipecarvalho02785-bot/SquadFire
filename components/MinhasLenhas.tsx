@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toggleLenha } from '@/lib/actions';
+import { Spark } from '@/components/Spark';
 import type { LenhaRow } from '@/lib/data/meudia';
 
 // "Minhas Lenhas de hoje" com checkbox de verdade: concluir/reabrir reflete
@@ -11,6 +12,7 @@ export function MinhasLenhas({ lenhas: initial }: { lenhas: LenhaRow[] }) {
   const router = useRouter();
   const [lenhas, setLenhas] = useState<LenhaRow[]>(initial);
   const [erro, setErro] = useState<string | null>(null);
+  const [spark, setSpark] = useState<string | null>(null);
   const [, start] = useTransition();
 
   // re-sincroniza quando o servidor revalida
@@ -21,6 +23,7 @@ export function MinhasLenhas({ lenhas: initial }: { lenhas: LenhaRow[] }) {
     setErro(null);
     let novo = false;
     setLenhas((ls) => ls.map((l) => (l.id === id ? ((novo = !l.done), { ...l, done: novo }) : l)));
+    if (novo) { setSpark(id); setTimeout(() => setSpark((s) => (s === id ? null : s)), 720); } // faísca ao concluir
     start(async () => {
       const res = await toggleLenha(id, novo);
       if (!res.ok) {
@@ -50,6 +53,7 @@ export function MinhasLenhas({ lenhas: initial }: { lenhas: LenhaRow[] }) {
               aria-label={l.done ? 'Reabrir Lenha' : 'Concluir Lenha'}
             >
               {l.done ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg> : null}
+              {spark === l.id && <Spark />}
             </button>
             <div className="rmain">
               <div className="t" style={{ textDecoration: l.done ? 'line-through' : 'none', color: l.done ? 'var(--muted)' : undefined }}>{l.titulo}</div>
