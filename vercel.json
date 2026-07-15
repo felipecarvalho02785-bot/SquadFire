@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "comment": "Vercel Cron roda em UTC. 12:00/12:30 UTC = 09:00/09:30 em Brasília (BRT, UTC-3).",
   "crons": [
     {
       "path": "/api/clickup/sync",
