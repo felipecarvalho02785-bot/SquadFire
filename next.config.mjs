@@ -10,10 +10,11 @@ const nextConfig = {
     // usuários): páginas dinâmicas já visitadas ficam reutilizáveis por N
     // segundos, então RE-NAVEGAR entre abas é instantâneo (zero ida ao
     // servidor). Mutações (server actions com revalidatePath) invalidam o
-    // cache normalmente — o dado não fica preso; no máximo fica alguns segundos
-    // "atrasado" ao voltar numa aba sem ter editado nada.
+    // cache normalmente. `dynamic` curto (20s) porque as telas espelham fonte
+    // externa (ClickUp/Google): acima disso, mudança feita por outro membro ou
+    // pelo webhook ficaria escondida ao voltar numa aba sem ter editado nada.
     staleTimes: {
-      dynamic: 60,
+      dynamic: 20,
       static: 300,
     },
   },

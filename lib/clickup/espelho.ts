@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
+import { hojeBRT } from '@/lib/datas';
 import { syncCrias, mapTaskToCria } from '@/integracao/clickup/sync-crias.js';
 import { getTask } from '@/integracao/clickup/client.js';
 
@@ -58,11 +59,35 @@ async function aplicarEmLotes(admin: Admin, crias: CriaSync[], limite = 8): Prom
   return ok;
 }
 
-// Recalcula o em_risco (SLA de fase vencida) — no plano Hobby não sobra slot de
-// cron pra isso, então o sync é quem mantém o flag em dia. Idempotente.
+// Recalcula o em_risco (SLA de fase vencida) de TODAS as Crias — no plano Hobby
+// não sobra slot de cron pra isso, então o sync da lista é quem mantém o flag em
+// dia. Idempotente. Usado no cron, no webhook e no pull-on-view da LISTA.
 export async function recalcularRisco(admin: Admin): Promise<void> {
   try {
     await admin.rpc('recalcular_em_risco');
+  } catch {
+    /* best-effort */
+  }
+}
+
+// Recalcula o em_risco de UMA Cria só (mesma regra da RPC global, no fuso BRT).
+// Abrir a página de uma Cria não deve disparar um UPDATE na tabela inteira.
+async function recalcularRiscoDaCria(admin: Admin, criaId: string): Promise<void> {
+  try {
+    const { data: forja } = await admin.from('forja').select('id').eq('cria_id', criaId).maybeSingle();
+    const fid = (forja as { id: string } | null)?.id;
+    if (!fid) return;
+    const { data: fases } = await admin
+      .from('fase_da_forja')
+      .select('data_prevista_fim')
+      .eq('forja_id', fid)
+      .neq('status', 'concluida');
+    const hoje = hojeBRT();
+    // em risco = alguma fase não-concluída com prazo ESTRITAMENTE antes de hoje.
+    const emRisco = ((fases as { data_prevista_fim: string | null }[]) ?? []).some(
+      (f) => !!f.data_prevista_fim && f.data_prevista_fim < hoje,
+    );
+    await admin.from('cria').update({ em_risco: emRisco }).eq('id', criaId);
   } catch {
     /* best-effort */
   }
@@ -101,9 +126,19 @@ export async function sincronizarEspelhoSeVelho(
       return { status: 'pulado' };
     }
     ultimoSyncListaMs = Date.now(); // trava otimista (mesmo em erro, não re-tenta na janela)
-    const { crias } = (await syncCrias({ includeClosed: true })) as { crias: CriaSync[] };
-    const upserts = await aplicarEmLotes(admin, crias);
-    await recalcularRisco(admin);
+    // Deadline: o sync roda dentro do render (streamado) — se o ClickUp estiver
+    // lento/em 429, não deixa a lista de Crias pendurar. Estoura → cai no catch,
+    // a página mostra o espelho atual e o próximo acesso tenta de novo.
+    const trabalho = (async () => {
+      const { crias } = (await syncCrias({ includeClosed: true })) as { crias: CriaSync[] };
+      const n = await aplicarEmLotes(admin, crias);
+      await recalcularRisco(admin);
+      return n;
+    })();
+    const upserts = (await Promise.race([
+      trabalho,
+      new Promise<number>((_, rej) => setTimeout(() => rej(new Error('deadline')), 15_000)),
+    ])) as number;
     return { status: 'ok', upserts };
   } catch {
     return { status: 'erro' };
@@ -126,7 +161,7 @@ export async function sincronizarCriaSeVelho(
     if (idade < maxIdadeMs) return { status: 'pulado' };
     const task = await getTask(row.clickup_task_id);
     await aplicarCriaNoBanco(admin, mapTaskToCria(task) as CriaSync);
-    await recalcularRisco(admin);
+    await recalcularRiscoDaCria(admin, criaId); // só esta Cria, não a tabela toda
     return { status: 'ok' };
   } catch {
     return { status: 'erro' };

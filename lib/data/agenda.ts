@@ -4,14 +4,20 @@ import { hojeBRT, diasDesdeBRT } from '@/lib/datas';
 
 // Materializa as Lenhas de Rotina de hoje (idempotente) — pra os rituais
 // aparecerem como tarefas de verdade mesmo antes do cron diário rodar.
+// Throttle em memória por instância: a RPC é idempotente, mas rodava a CADA
+// render do Meu Dia; guardar a data já materializada evita a escrita repetida.
+let rituaisMaterializados = '';
 export async function garantirRituaisHoje(): Promise<void> {
   if (!isSupabaseConfigured) return;
+  const hoje = hojeBRT();
+  if (rituaisMaterializados === hoje) return; // já gerou hoje nesta instância
+  rituaisMaterializados = hoje;
   try {
     // Gera com a data de HOJE em Brasília — o Meu Dia filtra por hojeBRT(); se
     // gerasse com current_date (UTC), à noite a Lenha ficava "amanhã" e sumia.
-    await getSupabaseAdmin().rpc('gerar_lenhas_do_dia', { p_data: hojeBRT() });
+    await getSupabaseAdmin().rpc('gerar_lenhas_do_dia', { p_data: hoje });
   } catch {
-    /* sem service_role ou falha — o cron diário cobre de qualquer forma */
+    rituaisMaterializados = ''; // falhou — permite nova tentativa no próximo render
   }
 }
 
