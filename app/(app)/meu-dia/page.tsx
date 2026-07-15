@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
 import { MinhasLenhas } from '@/components/MinhasLenhas';
@@ -6,6 +7,7 @@ import { getCurrentMembro } from '@/lib/auth';
 import { getMeuDiaDashboard } from '@/lib/data/meudia';
 import { getAlertas } from '@/lib/data/alertas';
 import { garantirRituaisHoje } from '@/lib/data/agenda';
+import { AgendaHojeStream } from '@/components/AgendaHojeStream';
 import { isSupabaseConfigured } from '@/lib/env';
 import { horaBRT } from '@/lib/datas';
 
@@ -15,8 +17,6 @@ function saudacao(): string {
   const h = horaBRT();
   return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
 }
-
-const tagKind: Record<string, string> = { cliente: 'ember', roda: 'ok', interna: 'dim' };
 
 export default async function MeuDiaPage() {
   await garantirRituaisHoje(); // materializa os rituais do dia (idempotente)
@@ -104,19 +104,9 @@ export default async function MeuDiaPage() {
 
           <div className="card">
             <div className="c-h"><span className="t">Agenda de hoje</span><span className="s">Google Agenda</span></div>
-            {d.agenda.length === 0 ? (
-              <div className="s" style={{ color: 'var(--muted)' }}>Sem reuniões no Google Agenda hoje. Conecte em Configurações se ainda não conectou — as Rodas de Fogo agendadas aparecem aqui.</div>
-            ) : (
-              <div className="list agn">
-                {d.agenda.map((a, i) => (
-                  <div className="lrow" key={i}>
-                    <span className="time">{a.hora}</span>
-                    <div className="rmain"><div className="t">{a.titulo}</div></div>
-                    <span className={`badge ${tagKind[a.kind] ?? 'dim'}`}>{a.tag}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <Suspense fallback={<div className="s" style={{ color: 'var(--muted)' }}>carregando agenda…</div>}>
+              <AgendaHojeStream membroId={membro?.id ?? null} />
+            </Suspense>
           </div>
         </div>
 

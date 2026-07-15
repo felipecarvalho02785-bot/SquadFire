@@ -167,24 +167,9 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
     href: `/crias/${c.id}/roda`,
   }));
 
-  // Agenda de hoje: reuniões do Google Agenda do membro (inclui as Rodas de
-  // Fogo agendadas). Só aparece se ele conectou o Google.
+  // Agenda de hoje é buscada à PARTE (streaming) — depende do Google Agenda
+  // (chamada externa) e não pode travar o resto do dashboard. Ver getAgendaHoje.
   const agenda: AgendaItem[] = [];
-  const g = await statusGoogle(membro.id);
-  if (g.conectado) {
-    // Janela = o dia de hoje em Brasília (não o dia UTC do servidor, senão os
-    // eventos da noite vazam pro "amanhã" e somem da lista).
-    const { ini, fim } = limitesDoDiaBRT();
-    for (const ev of await listarEventos(membro.id, ini, fim)) {
-      const t = ev.titulo.toLowerCase();
-      const kind: AgendaItem['kind'] = /roda de fogo/.test(t) ? 'roda' : /daily|weekly|alinhamento|squad|interna/.test(t) ? 'interna' : 'cliente';
-      // Horário no fuso de Brasília (o servidor da Vercel roda em UTC — sem isso
-      // os horários saíam +3h). É o horário local da squad.
-      const hora = ev.allDay || !ev.inicio ? 'dia' : new Date(ev.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
-      agenda.push({ hora, titulo: ev.titulo, tag: kind === 'roda' ? 'Roda' : kind === 'interna' ? 'Interna' : 'Cliente', kind });
-    }
-    agenda.sort((a, b) => a.hora.localeCompare(b.hora));
-  }
 
   return {
     demo: false,
@@ -202,4 +187,22 @@ export async function getMeuDiaDashboard(membro: { id: string; nome: string; pap
     briefings: briefingsList,
     rituais,
   };
+}
+
+// Agenda de hoje (Google Agenda) — buscada à parte pra STREAMAR no Meu Dia sem
+// travar o resto da página na chamada externa (que pode demorar).
+export async function getAgendaHoje(membroId: string): Promise<AgendaItem[]> {
+  if (!isSupabaseConfigured) return [];
+  const g = await statusGoogle(membroId);
+  if (!g.conectado) return [];
+  const agenda: AgendaItem[] = [];
+  const { ini, fim } = limitesDoDiaBRT();
+  for (const ev of await listarEventos(membroId, ini, fim)) {
+    const t = ev.titulo.toLowerCase();
+    const kind: AgendaItem['kind'] = /roda de fogo/.test(t) ? 'roda' : /daily|weekly|alinhamento|squad|interna/.test(t) ? 'interna' : 'cliente';
+    const hora = ev.allDay || !ev.inicio ? 'dia' : new Date(ev.inicio).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+    agenda.push({ hora, titulo: ev.titulo, tag: kind === 'roda' ? 'Roda' : kind === 'interna' ? 'Interna' : 'Cliente', kind });
+  }
+  agenda.sort((a, b) => a.hora.localeCompare(b.hora));
+  return agenda;
 }
