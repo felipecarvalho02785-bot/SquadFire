@@ -10,6 +10,7 @@ export interface BiblioItem {
   id: string; titulo: string; tipo: 'roteiro' | 'criativo'; conteudo: string | null;
   arquivoUrl: string | null; arquivoNome: string | null;
   criaId: string | null; criaNome: string | null; autorId: string | null; criadoEm: string;
+  fonte: 'app' | 'drive'; tema: string | null; thumbUrl: string | null; mimeType: string | null;
 }
 interface CriaOpt { id: string; nome: string }
 
@@ -20,9 +21,15 @@ const FILTROS: { key: Filtro; label: string }[] = [
   { key: 'criativo', label: 'Criativos' },
 ];
 
-export function BibliotecaClient({ itens, crias, meuId }: { itens: BiblioItem[]; crias: CriaOpt[]; meuId: string | null }) {
+export function BibliotecaClient({
+  itens, crias, meuId, temas = [], driveConfigurado = false, driveErro = null, driveTruncado = false, ehAdmin = false,
+}: {
+  itens: BiblioItem[]; crias: CriaOpt[]; meuId: string | null;
+  temas?: string[]; driveConfigurado?: boolean; driveErro?: string | null; driveTruncado?: boolean; ehAdmin?: boolean;
+}) {
   const router = useRouter();
   const [filtro, setFiltro] = useState<Filtro>('todos');
+  const [temaSel, setTemaSel] = useState('');
   const [abrir, setAbrir] = useState(false);
 
   // formulário
@@ -35,7 +42,7 @@ export function BibliotecaClient({ itens, crias, meuId }: { itens: BiblioItem[];
   const [erro, setErro] = useState<string | null>(null);
   const [copiado, setCopiado] = useState<string | null>(null);
 
-  const vis = itens.filter((it) => filtro === 'todos' || it.tipo === filtro);
+  const vis = itens.filter((it) => (filtro === 'todos' || it.tipo === filtro) && (temaSel === '' || it.tema === temaSel));
 
   function limpar() { setTitulo(''); setConteudo(''); setArquivo(null); setCriaId(''); setErro(null); }
 
@@ -84,10 +91,35 @@ export function BibliotecaClient({ itens, crias, meuId }: { itens: BiblioItem[];
             <button key={f.key} type="button" className={filtro === f.key ? 'on' : ''} onClick={() => setFiltro(f.key)}>{f.label}</button>
           ))}
         </div>
+        {temas.length > 0 && (
+          <select className="selin" value={temaSel} onChange={(e) => setTemaSel(e.target.value)} style={{ maxWidth: 220 }} aria-label="Filtrar por tema">
+            <option value="">Todos os temas</option>
+            {temas.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        )}
         <button type="button" className="btn primary" style={{ marginLeft: 'auto' }} onClick={() => setAbrir((v) => !v)}>
           {abrir ? 'Fechar' : '+ Adicionar ao acervo'}
         </button>
       </div>
+
+      {/* Avisos de status do Drive (discretos) */}
+      {driveErro && (
+        <div className="card" style={{ marginBottom: 12 }}>
+          <div className="s" style={{ color: 'var(--muted)' }}>Google Drive: {driveErro} — mostrando o resto do acervo.</div>
+        </div>
+      )}
+      {driveTruncado && (
+        <div className="card" style={{ marginBottom: 12 }}>
+          <div className="s" style={{ color: 'var(--muted)' }}>Acervo grande no Drive — mostrando os primeiros itens.</div>
+        </div>
+      )}
+      {!driveConfigurado && ehAdmin && (
+        <div className="card" style={{ marginBottom: 12 }}>
+          <div className="s" style={{ color: 'var(--muted)' }}>
+            O Google Drive ainda não está conectado. Conecte a pasta compartilhada para o acervo aparecer aqui (veja <code>docs/biblioteca-drive.md</code>).
+          </div>
+        </div>
+      )}
 
       {abrir && (
         <div className="card" style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -111,19 +143,26 @@ export function BibliotecaClient({ itens, crias, meuId }: { itens: BiblioItem[];
       )}
 
       {vis.length === 0 ? (
-        <div className="card"><div className="s" style={{ color: 'var(--muted)' }}>Acervo vazio neste filtro — adicione o primeiro item.</div></div>
+        <div className="card"><div className="s" style={{ color: 'var(--muted)' }}>Acervo vazio neste filtro — adicione o primeiro item ou conecte o Drive.</div></div>
       ) : (
         <div className="grid cols-3">
           {vis.map((it) => (
             <div className="card" key={it.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {it.thumbUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={it.thumbUrl} alt={it.titulo} loading="lazy" style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 8, background: 'var(--panel-2, rgba(255,255,255,.03))' }} />
+              )}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span className={`ttag ${it.tipo === 'roteiro' ? 'forja' : 'rotina'}`}>{it.tipo === 'roteiro' ? 'Roteiro' : 'Criativo'}</span>
-                {it.autorId && it.autorId === meuId && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span className={`ttag ${it.tipo === 'roteiro' ? 'forja' : 'rotina'}`}>{it.tipo === 'roteiro' ? 'Roteiro' : 'Criativo'}</span>
+                  {it.fonte === 'drive' && <span className="badge dim" title="Do Google Drive">Drive</span>}
+                </div>
+                {it.fonte === 'app' && it.autorId && it.autorId === meuId && (
                   <button type="button" className="btn" title="Remover" onClick={() => excluir(it.id)} style={{ padding: '2px 8px', fontSize: 12 }}>×</button>
                 )}
               </div>
-              <div className="t" style={{ fontSize: 14 }}>{it.titulo}</div>
-              {it.criaNome && <div className="s" style={{ color: 'var(--muted)' }}>{it.criaNome}</div>}
+              <div className="t" style={{ fontSize: 14, wordBreak: 'break-word' }}>{it.titulo}</div>
+              {(it.criaNome || it.tema) && <div className="s" style={{ color: 'var(--muted)' }}>{it.criaNome ?? it.tema}</div>}
               {it.tipo === 'roteiro' && it.conteudo && (
                 <>
                   <div className="s" style={{ color: 'var(--faint)', whiteSpace: 'pre-wrap', maxHeight: 96, overflow: 'hidden' }}>{it.conteudo}</div>
@@ -132,8 +171,10 @@ export function BibliotecaClient({ itens, crias, meuId }: { itens: BiblioItem[];
                   </button>
                 </>
               )}
-              {it.tipo === 'criativo' && it.arquivoUrl && (
-                <a className="btn" href={it.arquivoUrl} target="_blank" rel="noreferrer" style={{ alignSelf: 'flex-start', padding: '3px 10px', fontSize: 12 }}>Abrir {it.arquivoNome || 'arquivo'} ↗</a>
+              {it.arquivoUrl && (
+                <a className="btn" href={it.arquivoUrl} target="_blank" rel="noreferrer" style={{ alignSelf: 'flex-start', padding: '3px 10px', fontSize: 12 }}>
+                  {it.fonte === 'drive' ? 'Abrir no Drive ↗' : `Abrir ${it.arquivoNome || 'arquivo'} ↗`}
+                </a>
               )}
             </div>
           ))}
