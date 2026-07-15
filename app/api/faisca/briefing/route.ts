@@ -52,6 +52,11 @@ export async function POST(request: Request) {
     if (!audioPath) {
       return NextResponse.json({ error: 'audioPath ou transcript obrigatório' }, { status: 400 });
     }
+    // Guarda de caminho: nada de path traversal / caminho absoluto (o áudio é
+    // baixado via service_role, que ignora RLS).
+    if (audioPath.includes('..') || audioPath.startsWith('/')) {
+      return NextResponse.json({ error: 'caminho de áudio inválido' }, { status: 400 });
+    }
     if (!transcricaoConfigurada()) {
       return NextResponse.json(
         { error: 'transcrição não configurada (defina GOOGLE_GENERATIVE_AI_API_KEY)' },

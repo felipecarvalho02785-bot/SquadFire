@@ -5,11 +5,16 @@
 -- não no Postgres puro do CI. Aplique este arquivo no SQL Editor (ou psql)
 -- depois das migrations. Buckets privados; acesso restrito a membros da squad.
 
-insert into storage.buckets (id, name, public) values
-  ('contratos',   'contratos',   false),
-  ('briefings',   'briefings',   false),
-  ('entregaveis', 'entregaveis', false)
-on conflict (id) do nothing;
+-- Buckets privados com TETO de tamanho e MIME por tipo (o upload é gateado só
+-- por app.is_membro; sem isto um membro poderia subir arquivo gigante/qualquer).
+-- contratos = PDF; briefings = áudio; entregaveis = criativos (imagem/vídeo/pdf).
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types) values
+  ('contratos',   'contratos',   false, 26214400,  array['application/pdf']),
+  ('briefings',   'briefings',   false, 26214400,  array['audio/webm','audio/mpeg','audio/mp4','audio/ogg','audio/wav','audio/x-m4a','audio/aac']),
+  ('entregaveis', 'entregaveis', false, 52428800,  array['image/png','image/jpeg','image/webp','image/gif','video/mp4','video/quicktime','application/pdf'])
+on conflict (id) do update
+  set file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
 
 -- Membros ativos da squad leem/gravam nos buckets internos (usa app.is_membro,
 -- criado nas migrations). O service_role (server-side) bypassa isto.

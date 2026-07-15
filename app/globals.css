@@ -1077,3 +1077,13 @@ button.cal-cell:hover { border-color: color-mix(in srgb, var(--ember) 40%, var(-
 @media (prefers-reduced-motion: reduce) {
   .sidebar { transition: none; }
 }
+
+/* Foco de teclado visível nos campos que zeravam o outline (a11y · panorama) */
+.cria-search input:focus-visible,
+.fa-composer textarea:focus-visible,
+.roda-nota:focus-visible,
+.fd-input input:focus-visible {
+  outline: 2px solid var(--plasma);
+  outline-offset: 1px;
+  border-color: var(--plasma);
+}
