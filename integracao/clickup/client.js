@@ -76,7 +76,12 @@ export async function getTasksListaMestre({ includeClosed = true } = {}) {
     all.push(...tasks);
     if (data.last_page || tasks.length === 0) break;
     page += 1;
-    if (page > 50) break; // guarda-chuva contra loop infinito
+    // Teto de páginas (~5000 tasks). Se bater com mais por vir, AVISA — Crias do
+    // Squad 08 em páginas seguintes não sincronizariam em silêncio.
+    if (page > 50) {
+      console.warn(`[clickup] getTasksListaMestre parou no teto de 50 páginas (~${all.length} tasks); pode haver Crias não sincronizadas.`);
+      break;
+    }
   }
   return all;
 }

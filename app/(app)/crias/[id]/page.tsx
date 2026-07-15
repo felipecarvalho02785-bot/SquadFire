@@ -176,7 +176,7 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
           {briefings.map((b) => (
             <details className="card briefcard" key={b.id}>
               <summary>
-                <span className="bc-data">{new Date(b.data).toLocaleDateString('pt-BR')}</span>
+                <span className="bc-data">{new Date(b.data).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</span>
                 <span className="bc-sem">{b.semana ? `semana de ${new Date(b.semana + 'T00:00:00').toLocaleDateString('pt-BR')}` : 'briefing'}</span>
                 <span className={`badge ${b.enviadoClickup ? 'ok' : 'dim'}`}>{b.enviadoClickup ? 'no ClickUp ✓' : 'só no CRM'}</span>
               </summary>

@@ -187,9 +187,11 @@ export async function definirGestorContas(criaId: string, membroId: string | nul
 // Editar o investimento em mídia da Cria (verba de campanha). RLS: Contas,
 // Tráfego ou Admin. Valor null = "a definir".
 export async function atualizarInvestimento(criaId: string, valor: number | null): Promise<ActionResult> {
-  const v = valor != null && (!isFinite(valor) || valor < 0) ? null : valor;
+  // valor inválido é REJEITADO (antes virava null e apagava o investimento por
+  // engano). null explícito = "a definir".
+  if (valor != null && (!Number.isFinite(valor) || valor < 0)) return { ok: false, error: 'informe um valor válido (≥ 0)' };
   const supabase = await getSupabaseServer();
-  const { error } = await supabase.from('cria').update({ investimento_midia: v }).eq('id', criaId);
+  const { error } = await supabase.from('cria').update({ investimento_midia: valor }).eq('id', criaId);
   if (error) return { ok: false, error: error.message };
   revalidatePath('/crias/[id]', 'page');
   revalidatePath('/crias');
