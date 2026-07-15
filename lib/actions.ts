@@ -253,6 +253,48 @@ export async function salvarPreferencias(dados: Record<string, unknown>): Promis
   return { ok: true };
 }
 
+// Adicionar item ao acervo da Biblioteca (roteiro em texto ou criativo com
+// arquivo). Autor = membro logado. RLS: qualquer membro cria.
+export async function criarItemBiblioteca(input: {
+  titulo: string;
+  tipo: 'roteiro' | 'criativo';
+  conteudo?: string | null;
+  arquivoPath?: string | null;
+  arquivoNome?: string | null;
+  criaId?: string | null;
+}): Promise<ActionResult> {
+  const titulo = input.titulo.trim();
+  if (!titulo) return { ok: false, error: 'informe um título' };
+  if (input.tipo !== 'roteiro' && input.tipo !== 'criativo') return { ok: false, error: 'tipo inválido' };
+  if (input.tipo === 'roteiro' && !(input.conteudo ?? '').trim()) return { ok: false, error: 'escreva o roteiro' };
+  if (input.tipo === 'criativo' && !input.arquivoPath) return { ok: false, error: 'anexe o arquivo do criativo' };
+  const membro = await getCurrentMembro();
+  if (!membro) return { ok: false, error: 'membro não identificado' };
+
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.from('biblioteca_item').insert({
+    titulo,
+    tipo: input.tipo,
+    conteudo: input.tipo === 'roteiro' ? (input.conteudo?.trim() || null) : null,
+    arquivo_path: input.tipo === 'criativo' ? (input.arquivoPath || null) : null,
+    arquivo_nome: input.tipo === 'criativo' ? (input.arquivoNome || null) : null,
+    cria_id: input.criaId || null,
+    autor_id: membro.id,
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/biblioteca');
+  return { ok: true };
+}
+
+// Remover item do acervo. RLS: só o autor ou Admin.
+export async function excluirItemBiblioteca(id: string): Promise<ActionResult> {
+  const supabase = await getSupabaseServer();
+  const { error } = await supabase.from('biblioteca_item').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/biblioteca');
+  return { ok: true };
+}
+
 // Exporta os dados do próprio membro (LGPD/portabilidade): perfil, preferências,
 // e as Lenhas/Comentários/Briefings de sua autoria. Só o próprio membro (RLS).
 export async function exportarMeusDados(): Promise<{ ok: boolean; json?: string; error?: string }> {

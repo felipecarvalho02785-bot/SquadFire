@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { iniciais } from '@/lib/format';
 
-type IconKey = 'meu-dia' | 'covil' | 'crias' | 'linha-de-fogo' | 'tarefas' | 'calendario' | 'biblioteca' | 'brigada' | 'forjaria';
+type IconKey = 'meu-dia' | 'covil' | 'crias' | 'linha-de-fogo' | 'tarefas' | 'calendario' | 'biblioteca' | 'brigada' | 'forjaria' | 'auditoria';
 
-const NAV: { grupo: string; itens: { href: string; ic: IconKey; label: string }[] }[] = [
+const NAV: { grupo: string; itens: { href: string; ic: IconKey; label: string; admin?: boolean }[] }[] = [
   {
     grupo: 'Operação',
     itens: [
@@ -24,6 +24,7 @@ const NAV: { grupo: string; itens: { href: string; ic: IconKey; label: string }[
     grupo: 'Gestão',
     itens: [
       { href: '/brigada', ic: 'brigada', label: 'Brigada' },
+      { href: '/auditoria', ic: 'auditoria', label: 'Rastro', admin: true },
       { href: '/forjaria', ic: 'forjaria', label: 'Forjaria' },
     ],
   },
@@ -38,6 +39,7 @@ const ICON: Record<IconKey, React.ReactNode> = {
   calendario: <path d="M4 5h16v16H4zM4 9h16M8 3v4M16 3v4" />,
   biblioteca: <path d="M4 5h6a2 2 0 012 2v13a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v13a2 2 0 012-2h6z" />,
   brigada: <path d="M12 3l7 3v5c0 4.2-2.9 7.7-7 9-4.1-1.3-7-4.8-7-9V6z" />,
+  auditoria: <><path d="M5 3h10l4 4v14H5z" /><path d="M15 3v4h4M9 12h6M9 16h6M9 8h2" /></>,
   forjaria: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" /></>,
 };
 
@@ -108,7 +110,7 @@ export function Sidebar({
         {NAV.map((g) => (
           <div key={g.grupo} style={{ display: 'contents' }}>
             <span className="lbl">{g.grupo}</span>
-            {g.itens.map((n) => {
+            {g.itens.filter((n) => !n.admin || membro?.is_admin).map((n) => {
               const active = path === n.href || path.startsWith(n.href + '/');
               return (
                 <Link key={n.href} href={n.href} className={active ? 'active' : ''} title={n.label}>

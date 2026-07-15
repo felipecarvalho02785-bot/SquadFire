@@ -1712,3 +1712,100 @@ begin
   return new;
 end;
 $$;
+
+-- ┌── supabase/migrations/0031_auditoria.sql
+-- SquadFire · 0031 — Rastro de alterações (auditoria / LGPD)
+-- ─────────────────────────────────────────────────────────────
+-- Trigger genérico grava quem mudou o quê em Cria/Forja/Contrato (ignora colunas
+-- de sistema). Só Admin lê.
+create table auditoria (
+  id           bigint generated always as identity primary key,
+  entidade     text not null,
+  entidade_id  uuid,
+  acao         text not null,
+  membro_email citext,
+  mudou        text[] not null default '{}',
+  dados        jsonb,
+  created_at   timestamptz not null default now()
+);
+create index idx_auditoria_entidade on auditoria(entidade, entidade_id, created_at desc);
+create index idx_auditoria_created on auditoria(created_at desc);
+comment on table auditoria is 'Rastro de alterações (LGPD): quem mudou o quê em Cria/Forja/Contrato. Admin-only.';
+
+create or replace function app.registrar_auditoria()
+returns trigger
+language plpgsql
+security definer set search_path = public, pg_temp
+as $$
+declare
+  v_id      uuid;
+  v_new     jsonb;
+  v_old     jsonb;
+  v_mudou   text[] := '{}';
+  v_dados   jsonb;
+  k         text;
+  v_sistema text[] := array['updated_at', 'sincronizado_em', 'clickup_puxado_em', 'clickup_puxa_tentativas'];
+begin
+  if tg_op = 'DELETE' then
+    v_id := (old).id; v_dados := to_jsonb(old);
+  else
+    v_id := (new).id; v_dados := to_jsonb(new);
+  end if;
+  if tg_op = 'UPDATE' then
+    v_new := to_jsonb(new); v_old := to_jsonb(old);
+    for k in select jsonb_object_keys(v_new) loop
+      if (v_new->k is distinct from v_old->k) and not (k = any(v_sistema)) then
+        v_mudou := array_append(v_mudou, k);
+      end if;
+    end loop;
+    if array_length(v_mudou, 1) is null then return new; end if;
+  end if;
+  insert into auditoria(entidade, entidade_id, acao, membro_email, mudou, dados)
+  values (tg_table_name, v_id, tg_op, app.jwt_email(), v_mudou, v_dados);
+  if tg_op = 'DELETE' then return old; else return new; end if;
+end;
+$$;
+
+create trigger trg_auditoria after insert or update or delete on cria
+  for each row execute function app.registrar_auditoria();
+create trigger trg_auditoria after insert or update or delete on contrato
+  for each row execute function app.registrar_auditoria();
+create trigger trg_auditoria after insert or update or delete on forja
+  for each row execute function app.registrar_auditoria();
+
+alter table auditoria enable row level security;
+create policy p_audit_read on auditoria for select to authenticated using (app.is_admin());
+
+-- ┌── supabase/migrations/0032_biblioteca.sql
+-- SquadFire · 0032 — Biblioteca (acervo real de roteiros e criativos)
+-- ─────────────────────────────────────────────────────────────
+create table biblioteca_item (
+  id           uuid primary key default gen_random_uuid(),
+  cria_id      uuid references cria(id) on delete set null,
+  titulo       text not null,
+  tipo         text not null check (tipo in ('roteiro', 'criativo')),
+  conteudo     text,
+  arquivo_path text,
+  arquivo_nome text,
+  autor_id     uuid references membro(id) on delete set null,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+create index idx_biblioteca_tipo on biblioteca_item(tipo, created_at desc);
+create index idx_biblioteca_cria on biblioteca_item(cria_id);
+comment on table biblioteca_item is 'Acervo de roteiros (texto) e criativos (arquivo) da squad, reutilizável, com vínculo opcional à Cria.';
+
+create trigger trg_biblioteca_updated_at
+  before update on biblioteca_item
+  for each row execute function app.set_updated_at();
+
+alter table biblioteca_item enable row level security;
+create policy p_read on biblioteca_item for select to authenticated
+  using (app.is_membro());
+create policy p_bib_ins on biblioteca_item for insert to authenticated
+  with check (app.is_membro() and autor_id = app.current_membro_id());
+create policy p_bib_upd on biblioteca_item for update to authenticated
+  using (autor_id = app.current_membro_id() or app.is_admin())
+  with check (autor_id = app.current_membro_id() or app.is_admin());
+create policy p_bib_del on biblioteca_item for delete to authenticated
+  using (autor_id = app.current_membro_id() or app.is_admin());
