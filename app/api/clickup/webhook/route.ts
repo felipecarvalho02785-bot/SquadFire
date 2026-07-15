@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { handleWebhook } from '@/integracao/clickup/webhook.js';
+import { aplicarCriaNoBanco, recalcularRisco } from '@/lib/clickup/espelho';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -40,28 +41,13 @@ export async function POST(request: Request) {
 
   if (result.action === 'upsert' && result.cria) {
     const supabase = getSupabaseAdmin();
-    const c = result.cria;
-    const patch: Record<string, unknown> = {
-      clickup_task_id: c.clickup_task_id,
-      nome_cliente: c.nome_cliente,
-      clickup_squad: c.clickup_squad,
-      clickup_semana: c.clickup_semana == null ? null : Math.min(7, Math.max(1, c.clickup_semana)),
-      status: c.status,
-      sincronizado_em: new Date().toISOString(),
-    };
-    for (const k of ['email', 'telefone_whatsapp', 'area_atuacao', 'closer'] as const) {
-      if (c.dados?.[k]) patch[k] = c.dados[k];
+    // Mesmo caminho de gravação do cron/pull-on-view: upsert + cascata
+    // (Data inicial → prazos; Semana → fase) + recálculo do em_risco.
+    const r = await aplicarCriaNoBanco(supabase, result.cria);
+    if (!r.ok) {
+      return NextResponse.json({ ok: false, reason: r.error }, { status: 500 });
     }
-    const { data: up, error } = await supabase.from('cria').upsert(patch, { onConflict: 'clickup_task_id' }).select('id').maybeSingle();
-    if (error) {
-      return NextResponse.json({ ok: false, reason: error.message }, { status: 500 });
-    }
-    const criaId = (up as { id: string } | null)?.id;
-    if (criaId) {
-      // "Data inicial" → início da Forja (cascateia); "Semana" → fase atual.
-      if (c.data_inicio) await supabase.rpc('definir_inicio_forja_sync', { p_cria_id: criaId, p_data: c.data_inicio });
-      if (c.clickup_semana) await supabase.rpc('definir_fase_forja_sync', { p_cria_id: criaId, p_semana: c.clickup_semana });
-    }
+    await recalcularRisco(supabase);
   }
 
   return NextResponse.json(
