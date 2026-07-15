@@ -1,9 +1,9 @@
-import Link from 'next/link';
 import { PuxarTodosBtn } from '@/components/PuxarTodosBtn';
+import { CriasCarteira, type CriaVM } from '@/components/CriasCarteira';
 import { listCrias } from '@/lib/data/crias';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
-import { brl, faseLabel, saudeDaCria } from '@/lib/format';
+import { brl, faseLabel, iniciais, saudeDaCria } from '@/lib/format';
 import { sincronizarEspelhoSeVelho } from '@/lib/clickup/espelho';
 
 // Componente STREAMADO (dentro de <Suspense> na página): antes de ler o espelho,
@@ -23,6 +23,18 @@ export async function CriasLista({ q }: { q: string }) {
   const emForja = crias.filter((c) => c.clickup_semana != null).length;
   const backlog = crias.length - emForja;
 
+  const itens: CriaVM[] = crias.map((c) => ({
+    id: c.id,
+    nome: c.nome_cliente,
+    iniciais: iniciais(c.nome_cliente),
+    area: c.area_atuacao ?? 'Área a definir',
+    semana: c.clickup_semana,
+    faseNome: c.clickup_semana ? faseLabel(c.clickup_semana) : null,
+    investimento: brl(c.investimento_midia),
+    investimentoNum: c.investimento_midia ?? null,
+    saude: saudeDaCria(c),
+  }));
+
   return (
     <>
       <div className="pagehead">
@@ -40,53 +52,7 @@ export async function CriasLista({ q }: { q: string }) {
           <p>{termo ? 'Tente outro termo ou limpe a busca.' : 'As Crias entram pelo sync do ClickUp (lista-mestre, Squad 08) ou pelo cadastro do Gestor de Contas. Rode a sincronização para materializar os clientes.'}</p>
         </div>
       ) : (
-        <div className="card" style={{ padding: 6, overflowX: 'auto' }}>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Cria</th>
-                <th>Fase</th>
-                <th>Saúde</th>
-                <th>Investimento</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {crias.map((c) => {
-                const s = saudeDaCria(c);
-                return (
-                  <tr key={c.id}>
-                    <td>
-                      <div className="crname">{c.nome_cliente}</div>
-                      <div className="s">{c.area_atuacao ?? 'Área a definir'}</div>
-                    </td>
-                    <td className="mono" style={{ color: c.clickup_semana ? undefined : 'var(--faint)' }}>
-                      {c.clickup_semana ? faseLabel(c.clickup_semana) : '—'}
-                    </td>
-                    <td>
-                      <span className={`pill ${s.kind}`}>
-                        <span className="d" style={{ background: s.kind === 'crit' ? 'var(--risk)' : s.kind === 'warn' ? 'var(--warn)' : s.kind === 'good' ? 'var(--ember-hi)' : 'var(--faint)' }} />
-                        {s.label}
-                      </span>
-                    </td>
-                    <td className="mono">{brl(c.investimento_midia)}</td>
-                    <td>
-                      {c.clickup_semana == null ? (
-                        <span className="chip dim">Backlog</span>
-                      ) : (
-                        <span className="s" style={{ color: 'var(--faint)' }}>—</span>
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <Link className="btn" href={`/crias/${c.id}`}>abrir →</Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <CriasCarteira itens={itens} />
       )}
     </>
   );
