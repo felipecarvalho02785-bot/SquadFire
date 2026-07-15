@@ -157,6 +157,17 @@ begin
     raise exception 'C4: sync não avançou de 5 para 6';
   end if;
 
+  -- A5 (0033): ao concluir fases pelo sync, as Lenhas de checklist delas são
+  -- canceladas (não ficam infladas nos KPIs de "Lenhas na fila / pendentes").
+  select count(*) into n
+    from lenha l
+    join fase_da_forja fdf on fdf.id = l.fase_da_forja_id
+    join forja f on f.id = fdf.forja_id
+    join cria c on c.id = f.cria_id
+   where c.clickup_task_id='CU-C4' and fdf.status='concluida'
+     and l.status not in ('concluida','cancelada');
+  if n <> 0 then raise exception 'A5: % Lenhas de fase concluída ficaram abertas', n; end if;
+
   -- Auditoria (0031): o trigger registrou as operações nas entidades sensíveis
   select count(*) into n from auditoria where entidade='cria' and acao='INSERT';
   if n < 1 then raise exception 'auditoria não registrou INSERT de cria'; end if;
@@ -225,6 +236,26 @@ set local role authenticated;
 select set_config('request.jwt.claims','{"email":"fora@t.dev"}',true);
 do $$ begin
   if (select count(*) from cria) <> 0 then raise exception 'não-membro leu crias'; end if;
+end $$;
+rollback;
+SQL
+
+# M4 (0033): o dono comum PODE delegar sua Lenha para outro membro ativo
+$PSQL <<'SQL'
+-- lenha avulsa do 'contas' (superuser insere, bypassa RLS)
+insert into lenha (tipo, titulo, responsavel_id)
+  values ('avulsa','delegar-teste',(select id from membro where email='contas@t.dev'));
+SQL
+$PSQL <<'SQL'
+begin;
+set local role authenticated;
+select set_config('request.jwt.claims','{"email":"contas@t.dev"}',true);
+do $$ declare r int; begin
+  -- contas (gestor_contas, não é Projetos/Admin) reatribui a própria Lenha
+  update lenha set responsavel_id=(select id from membro where email='projetos@t.dev')
+    where titulo='delegar-teste';
+  get diagnostics r = row_count;
+  if r <> 1 then raise exception 'M4: dono não conseguiu delegar a Lenha (% linhas)', r; end if;
 end $$;
 rollback;
 SQL

@@ -37,22 +37,26 @@ export async function getBibliotecaItens(): Promise<BiblioItem[]> {
     .limit(200);
 
   const rows = (data as unknown as Raw[]) ?? [];
-  const out: BiblioItem[] = [];
-  for (const r of rows) {
-    let arquivoUrl: string | null = null;
-    if (r.arquivo_path) {
-      const { data: s } = await supabase.storage.from('entregaveis').createSignedUrl(r.arquivo_path, 21600);
-      arquivoUrl = s?.signedUrl ?? null;
+
+  // Assina as URLs dos criativos em BATCH (uma chamada), não um round-trip por
+  // arquivo (era N+1 e travava a página proporcional ao nº de criativos).
+  const paths = rows.map((r) => r.arquivo_path).filter((p): p is string => !!p);
+  const urlPorPath = new Map<string, string>();
+  if (paths.length) {
+    const { data: assinadas } = await supabase.storage.from('entregaveis').createSignedUrls(paths, 21600);
+    for (const s of (assinadas as { path: string | null; signedUrl: string }[]) ?? []) {
+      if (s.path && s.signedUrl) urlPorPath.set(s.path, s.signedUrl);
     }
-    out.push({
-      id: r.id, titulo: r.titulo, tipo: r.tipo, conteudo: r.conteudo,
-      arquivoUrl, arquivoNome: r.arquivo_nome,
-      criaId: r.cria_id, criaNome: r.cria?.nome_cliente ?? null,
-      autorId: r.autor_id, criadoEm: r.created_at,
-      fonte: 'app', tema: null, thumbUrl: null, mimeType: null,
-    });
   }
-  return out;
+
+  return rows.map((r) => ({
+    id: r.id, titulo: r.titulo, tipo: r.tipo, conteudo: r.conteudo,
+    arquivoUrl: r.arquivo_path ? urlPorPath.get(r.arquivo_path) ?? null : null,
+    arquivoNome: r.arquivo_nome,
+    criaId: r.cria_id, criaNome: r.cria?.nome_cliente ?? null,
+    autorId: r.autor_id, criadoEm: r.created_at,
+    fonte: 'app' as const, tema: null, thumbUrl: null, mimeType: null,
+  }));
 }
 
 // Varredura do Drive cacheada (60s) — a MESMA biblioteca pra todo mundo (conta
