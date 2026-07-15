@@ -34,8 +34,8 @@ export default async function BrigadaPage() {
           </div>
         ) : (
           <div className="grid cols-3">
-            {membros.map((m) => (
-              <div className="card" key={m.id}>
+            {membros.map((m, i) => (
+              <div className="card sf-reveal" key={m.id} style={{ '--i': i } as React.CSSProperties}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                   <div className="avatar" style={{ width: 42, height: 42, fontSize: 15 }}>{iniciais(m.nome)}</div>
                   <div className="grow" style={{ minWidth: 0 }}>

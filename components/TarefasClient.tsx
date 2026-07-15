@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { criarTarefa, delegarTarefa, toggleLenha } from '@/lib/actions';
 import { iniciais } from '@/lib/format';
+import { Spark } from '@/components/Spark';
 import type { PrioridadeLenha } from '@/lib/types/database';
 
 export interface TaskRow {
@@ -47,6 +48,7 @@ export function TarefasClient({ rows: initial, membros, meuId }: { rows: TaskRow
   const [filtro, setFiltro] = useState<Filtro>('todas');
   const [erro, setErro] = useState<string | null>(null);
   const [reassign, setReassign] = useState<string | null>(null);
+  const [spark, setSpark] = useState<string | null>(null);
   const [toggling, startToggle] = useTransition();
   const [criando, startCriar] = useTransition();
 
@@ -78,6 +80,7 @@ export function TarefasClient({ rows: initial, membros, meuId }: { rows: TaskRow
     setErro(null);
     let novo = false;
     setRows((rs) => rs.map((r) => (r.id === id ? ((novo = !r.done), { ...r, done: novo }) : r)));
+    if (novo) { setSpark(id); setTimeout(() => setSpark((s) => (s === id ? null : s)), 720); } // faísca ao concluir
     startToggle(async () => {
       const res = await toggleLenha(id, novo);
       if (!res.ok) {
@@ -192,6 +195,7 @@ export function TarefasClient({ rows: initial, membros, meuId }: { rows: TaskRow
                   aria-label={t.done ? 'Reabrir tarefa' : 'Concluir tarefa'}
                 >
                   {t.done ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg> : null}
+                  {spark === t.id && <Spark />}
                 </button>
                 <span className={`ttag ${t.tipo}`}>{TTAG[t.tipo]}</span>
                 <div className="rmain">

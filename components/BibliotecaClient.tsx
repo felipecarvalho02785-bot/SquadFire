@@ -146,8 +146,8 @@ export function BibliotecaClient({
         <div className="card"><div className="s" style={{ color: 'var(--muted)' }}>Acervo vazio neste filtro — adicione o primeiro item ou conecte o Drive.</div></div>
       ) : (
         <div className="grid cols-3">
-          {vis.map((it) => (
-            <div className="card" key={it.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {vis.map((it, i) => (
+            <div className="card sf-reveal" key={it.id} style={{ display: 'flex', flexDirection: 'column', gap: 8, '--i': i } as React.CSSProperties}>
               {it.thumbUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={it.thumbUrl} alt={it.titulo} loading="lazy" style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 8, background: 'var(--panel-2, rgba(255,255,255,.03))' }} />
