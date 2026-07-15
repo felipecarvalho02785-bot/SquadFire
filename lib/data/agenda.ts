@@ -7,7 +7,9 @@ import { hojeBRT, diasDesdeBRT } from '@/lib/datas';
 export async function garantirRituaisHoje(): Promise<void> {
   if (!isSupabaseConfigured) return;
   try {
-    await getSupabaseAdmin().rpc('gerar_lenhas_do_dia');
+    // Gera com a data de HOJE em Brasília — o Meu Dia filtra por hojeBRT(); se
+    // gerasse com current_date (UTC), à noite a Lenha ficava "amanhã" e sumia.
+    await getSupabaseAdmin().rpc('gerar_lenhas_do_dia', { p_data: hojeBRT() });
   } catch {
     /* sem service_role ou falha — o cron diário cobre de qualquer forma */
   }
