@@ -1,18 +1,29 @@
 import { Topbar } from '@/components/Topbar';
-import { BibliotecaLista, type ItemBiblioteca } from '@/components/BibliotecaLista';
+import { BibliotecaClient } from '@/components/BibliotecaClient';
+import { getBibliotecaItens } from '@/lib/data/biblioteca';
+import { getCurrentMembro } from '@/lib/auth';
+import { getSupabaseServer } from '@/lib/supabase/server';
+import { isSupabaseConfigured } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
-const ITENS: ItemBiblioteca[] = [
-  { titulo: 'Roteiro VSL · Previdenciário', cria: 'M. Oliveira Advogados', tipo: 'Roteiro', data: 'esta semana' },
-  { titulo: 'Carrossel · 5 erros no INSS', cria: 'Mendes Advocacia', tipo: 'Criativo', data: 'ontem' },
-  { titulo: 'Roteiro Reels · Autoridade', cria: 'Letícia Stein', tipo: 'Roteiro', data: 'há 3 dias' },
-  { titulo: 'Criativo estático · Oferta', cria: 'Mozini Advocacia', tipo: 'Criativo', data: 'esta semana' },
-  { titulo: 'Roteiro anúncio · Trabalhista', cria: 'Edi Carlos Advocacia', tipo: 'Roteiro', data: 'há 5 dias' },
-  { titulo: 'Criativo vídeo · Depoimento', cria: 'Ribeiro & Associados', tipo: 'Criativo', data: 'há 1 semana' },
-];
+export default async function BibliotecaPage() {
+  let itens: Awaited<ReturnType<typeof getBibliotecaItens>> = [];
+  let crias: { id: string; nome: string }[] = [];
+  let meuId: string | null = null;
 
-export default function BibliotecaPage() {
+  if (isSupabaseConfigured) {
+    const supabase = await getSupabaseServer();
+    const [it, membro, criasData] = await Promise.all([
+      getBibliotecaItens(),
+      getCurrentMembro(),
+      supabase.from('cria').select('id, nome_cliente').eq('status', 'ativa').order('nome_cliente'),
+    ]);
+    itens = it;
+    meuId = membro?.id ?? null;
+    crias = ((criasData.data as { id: string; nome_cliente: string }[]) ?? []).map((c) => ({ id: c.id, nome: c.nome_cliente }));
+  }
+
   return (
     <div className="main">
       <Topbar title="Biblioteca" sub="roteiros e criativos da squad" />
@@ -25,7 +36,7 @@ export default function BibliotecaPage() {
           </div>
         </div>
 
-        <BibliotecaLista itens={ITENS} />
+        <BibliotecaClient itens={itens} crias={crias} meuId={meuId} />
       </div>
     </div>
   );

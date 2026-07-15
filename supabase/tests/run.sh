@@ -157,6 +157,13 @@ begin
     raise exception 'C4: sync não avançou de 5 para 6';
   end if;
 
+  -- Auditoria (0031): o trigger registrou as operações nas entidades sensíveis
+  select count(*) into n from auditoria where entidade='cria' and acao='INSERT';
+  if n < 1 then raise exception 'auditoria não registrou INSERT de cria'; end if;
+  if not exists (select 1 from auditoria where entidade='forja' and acao='UPDATE' and 'fase_atual_id' = any(mudou)) then
+    raise exception 'auditoria não capturou o avanço de fase da forja';
+  end if;
+
   raise notice '✓ triggers/regras OK';
 end $$;
 SQL
@@ -272,6 +279,30 @@ do $$ begin
     select 1 from membro_papel mp join membro m on m.id=mp.membro_id
     where m.email='trafego@t.dev' and mp.papel='gestor_contas'
   ) then raise exception 'C1: gestor_contas acabou concedido ao trafego'; end if;
+end $$;
+rollback;
+SQL
+
+# Biblioteca (0032): membro adiciona item ao acervo (RLS de insert como autor)
+$PSQL <<'SQL'
+begin;
+set local role authenticated;
+select set_config('request.jwt.claims','{"email":"contas@t.dev"}',true);
+do $$ begin
+  insert into biblioteca_item (titulo, tipo, conteudo, autor_id)
+    values ('Roteiro teste', 'roteiro', 'texto do roteiro', app.current_membro_id());
+  if (select count(*) from biblioteca_item) < 1 then raise exception 'biblioteca: insert do membro falhou'; end if;
+end $$;
+rollback;
+SQL
+
+# Auditoria: não-admin NÃO lê o rastro (RLS admin-only)
+$PSQL <<'SQL'
+begin;
+set local role authenticated;
+select set_config('request.jwt.claims','{"email":"contas@t.dev"}',true);
+do $$ begin
+  if (select count(*) from auditoria) <> 0 then raise exception 'não-admin leu a auditoria'; end if;
 end $$;
 rollback;
 SQL

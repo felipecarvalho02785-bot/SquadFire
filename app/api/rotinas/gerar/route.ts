@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { sincronizarTodosGoogle } from '@/lib/google/calendar';
+import { hojeBRT } from '@/lib/datas';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,7 +20,8 @@ export async function GET(request: Request) {
   }
 
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase.rpc('gerar_lenhas_do_dia');
+  // Gera as Lenhas de rotina do dia em BRT (o Meu Dia filtra por hojeBRT()).
+  const { data, error } = await supabase.rpc('gerar_lenhas_do_dia', { p_data: hojeBRT() });
   if (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }

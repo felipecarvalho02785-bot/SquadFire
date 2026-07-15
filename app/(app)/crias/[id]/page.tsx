@@ -208,6 +208,10 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
           <div className="dinfo">
             <h2>{cria.nome_cliente}</h2>
             <p>{cria.area_atuacao ?? 'Estruturação'} · Squad 08{forja?.data_inicio ? ` · Início ${fmtData(forja.data_inicio)}` : ''}</p>
+            <Link href={`/crias/${cria.id}/relatorio`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 13, color: 'var(--ember-hi, #f2760c)', fontWeight: 600 }}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path d="M14 2v6h6M9 13h6M9 17h6" /></svg>
+              Gerar relatório semanal
+            </Link>
           </div>
           <div className="dbadges">
             <span className={`pill ${statusPill.cls}`}><span className="d" />{statusPill.txt}</span>
