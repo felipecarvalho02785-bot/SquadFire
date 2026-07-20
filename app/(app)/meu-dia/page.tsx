@@ -10,6 +10,7 @@ import { garantirRituaisHoje } from '@/lib/data/agenda';
 import { AgendaHojeStream } from '@/components/AgendaHojeStream';
 import { isSupabaseConfigured } from '@/lib/env';
 import { horaBRT } from '@/lib/datas';
+import { ehPrefetch } from '@/lib/prefetch';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,7 @@ function saudacao(): string {
 }
 
 export default async function MeuDiaPage() {
-  await garantirRituaisHoje(); // materializa os rituais do dia (idempotente)
+  if (!(await ehPrefetch())) await garantirRituaisHoje(); // materializa os rituais (pulado no prefetch)
   const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
   const [d, alertas] = await Promise.all([getMeuDiaDashboard(membro), getAlertas(membro)]);
 

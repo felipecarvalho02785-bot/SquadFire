@@ -9,12 +9,11 @@ const nextConfig = {
     // Cache do roteador no CLIENTE (por sessão do navegador, sem vazar entre
     // usuários): páginas dinâmicas já visitadas ficam reutilizáveis por N
     // segundos, então RE-NAVEGAR entre abas é instantâneo (zero ida ao
-    // servidor). Mutações (server actions com revalidatePath) invalidam o
-    // cache normalmente. `dynamic` curto (20s) porque as telas espelham fonte
-    // externa (ClickUp/Google): acima disso, mudança feita por outro membro ou
-    // pelo webhook ficaria escondida ao voltar numa aba sem ter editado nada.
+    // servidor). Junto com o prefetch da Sidebar, a navegação fica instantânea.
+    // Mutações (revalidatePath) invalidam o cache; o pull-on-view + webhook
+    // mantêm o frescor, então 45s é um bom equilíbrio (rápido, sem ficar velho).
     staleTimes: {
-      dynamic: 20,
+      dynamic: 45,
       static: 300,
     },
   },

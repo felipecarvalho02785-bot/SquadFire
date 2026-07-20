@@ -113,13 +113,11 @@ export function Sidebar({
             {g.itens.filter((n) => !n.admin || membro?.is_admin).map((n) => {
               const active = path === n.href || path.startsWith(n.href + '/');
               return (
-                // prefetch DEFAULT (sem forçar): em rota dinâmica o Next pré-carrega
-                // só o loading.tsx — clique abre com esqueleto na hora, e o cache do
-                // roteador (staleTimes) deixa a RE-navegação instantânea. Forçar o
-                // prefetch completo renderizava TODAS as abas no servidor em segundo
-                // plano (custo no Hobby) e disparava o pull-on-view/escritas para
-                // abas que ninguém abriu — o sync agora só roda na navegação real.
-                <Link key={n.href} href={n.href} className={active ? 'active' : ''} title={n.label} onClick={() => document.documentElement.classList.remove('sf-nav-open')}>
+                // prefetch: pré-aquece a aba (dados + esqueleto) → clicar abre na
+                // hora. Os efeitos colaterais (sync do ClickUp, gerar Lenhas) são
+                // PULADOS no prefetch (ver lib/prefetch.ts / ehPrefetch), então
+                // pré-aquecer é barato e não dispara escrita por aba não aberta.
+                <Link key={n.href} href={n.href} prefetch className={active ? 'active' : ''} title={n.label} onClick={() => document.documentElement.classList.remove('sf-nav-open')}>
 
                   <span className="ic">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
