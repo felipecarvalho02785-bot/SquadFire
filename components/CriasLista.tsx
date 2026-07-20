@@ -5,6 +5,7 @@ import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
 import { brl, faseLabel, iniciais, saudeDaCria } from '@/lib/format';
 import { sincronizarEspelhoSeVelho } from '@/lib/clickup/espelho';
+import { ehPrefetch } from '@/lib/prefetch';
 
 // Componente STREAMADO (dentro de <Suspense> na página): antes de ler o espelho,
 // dispara um sync leve do ClickUp SE estiver velho (> 2min) — assim abrir a aba
@@ -12,7 +13,8 @@ import { sincronizarEspelhoSeVelho } from '@/lib/clickup/espelho';
 // já apareceu; a lista entra quando o sync/leitura terminam.
 export async function CriasLista({ q }: { q: string }) {
   // Pull-on-view: idempotente, throttled e resiliente (nunca derruba a página).
-  await sincronizarEspelhoSeVelho({ maxIdadeMs: 120_000 });
+  // Pulado no PREFETCH — pré-aquecer a aba não deve puxar o ClickUp nem escrever.
+  if (!(await ehPrefetch())) await sincronizarEspelhoSeVelho({ maxIdadeMs: 120_000 });
 
   const termo = q.trim().toLowerCase();
   const todas = await listCrias();
