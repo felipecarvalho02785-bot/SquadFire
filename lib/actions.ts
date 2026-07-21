@@ -243,6 +243,7 @@ export async function avancarFase(forjaId: string): Promise<ActionResult> {
   if (error) return { ok: false, error: error.message };
   await recalcularRisco(getSupabaseAdmin()); // avançar fase pode tirar do risco
   revalidatePath('/crias/[id]', 'page');
+  revalidatePath('/crias', 'page'); // a carteira mostra a fase da Forja → precisa refrescar
   revalidatePath('/covil');
   return { ok: true };
 }

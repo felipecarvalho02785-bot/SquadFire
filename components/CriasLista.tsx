@@ -1,6 +1,6 @@
 import { PuxarTodosBtn } from '@/components/PuxarTodosBtn';
 import { CriasCarteira, type CriaVM } from '@/components/CriasCarteira';
-import { listCrias } from '@/lib/data/crias';
+import { listCrias, getFaseAtualPorCria } from '@/lib/data/crias';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
 import { brl, faseLabel, iniciais, saudeDaCria } from '@/lib/format';
@@ -17,25 +17,35 @@ export async function CriasLista({ q }: { q: string }) {
   if (!(await ehPrefetch())) await sincronizarEspelhoSeVelho({ maxIdadeMs: 120_000 });
 
   const termo = q.trim().toLowerCase();
-  const todas = await listCrias();
+  const [todas, faseMap] = await Promise.all([listCrias(), getFaseAtualPorCria()]);
   const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
   const crias = termo
     ? todas.filter((c) => c.nome_cliente.toLowerCase().includes(termo) || (c.area_atuacao ?? '').toLowerCase().includes(termo))
     : todas;
-  const emForja = crias.filter((c) => c.clickup_semana != null).length;
+
+  // Fase de EXIBIÇÃO = a fase corrente da Forja (fonte do detalhe), caindo pro
+  // clickup_semana só quando não há Forja/fase. Assim a carteira nunca discorda
+  // do detalhe quando o time avança a fase à frente da Semana do ClickUp.
+  const semanaDe = (c: { id: string; clickup_semana: number | null }): number | null =>
+    faseMap.get(c.id) ?? c.clickup_semana;
+
+  const emForja = crias.filter((c) => semanaDe(c) != null).length;
   const backlog = crias.length - emForja;
 
-  const itens: CriaVM[] = crias.map((c) => ({
-    id: c.id,
-    nome: c.nome_cliente,
-    iniciais: iniciais(c.nome_cliente),
-    area: c.area_atuacao ?? 'Área a definir',
-    semana: c.clickup_semana,
-    faseNome: c.clickup_semana ? faseLabel(c.clickup_semana) : null,
-    investimento: brl(c.investimento_midia),
-    investimentoNum: c.investimento_midia ?? null,
-    saude: saudeDaCria(c),
-  }));
+  const itens: CriaVM[] = crias.map((c) => {
+    const semana = semanaDe(c);
+    return {
+      id: c.id,
+      nome: c.nome_cliente,
+      iniciais: iniciais(c.nome_cliente),
+      area: c.area_atuacao ?? 'Área a definir',
+      semana,
+      faseNome: semana ? faseLabel(semana) : null,
+      investimento: brl(c.investimento_midia),
+      investimentoNum: c.investimento_midia ?? null,
+      saude: saudeDaCria({ status: c.status, em_risco: c.em_risco, clickup_semana: semana }),
+    };
+  });
 
   return (
     <>

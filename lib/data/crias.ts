@@ -37,6 +37,24 @@ export async function listCrias(): Promise<Cria[]> {
   return (data as Cria[]) ?? [];
 }
 
+// Fase CORRENTE real de cada Cria = a fase atual da Forja (mesma fonte que o
+// detalhe usa). Isso diverge de `clickup_semana` quando o time "Avança fase" à
+// frente da Semana do ClickUp: o `avancar_fase` (e o sync "só avança") movem a
+// Forja, mas nunca mexem em `clickup_semana` (que é o espelho cru do ClickUp e
+// é reescrito a cada sync). A carteira precisa desta fonte pra bater com o
+// detalhe. Chave: cria_id → ordem da fase (1..7). Respeita RLS.
+export async function getFaseAtualPorCria(): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  if (!isSupabaseConfigured) return map;
+  const supabase = await getSupabaseServer();
+  const { data } = await supabase.from('forja').select('cria_id, fase_atual:fase_atual_id(ordem)');
+  for (const row of (data as unknown as { cria_id: string | null; fase_atual: { ordem: number } | null }[]) ?? []) {
+    const ordem = row.fase_atual?.ordem;
+    if (row.cria_id && ordem != null) map.set(row.cria_id, ordem);
+  }
+  return map;
+}
+
 export interface GargaloView {
   id: string;
   descricao: string;
