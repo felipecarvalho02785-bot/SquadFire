@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
 import { enviarWhatsapp } from '@/lib/whatsapp/evolution';
-import { recalcularRisco } from '@/lib/clickup/espelho';
+import { recalcularRisco, sincronizarEspelhoSeVelho } from '@/lib/clickup/espelho';
 import { hojeBRT } from '@/lib/datas';
 import type { Papel, PrioridadeLenha } from '@/lib/types/database';
 
@@ -245,6 +245,18 @@ export async function avancarFase(forjaId: string): Promise<ActionResult> {
   revalidatePath('/crias/[id]', 'page');
   revalidatePath('/crias', 'page'); // a carteira mostra a fase da Forja → precisa refrescar
   revalidatePath('/covil');
+  return { ok: true };
+}
+
+// Sincronizar a carteira com o ClickUp AGORA (botão "atualizar" da lista de
+// Crias — disponível pra todo mundo, não só admin). Força o pull (ignora o
+// throttle), recalcula o risco e revalida a lista. Leve: reaproveita o engine
+// do pull-on-view, com deadline próprio; nunca lança pra fora.
+export async function sincronizarCriasAgora(): Promise<ActionResult> {
+  const r = await sincronizarEspelhoSeVelho({ maxIdadeMs: 0 });
+  revalidatePath('/crias', 'page');
+  revalidatePath('/covil');
+  if (r.status === 'erro') return { ok: false, error: 'não deu pra sincronizar agora — tente de novo' };
   return { ok: true };
 }
 
