@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentMembro } from '@/lib/auth';
-import { conversarFaiscaComFerramentas, iaGeminiConfigurada } from '@/lib/ia/gemini';
+import { conversarFaiscaIA, iaChatConfigurada } from '@/lib/ia/faisca';
 import { FERRAMENTAS_FAISCA, executarFerramentaFaisca } from '@/lib/ia/faisca-tools';
 import { getContextoFaisca } from '@/lib/data/faisca';
 import { isSupabaseConfigured } from '@/lib/env';
@@ -53,11 +53,11 @@ export async function POST(request: Request) {
   messages = coal;
   if (!messages.length) return NextResponse.json({ error: 'mensagem vazia' }, { status: 400 });
 
-  if (!iaGeminiConfigurada()) {
+  if (!iaChatConfigurada()) {
     return NextResponse.json({
       reply:
-        'Ainda não tenho uma IA conectada aqui — falta a chave GOOGLE_GENERATIVE_AI_API_KEY (Gemini) nas variáveis de ambiente. ' +
-        'Assim que ligar, eu respondo de verdade com o contexto do Squad.',
+        'Ainda não tenho uma IA conectada aqui — falta a chave do Gemini (GEMINI_API_KEY) ou do Groq (GROQ_API_KEY) nas variáveis de ambiente. ' +
+        'Assim que ligar uma delas, eu respondo de verdade com o contexto do Squad.',
       demo: true,
     });
   }
@@ -65,9 +65,10 @@ export async function POST(request: Request) {
   try {
     const contexto = await getContextoFaisca();
     const ctx = `${contexto}\n\nQuem fala com você agora: ${membro.nome} (${membro.papel_primario}${membro.is_admin ? ', admin' : ''}).`;
-    // Gemini é o único provedor (tier gratuito). Com ferramentas, a Faísca AGE:
-    // cria Lenha, busca Cria e resume o dia — tudo como o membro logado (RLS).
-    const reply = await conversarFaiscaComFerramentas(
+    // Gemini com fallback pro Groq (ambos no tier gratuito). Com ferramentas, a
+    // Faísca AGE: cria Lenha, busca Cria e resume o dia — tudo como o membro
+    // logado (RLS). O fallback não re-executa ação já feita (ver lib/ia/faisca).
+    const reply = await conversarFaiscaIA(
       messages,
       ctx,
       FERRAMENTAS_FAISCA,
@@ -82,14 +83,16 @@ export async function POST(request: Request) {
   }
 }
 
-// Traduz erros da API do Gemini em algo que a pessoa entende (e resolve).
+// Traduz erros da API de IA em algo que a pessoa entende (e resolve).
 function mensagemAmigavel(e: unknown): string {
   const raw = (e instanceof Error ? e.message : String(e)).toLowerCase();
   if (raw.includes('api key') || raw.includes('api_key') || raw.includes('permission') || raw.includes('401') || raw.includes('403')) {
-    return 'Minha chave de IA parece inválida — confere a GOOGLE_GENERATIVE_AI_API_KEY nas variáveis da Vercel.';
+    return 'Minha chave de IA parece inválida — confere a GEMINI_API_KEY (ou a GROQ_API_KEY) nas variáveis da Vercel.';
   }
   if (raw.includes('quota') || raw.includes('rate') || raw.includes('429') || raw.includes('resource_exhausted') || raw.includes('overloaded')) {
-    return 'Bati o limite gratuito do Gemini agora há pouco (mesmo tentando de novo). É por minuto/dia e reseta sozinho — espera ~1 minuto e manda de novo. Pra tirar o teto, dá pra ativar o pay-as-you-go do Gemini (bem barato, por uso).';
+    // Com o fallback do Groq ligado, chegar aqui significa que as DUAS IAs
+    // gratuitas bateram o limite ao mesmo tempo — raro. Reseta sozinho.
+    return 'As IAs gratuitas bateram o limite agora há pouco — é por minuto e reseta sozinho. Espera ~1 minuto e manda de novo. (Dica: ligar a GROQ_API_KEY dá bastante fôlego extra, de graça.)';
   }
   return 'Tive um problema ao pensar aqui agora. Tenta de novo daqui a pouco?';
 }
