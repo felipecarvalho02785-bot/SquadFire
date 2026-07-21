@@ -4,9 +4,10 @@ import { PuxarTodosBtn } from '@/components/PuxarTodosBtn';
 import { CriasFrescor } from '@/components/CriasFrescor';
 import { CriasCarteira, type CriaVM } from '@/components/CriasCarteira';
 import { listCrias, getFaseAtualPorCria } from '@/lib/data/crias';
+import { getSinaisSaudePorCria, scoreSaude } from '@/lib/data/saude';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
-import { brl, faseLabel, iniciais, saudeDaCria } from '@/lib/format';
+import { brl, faseLabel, iniciais } from '@/lib/format';
 import { sincronizarEspelhoSeVelho } from '@/lib/clickup/espelho';
 import { ehPrefetch } from '@/lib/prefetch';
 
@@ -35,7 +36,10 @@ export async function CriasLista({ q }: { q: string }) {
     }
   }
 
-  const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
+  const [membro, sinais] = await Promise.all([
+    isSupabaseConfigured ? getCurrentMembro() : Promise.resolve(null),
+    getSinaisSaudePorCria(),
+  ]);
   const crias = termo
     ? todas.filter((c) => c.nome_cliente.toLowerCase().includes(termo) || (c.area_atuacao ?? '').toLowerCase().includes(termo))
     : todas;
@@ -55,6 +59,19 @@ export async function CriasLista({ q }: { q: string }) {
 
   const itens: CriaVM[] = crias.map((c) => {
     const semana = semanaDe(c);
+    // Estados especiais mantêm a linguagem da casa (sem score). Cria ativa e na
+    // Forja ganha o termômetro de churn (SLA + dias sem briefing + lenhas atrasadas).
+    let saude: CriaVM['saude'];
+    let score: number | null = null;
+    if (c.status === 'pausada') saude = { label: 'Cinzas', kind: 'dim' };
+    else if (c.status === 'encerrada') saude = { label: 'Temperada', kind: 'dim' };
+    else if (!semana) saude = { label: 'Pré-Forja', kind: 'dim' };
+    else {
+      const s = sinais.get(c.id);
+      const r = scoreSaude({ slaVencido: c.em_risco, diasSemBriefing: s?.diasSemBriefing ?? null, lenhasAtrasadas: s?.lenhasAtrasadas ?? 0 });
+      saude = { label: r.label, kind: r.kind };
+      score = r.score;
+    }
     return {
       id: c.id,
       nome: c.nome_cliente,
@@ -64,7 +81,8 @@ export async function CriasLista({ q }: { q: string }) {
       faseNome: semana ? faseLabel(semana) : null,
       investimento: brl(c.investimento_midia),
       investimentoNum: c.investimento_midia ?? null,
-      saude: saudeDaCria({ status: c.status, em_risco: c.em_risco, clickup_semana: semana }),
+      saude,
+      score,
     };
   });
 

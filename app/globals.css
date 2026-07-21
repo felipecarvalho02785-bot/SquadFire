@@ -704,6 +704,21 @@ svg .axis { fill: var(--faint); }
 .frescor-btn:disabled { opacity: 0.6; cursor: default; }
 @media (prefers-reduced-motion: reduce) { .frescor-dot[data-on="sync"] { animation: none; } }
 
+/* Termômetro de churn — número do score no pill da carteira + card no detalhe. */
+.pill-score { margin-left: 5px; padding-left: 6px; border-left: 1px solid currentColor; font-variant-numeric: tabular-nums; opacity: 0.85; font-weight: 700; }
+.saudecard .saude-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.saude-score { display: flex; align-items: baseline; gap: 2px; min-width: 96px; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--inset); }
+.saude-score b { font-family: var(--display); font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.saude-score small { color: var(--muted); font-size: 13px; }
+.saude-score.k-good b { color: var(--ember-hi); }
+.saude-score.k-good { border-color: color-mix(in srgb, var(--ember-hi) 34%, var(--line)); }
+.saude-score.k-warn b { color: var(--warn); }
+.saude-score.k-warn { border-color: color-mix(in srgb, var(--warn) 34%, var(--line)); }
+.saude-score.k-crit b { color: var(--risk); }
+.saude-score.k-crit { border-color: color-mix(in srgb, var(--risk) 34%, var(--line)); }
+.saude-info { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.saude-motivos { display: flex; gap: 6px; flex-wrap: wrap; }
+
 .table .crname { font-weight: 600; }
 .pill.dim { color: var(--faint); background: var(--inset); }
 .chip.dim { color: var(--faint); background: var(--inset); border: 1px solid var(--border); }

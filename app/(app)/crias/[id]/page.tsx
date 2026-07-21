@@ -16,8 +16,9 @@ import { EditCampoCria } from '@/components/EditCampoCria';
 import { EditGestorContas } from '@/components/EditGestorContas';
 import { getCriaDetalhe, getComentarios } from '@/lib/data/crias';
 import { getBrigada } from '@/lib/data/brigada';
+import { scoreSaude } from '@/lib/data/saude';
 import { iniciais } from '@/lib/format';
-import { diasDesdeBRT } from '@/lib/datas';
+import { diasDesdeBRT, hojeBRT } from '@/lib/datas';
 import { sincronizarCriaSeVelho } from '@/lib/clickup/espelho';
 
 export const dynamic = 'force-dynamic';
@@ -54,6 +55,15 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
   // Lenhas da fase corrente (checklist da Visão geral)
   const lenhasFase = faseAtual ? lenhas.filter((l) => l.fase_da_forja_id === faseAtual.id) : [];
   const lenhasPend = lenhas.filter((l) => l.status !== 'concluida').length;
+
+  // Termômetro de churn (mesma regra da carteira) — só pra Cria ativa e na Forja.
+  const hojeStr = hojeBRT();
+  const lenhasAtrasadas = lenhas.filter((l) => l.status !== 'concluida' && !!l.prazo && l.prazo < hojeStr).length;
+  const ultimoBrief = briefings[0]?.data ?? null;
+  const diasSemBriefing = ultimoBrief ? Math.floor((Date.now() - new Date(ultimoBrief).getTime()) / 86_400_000) : null;
+  const saude = forja && cria.status === 'ativa'
+    ? scoreSaude({ slaVencido: cria.em_risco, diasSemBriefing, lenhasAtrasadas })
+    : null;
 
   const statusPill =
     cria.status !== 'ativa'
@@ -237,6 +247,28 @@ export default async function CriaDetalhePage({ params }: { params: Promise<{ id
           <div className="kpi"><div className="k-top"><span className="k-label">Lenhas pendentes</span></div><div className="k-val">{lenhasPend}</div><span className="k-delta neu">na Forja</span></div>
           <div className={`kpi${briefingsSemana === 0 ? ' flag-warn' : ''}`}><div className="k-top"><span className="k-label">Briefing</span>{briefingsSemana === 0 && <span className="chip warn">esta semana</span>}</div><div className="k-val">{briefingsSemana}</div><span className="k-delta neu">{briefingsSemana === 0 ? 'pendente' : 'em dia'}</span></div>
         </div>
+
+        {/* Saúde da Cria (termômetro de churn) */}
+        {saude && (
+          <div className="card saudecard">
+            <div className="c-h"><span className="t">Saúde da Cria</span><span className="now">termômetro de churn</span></div>
+            <div className="saude-row">
+              <div className={`saude-score k-${saude.kind}`} role="meter" aria-valuenow={saude.score} aria-valuemin={0} aria-valuemax={100} aria-label="Saúde da Cria">
+                <b>{saude.score}</b><small>/100</small>
+              </div>
+              <div className="saude-info">
+                <span className={`pill ${saude.kind}`}><span className="d" />{saude.label}</span>
+                <div className="saude-motivos">
+                  {saude.motivos.length === 0 ? (
+                    <span className="s" style={{ color: 'var(--muted)' }}>Tudo em dia — sem pontos de atenção. 🔥</span>
+                  ) : (
+                    saude.motivos.map((m, i) => <span className="chip crit" key={i}>{m}</span>)
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Termômetro da Forja */}
         <div className="card">
