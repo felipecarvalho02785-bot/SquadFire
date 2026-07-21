@@ -91,7 +91,7 @@ const CAMPOS_KEYS: (keyof BriefingCampos)[] = [
   'c6_proximos_passos',
 ];
 
-function sistemaBriefing(contexto: { cliente: string; fase?: string | null }): string {
+export function sistemaBriefing(contexto: { cliente: string; fase?: string | null }): string {
   return (
     'Você é a Faísca, a IA do Squad 08 (E3 Digital). Monta o briefing semanal do ' +
     'cliente em português do Brasil, seguindo estritamente o modelo de 6 campos. ' +
@@ -105,7 +105,7 @@ function sistemaBriefing(contexto: { cliente: string; fase?: string | null }): s
 }
 
 // Extrai o objeto JSON da resposta (tolera cercas ```json e texto ao redor).
-function parseCampos(texto: string): BriefingCampos {
+export function parseCampos(texto: string): BriefingCampos {
   let raw = texto.trim();
   const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fence) raw = fence[1].trim();
@@ -201,7 +201,7 @@ export async function resumirDiagnosticoGemini(pdf: Buffer): Promise<string> {
 }
 
 // ── chat da Faísca COM ferramentas (function calling) ───────────────────────
-const SISTEMA_FAISCA =
+export const SISTEMA_FAISCA =
   'Você é a Faísca, a assistente de IA do Squad 08 da E3 Digital — uma agência que ' +
   'estrutura escritórios de advocacia. Vocabulário da casa: Cria = cliente, Forja = a ' +
   'Estruturação (projeto de 7 fases × 7 dias), Lenha = tarefa, Roda de Fogo = reunião ' +

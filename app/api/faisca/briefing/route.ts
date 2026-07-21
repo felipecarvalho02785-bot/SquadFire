@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseServer, getSupabaseAdmin } from '@/lib/supabase/server';
 import { getCurrentMembro } from '@/lib/auth';
-import { estruturarBriefingGemini, iaGeminiConfigurada, transcreverAudio, transcricaoConfigurada } from '@/lib/ia/gemini';
+import { transcreverAudio, transcricaoConfigurada } from '@/lib/ia/gemini';
+import { estruturarBriefingIA, iaChatConfigurada } from '@/lib/ia/faisca';
 import { pushBriefing } from '@/integracao/clickup/push-briefing.js';
 import { hojeBRT } from '@/lib/datas';
 
@@ -17,9 +18,9 @@ export async function POST(request: Request) {
   if (!membro) {
     return NextResponse.json({ error: 'não autenticado' }, { status: 401 });
   }
-  if (!iaGeminiConfigurada()) {
+  if (!iaChatConfigurada()) {
     return NextResponse.json(
-      { error: 'IA não configurada (defina GOOGLE_GENERATIVE_AI_API_KEY)' },
+      { error: 'IA não configurada (defina GEMINI_API_KEY ou GROQ_API_KEY)' },
       { status: 501 },
     );
   }
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
         ? `Semana ${(cria as { clickup_semana: number }).clickup_semana}`
         : null,
     };
-    campos = await estruturarBriefingGemini(transcricao, ctx);
+    campos = await estruturarBriefingIA(transcricao, ctx);
   } catch (e) {
     console.error('[faisca/briefing] estruturação', e);
     return NextResponse.json({ error: 'a Faísca não conseguiu estruturar o briefing agora' }, { status: 502 });
