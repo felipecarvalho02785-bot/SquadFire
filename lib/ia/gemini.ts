@@ -15,12 +15,19 @@ export function iaGeminiConfigurada(): boolean {
 // Retryable? Decide pelo STATUS estruturado do erro do SDK (não pela mensagem —
 // a mensagem quase sempre cita "generateContent", cujo "rate" fazia a regex
 // antiga retentar até erros permanentes 400/safety). Fallback por termos precisos.
+//
+// 429 (RESOURCE_EXHAUSTED / quota) do tier GRATUITO NÃO é retentável: o limite é
+// por minuto/dia e reseta sozinho — reexecutar na hora não passa (o teto continua
+// lá) e ainda QUEIMA mais cota, ampliado pelo laço de ferramentas (várias chamadas
+// por resposta). Falha rápido pra mensagem amigável ("espera ~1 min"), preservando
+// a cota do dia. Só 5xx (erro transitório de servidor) é que vale reexecutar.
 function ehRetryable(e: unknown): boolean {
   if ((e as { timeout?: boolean })?.timeout) return false; // timeout nosso: não insiste (bound de tempo)
   const status = (e as { status?: number })?.status;
-  if (typeof status === 'number') return [429, 500, 502, 503, 504].includes(status);
+  if (typeof status === 'number') return [500, 502, 503, 504].includes(status);
   const raw = (e instanceof Error ? e.message : String(e)).toLowerCase();
-  return /\b429\b|\b50[0234]\b|resource_exhausted|quota|rate limit|overloaded|unavailable|internal error/.test(raw);
+  if (/\b429\b|resource_exhausted|quota|rate limit/.test(raw)) return false;
+  return /\b50[0234]\b|overloaded|unavailable|internal error/.test(raw);
 }
 
 // Reexecuta a chamada em limite de uso (429) ou erro transitório (5xx), com
