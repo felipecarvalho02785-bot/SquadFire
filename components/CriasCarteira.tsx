@@ -13,6 +13,7 @@ export interface CriaVM {
   investimento: string;
   investimentoNum: number | null;
   saude: { label: string; kind: 'good' | 'warn' | 'crit' | 'dim' };
+  score: number | null; // termômetro de churn (0–100); null = backlog/pausada
 }
 
 type Filtro = 'todas' | 'chamas' | 'apagando' | 'backlog';
@@ -44,7 +45,9 @@ export function CriasCarteira({ itens }: { itens: CriaVM[] }) {
       return true;
     });
     const ord = [...filtrada];
-    if (ordem === 'quentes') ord.sort((a, b) => RANK[a.saude.kind] - RANK[b.saude.kind] || (b.semana ?? 0) - (a.semana ?? 0));
+    // "Mais quentes" = menor score de saúde primeiro (mais perto de apagar);
+    // backlog/pausada (score null) vão pro fim. Empata pelo tipo e pela fase.
+    if (ordem === 'quentes') ord.sort((a, b) => (a.score ?? 999) - (b.score ?? 999) || RANK[a.saude.kind] - RANK[b.saude.kind] || (b.semana ?? 0) - (a.semana ?? 0));
     else if (ordem === 'fase') ord.sort((a, b) => (b.semana ?? 0) - (a.semana ?? 0));
     else if (ordem === 'investimento') ord.sort((a, b) => (b.investimentoNum ?? 0) - (a.investimentoNum ?? 0));
     else ord.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
@@ -97,9 +100,10 @@ export function CriasCarteira({ itens }: { itens: CriaVM[] }) {
                 </div>
               </div>
               <div className="crow-right">
-                <span className={`pill ${c.saude.kind}`}>
+                <span className={`pill ${c.saude.kind}`} title={c.score != null ? `Saúde ${c.score}/100` : undefined}>
                   <span className="d" />
                   {c.saude.label}
+                  {c.score != null && <span className="pill-score">{c.score}</span>}
                 </span>
                 <span className="crow-inv">{c.investimento}</span>
               </div>
