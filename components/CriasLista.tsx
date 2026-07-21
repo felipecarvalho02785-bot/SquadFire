@@ -1,4 +1,7 @@
+import { after } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { PuxarTodosBtn } from '@/components/PuxarTodosBtn';
+import { CriasFrescor } from '@/components/CriasFrescor';
 import { CriasCarteira, type CriaVM } from '@/components/CriasCarteira';
 import { listCrias, getFaseAtualPorCria } from '@/lib/data/crias';
 import { getCurrentMembro } from '@/lib/auth';
@@ -12,12 +15,26 @@ import { ehPrefetch } from '@/lib/prefetch';
 // reflete o ClickUp de verdade, sem depender só do cron diário. O shell (Topbar)
 // já apareceu; a lista entra quando o sync/leitura terminam.
 export async function CriasLista({ q }: { q: string }) {
-  // Pull-on-view: idempotente, throttled e resiliente (nunca derruba a página).
-  // Pulado no PREFETCH — pré-aquecer a aba não deve puxar o ClickUp nem escrever.
-  if (!(await ehPrefetch())) await sincronizarEspelhoSeVelho({ maxIdadeMs: 120_000 });
-
   const termo = q.trim().toLowerCase();
-  const [todas, faseMap] = await Promise.all([listCrias(), getFaseAtualPorCria()]);
+  let [todas, faseMap] = await Promise.all([listCrias(), getFaseAtualPorCria()]);
+
+  // Pull-on-view SEM travar a página. Pulado no PREFETCH (pré-aquecer não puxa).
+  //  • Espelho vazio (1ª carga): sincroniza AGORA e relê — senão abriria vazio.
+  //  • Espelho já tem Crias: sincroniza em SEGUNDO PLANO (after) — a página
+  //    aparece na hora com o espelho atual e o dado fresco entra na próxima
+  //    navegação (revalidamos a lista só se algo mudou).
+  if (!(await ehPrefetch())) {
+    if (todas.length === 0) {
+      await sincronizarEspelhoSeVelho({ maxIdadeMs: 120_000 });
+      [todas, faseMap] = await Promise.all([listCrias(), getFaseAtualPorCria()]);
+    } else {
+      after(async () => {
+        const r = await sincronizarEspelhoSeVelho({ maxIdadeMs: 120_000 });
+        if (r.status === 'ok' && r.upserts) revalidatePath('/crias', 'page');
+      });
+    }
+  }
+
   const membro = isSupabaseConfigured ? await getCurrentMembro() : null;
   const crias = termo
     ? todas.filter((c) => c.nome_cliente.toLowerCase().includes(termo) || (c.area_atuacao ?? '').toLowerCase().includes(termo))
@@ -31,6 +48,10 @@ export async function CriasLista({ q }: { q: string }) {
 
   const emForja = crias.filter((c) => semanaDe(c) != null).length;
   const backlog = crias.length - emForja;
+
+  // Frescor do espelho = o sincronizado_em MAIS RECENTE (ISO ordena = cronológico).
+  const sincronizadoEm =
+    todas.map((c) => c.sincronizado_em).filter((x): x is string => !!x).sort().at(-1) ?? null;
 
   const itens: CriaVM[] = crias.map((c) => {
     const semana = semanaDe(c);
@@ -54,6 +75,7 @@ export async function CriasLista({ q }: { q: string }) {
           <div className="eye">Carteira · {todas.length} Crias{termo ? ` · ${crias.length} para "${q}"` : ''}</div>
           <h2>Crias</h2>
           <p>Squad 08 · espelho do ClickUp (Estruturação): {emForja} em execução + {backlog} no backlog. Clique numa Cria pra abrir a Forja.</p>
+          {isSupabaseConfigured && <CriasFrescor sincronizadoEm={sincronizadoEm} />}
           {membro?.is_admin && <PuxarTodosBtn />}
         </div>
       </div>
