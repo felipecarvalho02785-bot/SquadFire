@@ -43,8 +43,8 @@ export function MinhasLenhas({ lenhas: initial }: { lenhas: LenhaRow[] }) {
     <>
       {erro && <div className="tkn-erro">{erro}</div>}
       <div className="list">
-        {lenhas.map((l) => (
-          <div className={`lrow${l.done ? ' done' : ''}`} key={l.id}>
+        {lenhas.map((l, i) => (
+          <div className={`lrow sf-reveal${l.done ? ' done' : ''}`} key={l.id} style={{ '--i': i } as React.CSSProperties}>
             <button
               type="button"
               className={`chk${l.done ? ' done' : ''}`}

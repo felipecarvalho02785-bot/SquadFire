@@ -25,12 +25,47 @@ export interface SaudeScore {
   motivos: string[]; // por que está apagando (pra mostrar no detalhe)
 }
 
-const FAIXA_META: Record<FaixaSaude, { label: string; kind: 'good' | 'warn' | 'crit' }> = {
+export const FAIXA_META: Record<FaixaSaude, { label: string; kind: 'good' | 'warn' | 'crit' }> = {
   chamas: { label: 'Em Chamas', kind: 'good' },
   mornando: { label: 'Mornando', kind: 'warn' },
   apagando: { label: 'Apagando', kind: 'crit' },
   brasa: { label: 'Brasa Fria', kind: 'crit' },
 };
+
+// Cor sólida por faixa (pra gráficos — donut do Covil). Espelha os tokens da UI.
+export const FAIXA_COR: Record<FaixaSaude, string> = {
+  chamas: '#ff7a1f', // brasa viva (good)
+  mornando: '#ffc531', // amarelo (warn)
+  apagando: '#e5484d', // vermelho (crit)
+  brasa: '#8f1720', // vermelho profundo — o pior
+};
+
+// Estados fora da escala de churn (não têm score): Cria pausada/encerrada/backlog.
+export type SaudeKind = 'good' | 'warn' | 'crit' | 'dim';
+export interface SaudeVM {
+  label: string;
+  kind: SaudeKind;
+  score: number | null; // null = estado especial (sem termômetro)
+  faixa: FaixaSaude | 'cinzas' | 'temperada' | 'preforja';
+}
+
+// Fonte ÚNICA da saúde de exibição de uma Cria (mesma em toda tela: carteira,
+// Fogueira, detalhe, Covil). Estados especiais mantêm a linguagem da casa; Cria
+// ativa e na Forja entra no termômetro de churn.
+export function saudeVM(
+  cria: { status: string; em_risco: boolean; clickup_semana: number | null },
+  sinais?: { diasSemBriefing: number | null; lenhasAtrasadas: number },
+): SaudeVM {
+  if (cria.status === 'pausada') return { label: 'Cinzas', kind: 'dim', score: null, faixa: 'cinzas' };
+  if (cria.status === 'encerrada') return { label: 'Temperada', kind: 'dim', score: null, faixa: 'temperada' };
+  if (!cria.clickup_semana) return { label: 'Pré-Forja', kind: 'dim', score: null, faixa: 'preforja' };
+  const r = scoreSaude({
+    slaVencido: cria.em_risco,
+    diasSemBriefing: sinais?.diasSemBriefing ?? null,
+    lenhasAtrasadas: sinais?.lenhasAtrasadas ?? 0,
+  });
+  return { label: r.label, kind: r.kind, score: r.score, faixa: r.faixa };
+}
 
 // Função PURA — mesma regra na carteira e no detalhe (nada de divergir de novo).
 export function scoreSaude(s: SinaisSaude): SaudeScore {
