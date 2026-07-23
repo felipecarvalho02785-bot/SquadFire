@@ -4,7 +4,7 @@ import { PuxarTodosBtn } from '@/components/PuxarTodosBtn';
 import { CriasFrescor } from '@/components/CriasFrescor';
 import { CriasCarteira, type CriaVM } from '@/components/CriasCarteira';
 import { listCrias, getFaseAtualPorCria } from '@/lib/data/crias';
-import { getSinaisSaudePorCria, scoreSaude } from '@/lib/data/saude';
+import { getSinaisSaudePorCria, saudeVM } from '@/lib/data/saude';
 import { getCurrentMembro } from '@/lib/auth';
 import { isSupabaseConfigured } from '@/lib/env';
 import { brl, faseLabel, iniciais } from '@/lib/format';
@@ -59,19 +59,9 @@ export async function CriasLista({ q }: { q: string }) {
 
   const itens: CriaVM[] = crias.map((c) => {
     const semana = semanaDe(c);
-    // Estados especiais mantêm a linguagem da casa (sem score). Cria ativa e na
-    // Forja ganha o termômetro de churn (SLA + dias sem briefing + lenhas atrasadas).
-    let saude: CriaVM['saude'];
-    let score: number | null = null;
-    if (c.status === 'pausada') saude = { label: 'Cinzas', kind: 'dim' };
-    else if (c.status === 'encerrada') saude = { label: 'Temperada', kind: 'dim' };
-    else if (!semana) saude = { label: 'Pré-Forja', kind: 'dim' };
-    else {
-      const s = sinais.get(c.id);
-      const r = scoreSaude({ slaVencido: c.em_risco, diasSemBriefing: s?.diasSemBriefing ?? null, lenhasAtrasadas: s?.lenhasAtrasadas ?? 0 });
-      saude = { label: r.label, kind: r.kind };
-      score = r.score;
-    }
+    // Saúde de exibição vem da fonte ÚNICA (saudeVM): estados especiais mantêm a
+    // linguagem da casa; Cria ativa e na Forja entra no termômetro de churn.
+    const vm = saudeVM({ status: c.status, em_risco: c.em_risco, clickup_semana: semana }, sinais.get(c.id));
     return {
       id: c.id,
       nome: c.nome_cliente,
@@ -81,8 +71,8 @@ export async function CriasLista({ q }: { q: string }) {
       faseNome: semana ? faseLabel(semana) : null,
       investimento: brl(c.investimento_midia),
       investimentoNum: c.investimento_midia ?? null,
-      saude,
-      score,
+      saude: { label: vm.label, kind: vm.kind },
+      score: vm.score,
     };
   });
 

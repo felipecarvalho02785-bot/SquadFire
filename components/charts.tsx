@@ -34,7 +34,7 @@ export function AreaChart({ data }: { data: number[] }) {
         </g>
       ))}
       <path className="area-in" d={area} fill={EMBER} opacity={0.13} />
-      <path d={line} fill="none" stroke={EMBER} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+      <path className="line-draw" pathLength={1} d={line} fill="none" stroke={EMBER} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
       <circle className="livedot" cx={X(n - 1)} cy={Y(last)} r={6} fill={EMBER} />
       <circle cx={X(n - 1)} cy={Y(last)} r={5} fill={EMBER} stroke={SURFACE} strokeWidth={2} />
       <text x={X(n - 1) - 4} y={Y(last) - 9} textAnchor="end" fill="#9a8e85">{last}</text>
@@ -71,7 +71,7 @@ export function Donut({ segs }: { segs: DonutSeg[] }) {
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--inset)" strokeWidth={sw} />
       ) : (
         arcs.map((a, i) => (
-          <path key={i} d={a.d} fill="none" stroke={a.color} strokeWidth={sw} strokeLinecap="round" />
+          <path key={i} className="donut-arc" style={{ '--i': i } as React.CSSProperties} pathLength={1} d={a.d} fill="none" stroke={a.color} strokeWidth={sw} strokeLinecap="round" />
         ))
       )}
       <text x={cx} y={cy - 2} textAnchor="middle" fill="var(--text)" fontSize={26} fontWeight={700}>{total}</text>

@@ -1,14 +1,16 @@
 import Link from 'next/link';
 import { Topbar } from '@/components/Topbar';
+import { SaudePill } from '@/components/SaudePill';
 import { listCrias } from '@/lib/data/crias';
-import { saudeDaCria } from '@/lib/format';
+import { getSinaisSaudePorCria, saudeVM } from '@/lib/data/saude';
+import { brl } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
 const FASES = ['Alinhamento', 'Diagnóstico 360', 'Treinamento', 'Consultoria', 'Implementação', 'Aud. Mídia', 'Aud. Criativa'];
 
 export default async function FogueiraPage() {
-  const crias = await listCrias();
+  const [crias, sinais] = await Promise.all([listCrias(), getSinaisSaudePorCria()]);
   const colunas = [
     { key: 0, titulo: 'Backlog', sub: 'pré-forja' },
     ...FASES.map((f, i) => ({ key: i + 1, titulo: `Fase ${i + 1}`, sub: f })),
@@ -24,6 +26,7 @@ export default async function FogueiraPage() {
             <h2>Linha de Fogo</h2>
             <p>As {crias.length} Crias distribuídas nas 7 fases da Forja (frio → quente). Clique numa Cria pra abrir.</p>
           </div>
+          <span className="kboard-hint" aria-hidden>arraste ↔ pra ver todas as fases</span>
         </div>
 
         <div className="kboard">
@@ -39,18 +42,29 @@ export default async function FogueiraPage() {
                   <span className="kc">{doGrupo.length}</span>
                 </div>
                 {doGrupo.length === 0 ? (
-                  <div className="empty-min">—</div>
+                  <div className="empty-min">vazio</div>
                 ) : (
-                  doGrupo.map((c) => {
-                    const s = saudeDaCria(c);
+                  doGrupo.map((c, i) => {
+                    const vm = saudeVM(c, sinais.get(c.id));
                     return (
-                      <Link key={c.id} href={`/crias/${c.id}`} className="card kcard">
+                      <Link
+                        key={c.id}
+                        href={`/crias/${c.id}`}
+                        className={`card kcard sf-reveal${vm.kind === 'crit' ? ' urgente' : ''}`}
+                        style={{ '--i': i } as React.CSSProperties}
+                      >
                         <div className="kn">{c.nome_cliente}</div>
+                        <div className="ksub">{c.area_atuacao ?? 'Área a definir'}</div>
+                        {col.key > 0 && (
+                          <div className="kprog" aria-hidden>
+                            {Array.from({ length: 7 }, (_, s) => (
+                              <span key={s} className={`cseg${s < col.key ? ' on' : ''}`} style={{ '--s': s } as React.CSSProperties} />
+                            ))}
+                          </div>
+                        )}
                         <div className="kmeta">
-                          <span className={`pill ${s.kind}`}>
-                            <span className="d" style={{ background: s.kind === 'crit' ? 'var(--risk)' : s.kind === 'warn' ? 'var(--warn)' : s.kind === 'good' ? 'var(--ember-hi)' : 'var(--faint)' }} />
-                            {s.label}
-                          </span>
+                          <SaudePill saude={vm} score={vm.score} />
+                          <span className="kinv">{brl(c.investimento_midia)}</span>
                         </div>
                       </Link>
                     );

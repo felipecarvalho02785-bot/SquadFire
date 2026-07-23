@@ -143,7 +143,14 @@ export function BibliotecaClient({
       )}
 
       {vis.length === 0 ? (
-        <div className="card"><div className="s" style={{ color: 'var(--muted)' }}>Acervo vazio neste filtro — adicione o primeiro item ou conecte o Drive.</div></div>
+        <div className="empty">
+          <svg className="ic" viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 5h6a2 2 0 012 2v13a2 2 0 00-2-2H4zM20 5h-6a2 2 0 00-2 2v13a2 2 0 012-2h6z" />
+          </svg>
+          <b>Acervo vazio neste filtro</b>
+          <p>Adicione o primeiro roteiro ou criativo — ou conecte o Google Drive pra puxar o que a Brigada já produziu.</p>
+          <button type="button" className="btn primary" style={{ marginTop: 6 }} onClick={() => setAbrir(true)}>+ Adicionar ao acervo</button>
+        </div>
       ) : (
         <div className="grid cols-3">
           {vis.map((it, i) => (

@@ -1,6 +1,7 @@
 import { getSupabaseServer } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { faseLabel } from '@/lib/format';
+import { getSinaisSaudePorCria, saudeVM, FAIXA_META, FAIXA_COR } from '@/lib/data/saude';
 import type { Cria, Papel } from '@/lib/types/database';
 
 // Cores das séries (sólidas, on-brand). Espelham os tokens do design.
@@ -54,9 +55,10 @@ function demoDashboard(): CovilDashboard {
     hero: { forjasAtivas: 12, noPrazoPct: 83, slaEstourando: 2, lenhasNaFila: 7 },
     entregas: [8, 11, 9, 13, 12, 15, 14, 17, 16, 19, 18, 22],
     saude: [
-      { label: 'Em Chamas', value: 6, color: SERIE.good },
-      { label: 'Esfriando', value: 3, color: SERIE.warn },
-      { label: 'Apagando', value: 2, color: SERIE.crit },
+      { label: FAIXA_META.chamas.label, value: 6, color: FAIXA_COR.chamas },
+      { label: FAIXA_META.mornando.label, value: 3, color: FAIXA_COR.mornando },
+      { label: FAIXA_META.apagando.label, value: 2, color: FAIXA_COR.apagando },
+      { label: FAIXA_META.brasa.label, value: 1, color: FAIXA_COR.brasa },
       { label: 'Cinzas', value: 1, color: SERIE.ash },
     ],
     fases: [3, 2, 1, 2, 2, 1, 1],
@@ -126,10 +128,19 @@ export async function getCovilDashboard(papel: Papel): Promise<CovilDashboard> {
     if (c.clickup_semana && c.clickup_semana >= 1 && c.clickup_semana <= 7) fases[c.clickup_semana - 1] += 1;
   }
 
-  // Saúde das Forjas (só segmentos com valor)
+  // Saúde das Forjas — distribuição pelas 4 faixas do termômetro de churn (mesma
+  // escala da carteira/Fogueira), + Cinzas (pausadas). Só segmentos com valor.
+  const sinais = await getSinaisSaudePorCria();
+  const bucket = { chamas: 0, mornando: 0, apagando: 0, brasa: 0 };
+  for (const c of ativas) {
+    const f = saudeVM(c, sinais.get(c.id)).faixa;
+    if (f === 'chamas' || f === 'mornando' || f === 'apagando' || f === 'brasa') bucket[f] += 1;
+  }
   const saude: DonutSeg[] = [
-    { label: 'Em Chamas', value: ativas.length - emRisco.length, color: SERIE.good },
-    { label: 'Apagando', value: emRisco.length, color: SERIE.crit },
+    { label: FAIXA_META.chamas.label, value: bucket.chamas, color: FAIXA_COR.chamas },
+    { label: FAIXA_META.mornando.label, value: bucket.mornando, color: FAIXA_COR.mornando },
+    { label: FAIXA_META.apagando.label, value: bucket.apagando, color: FAIXA_COR.apagando },
+    { label: FAIXA_META.brasa.label, value: bucket.brasa, color: FAIXA_COR.brasa },
     { label: 'Cinzas', value: pausadas.length, color: SERIE.ash },
   ].filter((s) => s.value > 0);
 
